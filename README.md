@@ -2,7 +2,7 @@
 
 ### What is this repository for? ###
 
-A client-server project using Node.js. Students in groups will plot linear functions using an iPad application. This repository holds the communication layer of the application (client) and the server frontend and backend. More documentation can be found [here](https://drive.google.com/a/ucdavis.edu/folderview?id=0B1W6Ca2MINIsfmVmNEVxRWUyQkE5MXNseXRBZC1VV3A3ZzJBOUMwZGJuWE1HbFphZmhtaHM)
+A client-server project using Node.js. Students in groups will plot linear functions using an iPad application. This repository holds the communication layer of the application (client) and the server frontend and backend. More documentation can be found [here](https://drive.google.com/a/ucdavis.edu/folderview?id=0B1W6Ca2MINIsfmVmNEVxRWUyQkE5MXNseXRBZC1VV3A3ZzJBOUMwZGJuWE1HbFphZmhtaHM).
 
 ### Dependencies ###
 * npm
