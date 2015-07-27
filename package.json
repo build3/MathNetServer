@@ -1,0 +1,13 @@
+{
+  "name": "nsf-physics-7-communication-project",
+  "version": "1.0.0",
+  "repository": {
+    "type": "git",
+    "url": "https://psalessi@bitbucket.org/psalessi/nsf-physics-7-communication-project.git"
+  },
+  "author": "Paul Salessi & Anton Ochs",
+  "dependencies": {
+    "express": "^4.13.1",
+    "hbs": "^3.1.0"
+  }
+}
