@@ -16,11 +16,12 @@ A client-server project using Node.js. Students in groups will plot linear funct
 * A teacher should be able to create/delete groups (any number) in a class.
 * A student should be able to login and set name.
 * A student should be able to join/leave a class.
-* A student should be able to see/join/leave any available group in a class.
-* A student should be able to notify other students in groups upon joining the group, leaving the group, or doing an action in the group. 
-* Students being able to move points on a graph asynchronously.
+* A student should be able to join/leave any available group in a class.
+* A student should be able to see the other students in a group upon joining.
+* A student in a group should be notified when another student join/leaves the group.
+* Students being able to move points on a graph asynchronously and update each other upon movement.
 * It will only run on port 8888.
-* It will run in browser.
+* It will run in browser on localhost (until a server is acquired).
 * A relational database will hold class/group data for now (using MySQL)
 
 #### Version 2 Functionality (September 30th): ####
