@@ -22,7 +22,7 @@ A client-server project using Node.js. Students in groups will plot linear funct
 * Students being able to move points on a graph asynchronously and update each other upon movement.
 * It will only run on port 8888.
 * It will run in browser on localhost until a server is acquired.
-* A MySQL relational database will hold class/group data..
+* A MySQL relational database will hold class/group data.
 
 #### Version 2 Functionality by September 30th: ####
 
