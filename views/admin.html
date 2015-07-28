@@ -6,10 +6,10 @@
 <!-- This div appears when an admin leaves a class or has not made on yet -->
 <div class="create_view">
   <h3>Class Name</h3>
-  <input class="class_input" type="text">
+  <input class="class_input" type="text" value="classname">
   <br>
   <h3>Number of Groups</h3>
-  <input class="group_input" type="number">
+  <input class="group_input" type="number" value="0">
   <br>
   <input class="create_button" type="button" value="Create Class">
 </div>
@@ -18,9 +18,9 @@
 <div class="manage_view">
   <h3 class="class_name"></h3>
   
-  <div class="groups"></div>
-
-  <input class="add_button" type="button" value="Add Group">
-  <br>
+  <input class="add_button" type="button" value="Add Group"> 
+  <input class="delete_button" type="button" value="Delete Group">
   <input class="leave_button" type="button" value="Leave Class">
+
+  <ul class="groups"></ul>
 </div>
