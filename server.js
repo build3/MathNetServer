@@ -20,9 +20,17 @@ var path = require('path');
 //app.use(passport.initialize());
 //app.use(passport.session()); // persistent login sessions
 
+// Sets the public directory as location of html files for routing
+app.set('views', __dirname + '/public');
+
+// Sets engine to render html files using handlebars
+app.set('view engine', 'html');
+app.engine('html', require('hbs').__express);
+
+// Sets static file location to public directory
 app.use(express.static(path.join(__dirname, '/public')));
 
-require('./routes/index.js'); // load our routes
+require('./routes/index.js')(app); // load our routes
 //require('./routes/public.js')(app);
 
 app.listen(port, '127.0.0.1');
