@@ -1,0 +1,28 @@
+<!-- admin.html is homepage view. Will allow user to create/manage class -->
+
+<script src="https://code.jquery.com/jquery-1.11.3.min.js"></script>
+<script src="/js/admin.js"></script>
+
+<!-- This div appears when an admin leaves a class or has not made on yet -->
+<div class="create_view">
+  <h3>Class Name</h3>
+  <input class="class_input" type="text" value="classname">
+  <br>
+
+  <h3>Number of Groups</h3>
+  <input class="group_input" type="number" value="0">
+  <br>
+  
+  <input class="create_button" type="button" value="Create Class">
+</div>
+
+<!-- This div appears once an admin has created a class -->
+<div class="manage_view">
+  <h3 class="class_name"></h3>
+  
+  <input class="add_button" type="button" value="Add Group"> 
+  <input class="delete_button" type="button" value="Delete Group">
+  <input class="leave_button" type="button" value="Leave Class">
+
+  <ul class="groups"></ul>
+</div>
