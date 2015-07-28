@@ -1,5 +1,5 @@
 // this has the values that customize the database created in create_database.js
-secrets = require('./secrets.js');
+secrets = require('./secrets');
 module.exports = {
     'connection': {
         'host': secrets.host,
