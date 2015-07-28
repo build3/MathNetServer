@@ -1,10 +1,10 @@
 // this has the values that customize the database created in create_database.js
-pw = require('secrets');
+secrets = require('./secrets.js');
 module.exports = {
     'connection': {
-        'host': 'localhost',
-        'user': 'root',
-        'password': pw.password
+        'host': secrets.host,
+        'user': secrets.user,
+        'password': secrets.password
     },
 	'database': 'nsf_physics_7',
     'class_table': 'Classes',
