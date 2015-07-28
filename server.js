@@ -22,11 +22,8 @@ app.use(session({ secret: 'vidyapathaisalwaysrunning' } )); // session secret
 
 app.use(express.static(path.join(__dirname, '/public')));
 
-
-require('./routes/index.js'); // load our routes and pass in our app and fully configured passport
+require('./routes/index.js'); // load our routes
 //require('./routes/public.js')(app);
-
-
 
 app.listen(port, '127.0.0.1');
 console.log('The magic happens on port ' + port);
