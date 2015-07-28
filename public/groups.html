@@ -1,1 +1,28 @@
-<!-- this page will be the specific group page, showing the group based upon the given class ID from login and the picked group from class.html-->
+<!-- this page will be the specific group page, showing the group based upon the given class ID from login and the picked group from class.html
+     this page contains the other users in the same group, and their coordinates, along with buttons to move yourself.-->
+
+<div id="main">
+  <div id="page">
+    <head> 
+        <title> Group </title> 
+    </head>
+    
+
+    <h2> Group :  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
+    <!-- foreach group, create a html button with onclick to emit action to a group -->
+    <table>
+        <tr>
+            <td>People in group</td>
+            <td>Coordinates</td>
+        </tr>
+        <!-- foreach person in group, create row for them + their coordinates (including you, with emphasis showing which person you are)-->
+    </table>
+
+    <input type="button" value="←" onclick=""/>
+    <input type="button" value="↑" onclick=""/>
+    <input type="button" value="↓" onclick=""/>
+    <input type="button" value="→" onclick=""/>
+    <br/>
+    <input type="button" value="Leave" onclick=""/>
+  </div>
+</div>
