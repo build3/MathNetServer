@@ -3,7 +3,7 @@ module.exports = {
     'connection': {
         'host': 'localhost',
         'user': 'root',
-        'password': '#Alex61549487'
+        'password': ''
     },
 	'database': 'nsf_physics_7',
     'class_table': 'Classes',

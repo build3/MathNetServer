@@ -12,7 +12,7 @@ connection.query('CREATE DATABASE ' + dbconfig.database + ';');
 
 connection.query('SET foreign_key_checks = 0;');
 
-/********************************** Item *************************************************/
+/********************************** Classes *************************************************/
 connection.query('\
                  CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.class_table + '` ( \
                  `class_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, \
@@ -24,7 +24,7 @@ connection.query('\
                  )');
 
 
-/********************************** Perk *************************************************/
+/********************************** Groups *************************************************/
 connection.query('\
                  CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.group_table + '` ( \
                  `group_id` INT UNSIGNED NOT NULL, \
