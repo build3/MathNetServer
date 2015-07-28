@@ -2,8 +2,9 @@
 //(maybe only need it in index.js for the routes)
 
 
-data = require('../datastructure');
+var data = require('../datastructure');
 var app = require('express')();
+var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mysql = require('mysql');
 
@@ -14,14 +15,21 @@ io.once('connection', function(){
     var classQuery = "SELECT * FROM classes";
     connection.query(classQuery, function(rows, fields){
         for (i in rows){
-            data.ds[rows[i].class_id] = {};
-        }
+            data.ds[i.class_id][class_name] = i.class_name;
+            data.ds[i.class_id]["user"] = {};
+        }//creates an array for 
     });
     var groupQuery = "SELECT * FROM groups";
     connection.query(groupQuery, function(rows, fields){
-        for (i in rows){
-            data.ds[rows[i].class_id][rows[i].group_id] = {};
+        for (j in rows){
+            if (j.class_id in Object.keys(data.ds)){
+                data.ds[j.class_id][j.group_id]["deleted"] = false;
+            }
         }
     });
+
     //query the database for classes and groups 
 });
+
+exports.ds = data.ds;
+connection.end();
