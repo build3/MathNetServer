@@ -2,7 +2,7 @@
 secrets = require('./secrets');
 module.exports = {
     'connection': {
-        'host': secrets.host,
+        'host': secrets.hosts,
         'user': secrets.user,
         'password': secrets.password
     },

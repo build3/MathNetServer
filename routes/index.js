@@ -21,8 +21,6 @@ module.exports = function(app) {
         //the class does not exist
     //add these variables into the datastructure
     //redirect to the appropriate class
-        //add these variables into the datastructure
-        //redirect to the appropriate class
     });
 
     app.get('/class', function(request, response) {
