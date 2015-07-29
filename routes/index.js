@@ -26,8 +26,8 @@ module.exports = function(app) {
 
     app.get('/admin', function(request, response) {
         response.render('admin', {title:"Admin Panel"});
-//        database_actions.create_class("Test");
-
+//        database_actions.create_class("d");
+//        database_actions.create_groups("d", 4);
     })
 }
 //module.exports = router;

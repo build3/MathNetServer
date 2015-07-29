@@ -31,7 +31,6 @@ connection.query('\
                  `class_id` INT UNSIGNED NOT NULL, \
                  `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
                  PRIMARY KEY (`group_id`, `class_id`), \
-                 UNIQUE INDEX `id_UNIQUE` (`group_id` ASC), \
                  FOREIGN KEY (`class_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.class_table+'`(class_id) \
                  )');
 
