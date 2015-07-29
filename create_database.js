@@ -32,6 +32,7 @@ connection.query('\
                  `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
                  PRIMARY KEY (`group_id`, `class_id`), \
                  FOREIGN KEY (`class_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.class_table+'`(class_id) \
+                 ON DELETE CASCADE \
                  )');
 
 
