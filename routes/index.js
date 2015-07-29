@@ -2,6 +2,8 @@ module.exports = function(app) {
 //    var express = require('express');
 //    var router = express.Router();
 
+    var database_actions = require('../database_actions');
+
     /* GET home page. */
     app.get('/', function(req, res, next) {
         res.render('index', {title:"Student Login"});
@@ -24,6 +26,8 @@ module.exports = function(app) {
 
     app.get('/admin', function(request, response) {
         response.render('admin', {title:"Admin Panel"});
+//        database_actions.create_class("Test");
+
     })
 }
 //module.exports = router;
