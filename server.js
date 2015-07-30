@@ -57,7 +57,6 @@ io.on('connection', function(socket){
                     username : data.username,
                     class_id : data.class_id
                 }
-                
                 //redirect to main groups page
             } else {
                 var response = {
@@ -75,12 +74,35 @@ io.on('connection', function(socket){
         //the class does not exist
         socket.emit('login_response', response);
     });
+
     socket.on('logout', function(data){
 
         var response = {
             logged_in : false
         }
-
         socket.emit('logout_response', response);
+    });
+    
+    socket.on('groups_get', function(data){
+        var groups = [];
+        console.log(head.ds);
+        if(data.logged_in){
+            for (var i in head.ds[data.class_id]){
+                if (i != "user" && i != "class_name"){
+                    groups.push({
+                        grp_name : i,
+                        num : head.ds[data.class_id][i]["students"].length
+                    });
+                }
+            }
+        }
+        var response = {
+            logged_in : data.logged_in,
+            username : data.username,
+            class_id : data.class_id,
+            groups : groups
+        }
+        console.log(response);
+        socket.emit('groups_get_response', response);
     });
 });

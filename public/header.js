@@ -21,7 +21,7 @@ connection.query(classQuery, function(err, rows, fields){
         throw err;
     for (var i in rows){
         data.ds[rows[i].class_id] = {}
-        data.ds[rows[i].class_id][rows[i].class_name] = rows[i].class_name;
+        data.ds[rows[i].class_id]["class_name"] = rows[i].class_name;
         data.ds[rows[i].class_id]["user"] = {};
     }//creates an array for 
     
@@ -31,11 +31,12 @@ connection.query(groupQuery, function(err, rows, fields){
     if (err)
         throw err;
     for (var j in rows){
-        if (rows[j].class_id in Object.keys(data.ds)){
+        if (rows[j].class_id in data.ds) {
+            data.ds[rows[j].class_id][rows[j].group_id] = {};
             data.ds[rows[j].class_id][rows[j].group_id]["deleted"] = false;
+            data.ds[rows[j].class_id][rows[j].group_id]["students"] = [];
         }
     }
-
 });
 
     //query the database for classes and groups 

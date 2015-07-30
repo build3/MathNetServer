@@ -1,6 +1,21 @@
 //this is the js file for all the client socket calls
 
- var socket = io.connect('http://localhost:8888');
+var socket = io.connect('http://localhost:8888');
+
+var current_path = window.location.pathname.split('/').pop();
+current_path = "/" + current_path;
+
+if (current_path == "/class"){
+
+    var send_object = {
+        logged_in : localStorage.getItem('logged_in'),
+        username : localStorage.getItem('username'),
+        class_id : localStorage.getItem('class_id')
+    }
+    console.log("groups get");
+    socket.emit('groups_get', send_object);
+}
+
 $(document).ready(function(){
     $("#login").on("click", function(){
 
@@ -34,9 +49,11 @@ $(document).ready(function(){
 });
 socket.on('login_response', function(data){
     if (data.logged_in){
-        location.href = '../class.html';
         localStorage.setItem('class_id', data.class_id);
         localStorage.setItem('username', data.username);
+        localStorage.setItem('logged_in', data.logged_in);
+        location.href = '../class';
+        
     }
     else{
         console.log(data.error_message);
@@ -51,3 +68,12 @@ socket.on('logout_response', function(data){
         location.href = '/';
     }
 });
+socket.on('groups_get_response', function(data){
+    console.log("got some kind of group response" + data.groups);
+    for (var i in data.groups){
+        var button = '<input type="button" value="Group' + data.groups[i].grp_name + '- '+ data.groups[i].num
+                   + '" id="'+ data.groups[i].grp_name + '" /><br/>';
+        $("#buttons").append(button);
+    }
+});
+
