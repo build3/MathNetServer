@@ -82,10 +82,9 @@ io.on('connection', function(socket){
         }
         socket.emit('logout_response', response);
     });
-    
+
     socket.on('groups_get', function(data){
         var groups = [];
-        console.log(head.ds);
         if(data.logged_in){
             for (var i in head.ds[data.class_id]){
                 if (i != "user" && i != "class_name"){
@@ -102,7 +101,56 @@ io.on('connection', function(socket){
             class_id : data.class_id,
             groups : groups
         }
-        console.log(response);
         socket.emit('groups_get_response', response);
     });
+    socket.on('group_join', function(data){
+
+        head.ds[data.class_id][data.group_id]["students"].push(data.username);
+
+        var response = {
+            logged_in : data.logged_in,
+            username : data.username,
+            class_id : data.class_id,
+            group_id : data.group_id
+        }
+        socket.emit('group_join_response', response);
+
+    });
+    socket.on('group_leave', function(data){
+        var index = head.ds[data.class_id][data.group_id]["students"].indexOf(data.username);
+        if(index > -1)
+            head.ds[data.class_id][data.group_id]["students"].splice(index, 1);
+        head.ds[data.class_id]["user"][data.username]["x"] = 0.0;
+        head.ds[data.class_id]["user"][data.username]["y"] = 0.0;
+        var response = {
+            logged_in : data.logged_in,
+            username : data.username,
+            class_id : data.class_id,
+            group_id : -1
+        }
+        socket.emit('group_leave_response', response);
+    });
+    socket.on('group_info', function(data){
+        var other_members = [];
+        if(data.logged_in){
+            for (var i in head.ds[data.class_id][data.group_id]["students"]){
+                var student_name = head.ds[data.class_id][data.group_id]["students"][i];
+                other_members.push({
+                    member_name : student_name,
+                    member_x : head.ds[data.class_id]["user"][student_name]["x"], 
+                    member_y : head.ds[data.class_id]["user"][student_name]["y"]
+                });
+            }
+        }
+        var response = {
+            logged_in : data.logged_in,
+            username : data.username,
+            class_id : data.class_id,
+            group_id : data.group_id,
+            other_members : other_members
+        }
+        
+        socket.emit('groups_info_response', response);
+    });
 });
+

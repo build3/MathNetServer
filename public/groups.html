@@ -1,6 +1,8 @@
 <!-- this page will be the specific group page, showing the group based upon the given class ID from login and the picked group from class.html
      this page contains the other users in the same group, and their coordinates, along with buttons to move yourself.-->
-
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+<script src="/js/client_socket.js"></script>
 <div id="main">
   <div id="page">
     <head> 
@@ -8,9 +10,9 @@
     </head>
     
 
-    <h2> Group :  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
+    <h2 id="number"> Group :  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
     <!-- foreach group, create a html button with onclick to emit action to a group -->
-    <table>
+    <table id="table_gen">
         <tr>
             <td>People in group</td>
             <td>Coordinates</td>
@@ -23,6 +25,6 @@
     <input type="button" value="↓" onclick=""/>
     <input type="button" value="→" onclick=""/>
     <br/>
-    <input type="button" value="Leave" onclick=""/>
+    <input type="button" value="Leave Group" id="leave_group"/>
   </div>
 </div>

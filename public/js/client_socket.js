@@ -15,6 +15,17 @@ if (current_path == "/class"){
     console.log("groups get");
     socket.emit('groups_get', send_object);
 }
+console.log(current_path);
+if (current_path == "/groups"){
+    var send_object = {
+        logged_in : localStorage.getItem('logged_in'),
+        username : localStorage.getItem('username'),
+        class_id : localStorage.getItem('class_id'),
+        group_id : localStorage.getItem('group_id')
+    }
+    console.log("group info");
+    socket.emit('group_info', send_object);
+}
 
 $(document).ready(function(){
     $("#login").on("click", function(){
@@ -41,6 +52,19 @@ $(document).ready(function(){
         }
         console.log("logging out");
         socket.emit('logout', send_object);
+        
+    });
+    $("#leave_group").on("click", function(){
+
+
+        var send_object = {
+            logged_in : true,
+            username : localStorage.getItem('username'),
+            class_id : localStorage.getItem('class_id'),
+            group_id : localStorage.getItem('group_id')
+        }
+        console.log("leaving group");
+        socket.emit('group_leave', send_object);
         
     });
     $(window).on('beforeunload', function(){
@@ -72,8 +96,45 @@ socket.on('groups_get_response', function(data){
     console.log("got some kind of group response" + data.groups);
     for (var i in data.groups){
         var button = '<input type="button" value="Group' + data.groups[i].grp_name + '- '+ data.groups[i].num
-                   + '" id="'+ data.groups[i].grp_name + '" /><br/>';
+                   + '" id="'+ data.groups[i].grp_name + '" onclick=group_btn_onclick(' + data.groups[i].grp_name +') /><br/>';
         $("#buttons").append(button);
     }
 });
+function group_btn_onclick(grp_num){
+    var send_object = {
+        logged_in : localStorage.getItem('logged_in'),
+        username : localStorage.getItem('username'),
+        class_id : localStorage.getItem('class_id'),
+        group_id : grp_num
+    }
+    socket.emit('group_join', send_object);
+}
+socket.on('group_join_response', function(data){
+    localStorage.setItem('group_id', data.group_id);
+    //emit message to your group that you joined
+    location.href = '/groups';
+});
+socket.on('group_leave_response', function(data){
+    if (data.logged_in){
+        localStorage.removeItem('group_id');
+        //emit message to your group that you left
+        location.href = '/class';
+    }
+});
+socket.on('groups_info_response', function(data){
+    for (var i in data.other_members){
+        if(data.other_members[i].member_name == localStorage.getItem('username')){
+            var table_entry = '<tr><td>(You) '+ data.other_members[i].member_name +'</td><td>('+ data.other_members[i].member_x +','
+                        + data.other_members[i].member_y +')</td></tr><br/>';
+        }
+        else{
+            var table_entry = '<tr><td>'+ data.other_members[i].member_name +'</td><td>('+ data.other_members[i].member_x +','
+                        + data.other_members[i].member_y +')</td></tr><br/>';
+        }
+        $("#table_gen").append(table_entry);
+    }
+    $("#number").append(data.group_id);
+});
+
+
 
