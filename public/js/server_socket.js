@@ -1,6 +1,6 @@
 //this will contain the server side socket commnication
 
-var socket = io.connect();
+var socket = io.connect('http://localhost:8888');
 var head = require('../header');
 
 io.on('login', function(data){

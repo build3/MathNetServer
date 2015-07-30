@@ -13,26 +13,33 @@ var connection = mysql.createConnection(dbconfig.connection);
 connection.connect();
 
 connection.query("USE " + dbconfig.database);
+exports.ds = data.ds;
 
 var classQuery = "SELECT * FROM classes";
-connection.query(classQuery, function(rows, fields){
+connection.query(classQuery, function(err, rows, fields){
+    if (err)
+        throw err;
     for (var i in rows){
-        console.log(rows);
-        data.ds[i.class_id][i.class_name] = i.class_name;
-        data.ds[i.class_id]["user"] = {};
+        data.ds[rows[i].class_id] = {}
+        data.ds[rows[i].class_id][rows[i].class_name] = rows[i].class_name;
+        data.ds[rows[i].class_id]["user"] = {};
     }//creates an array for 
+    
 });
 var groupQuery = "SELECT * FROM groups";
-connection.query(groupQuery, function(rows, fields){
+connection.query(groupQuery, function(err, rows, fields){
+    if (err)
+        throw err;
     for (var j in rows){
-        if (j.class_id in Object.keys(data.ds)){
-            data.ds[j.class_id][j.group_id]["deleted"] = false;
+        if (rows[j].class_id in Object.keys(data.ds)){
+            data.ds[rows[j].class_id][rows[j].group_id]["deleted"] = false;
         }
     }
+
 });
 
     //query the database for classes and groups 
 
 
-exports.ds = data.ds;
+
 connection.end();
