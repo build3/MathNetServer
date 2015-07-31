@@ -70,6 +70,37 @@ $(document).ready(function(){
     $(window).on('beforeunload', function(){
         socket.close();
     });
+
+    $(".change_coord").on("click", function(e){
+        var btn = $(e.target);
+        var x, y;
+        if (btn.val() == "←"){
+            x = -1.0;
+            y = 0.0;
+        }
+        if (btn.val() == "↑"){
+            x = 0.0;
+            y = 1.0;
+        }
+        if (btn.val() == "↓"){
+            x = 0.0;
+            y = -1.0;
+        }
+        if (btn.val() == "→"){
+            x = 1.0;
+            y = 0.0;
+        } 
+
+        var send_object = {
+            logged_in : true,
+            username : localStorage.getItem('username'),
+            class_id : localStorage.getItem('class_id'),
+            group_id : localStorage.getItem('group_id'),
+            x_coord : x,
+            y_coord : y
+        }
+        socket.emit('coordinate_change', send_object);
+    }); //processes the button press to change coordinates
 });
 
 socket.on('login_response', function(data){
@@ -131,8 +162,8 @@ socket.on('group_leave_response', function(data){
 socket.on('groups_info_response', function(data){
     for (var i in data.other_members){
         if(data.other_members[i].member_name == localStorage.getItem('username')){
-            var table_entry = '<tr><td>(You) '+ data.other_members[i].member_name +'</td><td>('+ data.other_members[i].member_x +','
-                        + data.other_members[i].member_y +')</td></tr><br/>';
+            var table_entry = '<tr><td>(You) '+ data.other_members[i].member_name +'</td><td id="' + data.other_members[i].member_name + 'x">('
+                            + data.other_members[i].member_x +','+ data.other_members[i].member_y +')</td></tr><br/>';
         }
         else{
             var table_entry = '<tr><td>'+ data.other_members[i].member_name +'</td><td>('+ data.other_members[i].member_x +','
@@ -142,6 +173,8 @@ socket.on('groups_info_response', function(data){
     }
     $("#number").append(data.group_id);
 }); //attaches group user info to the /groups page 
-
+socket.on('coordinate_change_response', function(data){
+    $("#" + data.username + "x").html('( '+ data.x_coord +','+ data.y_coord +')');
+}); //changes the innerHTML of the group member that pressed a button
 
 

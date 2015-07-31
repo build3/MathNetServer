@@ -153,5 +153,20 @@ io.on('connection', function(socket){
         
         socket.emit('groups_info_response', response);
     }); //populates array other_members with the other students and their coordinates in the given group.
+    socket.on('coordinate_change', function(data){
+        head.ds[data.class_id]["user"][data.username]["x"] += data.x_coord;
+        head.ds[data.class_id]["user"][data.username]["y"] += data.y_coord;
+
+        var response = {
+            logged_in : data.logged_in,
+            username : data.username,
+            class_id : data.class_id,
+            group_id : data.group_id,
+            x_coord : head.ds[data.class_id]["user"][data.username]["x"],
+            y_coord : head.ds[data.class_id]["user"][data.username]["y"]
+        }
+        socket.emit('coordinate_change_response', response);
+
+    }); //registers the change of coordinates in the datastructure and passes them back to client
 });
 
