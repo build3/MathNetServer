@@ -73,7 +73,8 @@ io.on('connection', function(socket){
         }
         //the class does not exist
         socket.emit('login_response', response);
-    });
+    }); //authenticates class ID and makes sure there is not another user with the same name. 
+        //adds in user info to datastructure if unique. else displays an error message
 
     socket.on('logout', function(data){
 
@@ -81,7 +82,7 @@ io.on('connection', function(socket){
             logged_in : false
         }
         socket.emit('logout_response', response);
-    });
+    }); //returns logged_in false
 
     socket.on('groups_get', function(data){
         var groups = [];
@@ -102,7 +103,7 @@ io.on('connection', function(socket){
             groups : groups
         }
         socket.emit('groups_get_response', response);
-    });
+    }); //populates groups array with groups with the given class id and returns to client.
     socket.on('group_join', function(data){
 
         head.ds[data.class_id][data.group_id]["students"].push(data.username);
@@ -115,7 +116,7 @@ io.on('connection', function(socket){
         }
         socket.emit('group_join_response', response);
 
-    });
+    }); //adds user to the students array of given group
     socket.on('group_leave', function(data){
         var index = head.ds[data.class_id][data.group_id]["students"].indexOf(data.username);
         if(index > -1)
@@ -129,7 +130,7 @@ io.on('connection', function(socket){
             group_id : -1
         }
         socket.emit('group_leave_response', response);
-    });
+    }); //resets user coordinates and removes them from the students array in current group
     socket.on('group_info', function(data){
         var other_members = [];
         if(data.logged_in){
@@ -151,6 +152,6 @@ io.on('connection', function(socket){
         }
         
         socket.emit('groups_info_response', response);
-    });
+    }); //populates array other_members with the other students and their coordinates in the given group.
 });
 
