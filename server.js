@@ -170,7 +170,7 @@ io.on('connection', function(socket){
             x_coord : head.ds[data.class_id]["user"][data.username]["x"],
             y_coord : head.ds[data.class_id]["user"][data.username]["y"]
         }
-        io.emit('coordinate_change_response', response);
+        io.sockets.to(data.class_id + data.group_id).emit('coordinate_change_response', response);
 
     }); //registers the change of coordinates in the datastructure and passes them back to client
 });

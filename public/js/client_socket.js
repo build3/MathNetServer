@@ -197,6 +197,7 @@ socket.on('coordinate_change_response', function(data){
         $("#" + data.username + "x").html('<td>(You) '+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
     else
         $("#" + data.username + "x").html('<td>'+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
+    
     $("#messages").append(data.username + " has moved their point to (" + data.x_coord + "," + data.y_coord + ").<br/>");
 }); //changes the innerHTML of the group member that pressed a button
 
