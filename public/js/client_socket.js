@@ -21,7 +21,8 @@ if (current_path == "/groups"){
         logged_in : localStorage.getItem('logged_in'),
         username : localStorage.getItem('username'),
         class_id : localStorage.getItem('class_id'),
-        group_id : localStorage.getItem('group_id')
+        group_id : localStorage.getItem('group_id'),
+        group_leave : false
     }
     console.log("group info");
     socket.emit('group_info', send_object);
@@ -146,7 +147,9 @@ function group_btn_onclick(grp_num){
 }//onclick function for the group buttons created in groups_get_response
 
 socket.on('group_join_response', function(data){
+
     localStorage.setItem('group_id', data.group_id);
+    
     //emit message to your group that you joined
     location.href = '/groups';
 }); //redirects user to /groups page and sets group ID in localStorage
@@ -154,27 +157,42 @@ socket.on('group_join_response', function(data){
 socket.on('group_leave_response', function(data){
     if (data.logged_in){
         localStorage.removeItem('group_id');
+
+        var response = {
+            logged_in : data.logged_in,
+            username : data.username,
+            class_id : data.class_id,
+            group_id : data.group_id,
+            group_leave : true
+        }
+        socket.emit('group_info', response);
         //emit message to your group that you left
         location.href = '/class';
     }
 }); //redirects user back to /class and removes group ID from localStorage
 
 socket.on('groups_info_response', function(data){
+    console.log(socket.rooms);
+    $(".table_entry").remove();
     for (var i in data.other_members){
         if(data.other_members[i].member_name == localStorage.getItem('username')){
-            var table_entry = '<tr><td>(You) '+ data.other_members[i].member_name +'</td><td id="' + data.other_members[i].member_name + 'x">('
+            var table_entry = '<tr class="table_entry" id="' + data.other_members[i].member_name + 'x"><td>(You) '+ data.other_members[i].member_name +'</td><td>('
                             + data.other_members[i].member_x +','+ data.other_members[i].member_y +')</td></tr><br/>';
         }
         else{
-            var table_entry = '<tr><td>'+ data.other_members[i].member_name +'</td><td>('+ data.other_members[i].member_x +','
-                        + data.other_members[i].member_y +')</td></tr><br/>';
+            var table_entry = '<tr class="table_entry" id="' + data.other_members[i].member_name + 'x"><td>'+ data.other_members[i].member_name +'</td><td>('
+                            + data.other_members[i].member_x +','+ data.other_members[i].member_y +')</td></tr><br/>';
         }
         $("#table_gen").append(table_entry);
     }
-    $("#number").append(data.group_id);
+    $("#number").html('Group : ' +data.group_id);
 }); //attaches group user info to the /groups page 
 socket.on('coordinate_change_response', function(data){
-    $("#" + data.username + "x").html('( '+ data.x_coord +','+ data.y_coord +')');
+    console.log(data);
+    if(data.username == localStorage.getItem('username'))
+        $("#" + data.username + "x").html('<td>(You) '+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
+    else
+        $("#" + data.username + "x").html('<td>'+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
 }); //changes the innerHTML of the group member that pressed a button
 
 

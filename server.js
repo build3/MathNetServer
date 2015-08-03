@@ -115,7 +115,6 @@ io.on('connection', function(socket){
             group_id : data.group_id
         }
         socket.emit('group_join_response', response);
-
     }); //adds user to the students array of given group
     socket.on('group_leave', function(data){
         var index = head.ds[data.class_id][data.group_id]["students"].indexOf(data.username);
@@ -127,11 +126,13 @@ io.on('connection', function(socket){
             logged_in : data.logged_in,
             username : data.username,
             class_id : data.class_id,
-            group_id : -1
+            group_id : data.group_id
         }
+        socket.leave(data.class_id + data.group_id);
         socket.emit('group_leave_response', response);
     }); //resets user coordinates and removes them from the students array in current group
     socket.on('group_info', function(data){
+        socket.join(data.class_id + data.group_id);
         var other_members = [];
         if(data.logged_in){
             for (var i in head.ds[data.class_id][data.group_id]["students"]){
@@ -150,8 +151,11 @@ io.on('connection', function(socket){
             group_id : data.group_id,
             other_members : other_members
         }
-        
-        socket.emit('groups_info_response', response);
+        console.log(io.sockets.adapter.rooms);
+        if(data.group_leave)
+            socket.broadcast.to(data.class_id + data.group_id).emit('groups_info_response', response);
+        else
+            io.sockets.to(data.class_id + data.group_id).emit('groups_info_response', response);
     }); //populates array other_members with the other students and their coordinates in the given group.
     socket.on('coordinate_change', function(data){
         head.ds[data.class_id]["user"][data.username]["x"] += data.x_coord;
@@ -165,7 +169,7 @@ io.on('connection', function(socket){
             x_coord : head.ds[data.class_id]["user"][data.username]["x"],
             y_coord : head.ds[data.class_id]["user"][data.username]["y"]
         }
-        socket.emit('coordinate_change_response', response);
+        io.emit('coordinate_change_response', response);
 
     }); //registers the change of coordinates in the datastructure and passes them back to client
 });
