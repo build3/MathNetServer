@@ -48,7 +48,7 @@ var head = require('./public/header');
 io.on('connection', function(socket){
     socket.on('login', function(data){
         if (Object.keys(head.ds).indexOf(data.class_id) >= 0){
-            if(!(data.username in Object.keys(head.ds[data.class_id]["user"]))){
+            if(!(Object.keys(head.ds[data.class_id]["user"]).indexOf(data.username) >= 0 )){
                 head.ds[data.class_id]["user"][data.username] = {};
                 head.ds[data.class_id]["user"][data.username]["x"] = 0.0;
                 head.ds[data.class_id]["user"][data.username]["y"] = 0.0;
@@ -103,7 +103,7 @@ io.on('connection', function(socket){
             groups : groups
         }
         socket.emit('groups_get_response', response);
-    }); //populates groups array with groups with the given class id and returns to client.
+    }); //populates groups array with groups with the given class id and returns it to client.
     socket.on('group_join', function(data){
 
         head.ds[data.class_id][data.group_id]["students"].push(data.username);
@@ -130,7 +130,7 @@ io.on('connection', function(socket){
         }
         socket.leave(data.class_id + data.group_id);
         socket.emit('group_leave_response', response);
-    }); //resets user coordinates and removes them from the students array in current group
+    }); //resets user coordinates and removes them from the students array in current group, leaves your socket group
     socket.on('group_info', function(data){
         socket.join(data.class_id + data.group_id);
         var other_members = [];
@@ -157,7 +157,8 @@ io.on('connection', function(socket){
             socket.broadcast.to(data.class_id + data.group_id).emit('groups_info_response', response);
         else
             io.sockets.to(data.class_id + data.group_id).emit('groups_info_response', response);
-    }); //populates array other_members with the other students and their coordinates in the given group.
+    }); //populates array other_members with the other students and their coordinates in the given group, 
+        //emits different response if user is leaving or joining.
     socket.on('coordinate_change', function(data){
         head.ds[data.class_id]["user"][data.username]["x"] += data.x_coord;
         head.ds[data.class_id]["user"][data.username]["y"] += data.y_coord;
@@ -172,6 +173,6 @@ io.on('connection', function(socket){
         }
         io.sockets.to(data.class_id + data.group_id).emit('coordinate_change_response', response);
 
-    }); //registers the change of coordinates in the datastructure and passes them back to client
+    }); //registers the change of coordinates in the datastructure and passes them back to group
 });
 

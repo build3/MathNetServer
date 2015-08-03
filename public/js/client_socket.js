@@ -68,10 +68,6 @@ $(document).ready(function(){
         socket.emit('group_leave', send_object);
     }); //onclick for leave group button
 
-    $(window).on('beforeunload', function(){
-        socket.close();
-    });
-
     $(".change_coord").on("click", function(e){
         var btn = $(e.target);
         var x, y;
@@ -165,11 +161,10 @@ socket.on('group_leave_response', function(data){
             group_id : data.group_id,
             group_leave : true
         }
-        socket.emit('group_info', response);
-        //emit message to your group that you left
+        socket.emit('group_info', response); 
         location.href = '/class';
     }
-}); //redirects user back to /class and removes group ID from localStorage
+}); //redirects user back to /class and removes group ID from localStorage (updates group info)
 
 socket.on('groups_info_response', function(data){
     console.log(socket.rooms);
@@ -190,15 +185,15 @@ socket.on('groups_info_response', function(data){
         $("#messages").append(data.username + " has left the group.<br/>");
     else
         $("#messages").append(data.username + " has joined the group.<br/>");
-}); //attaches group user info to the /groups page 
+}); //updates group user info to the /groups page, and prints message about leave/join 
 socket.on('coordinate_change_response', function(data){
     console.log(data);
     if(data.username == localStorage.getItem('username'))
         $("#" + data.username + "x").html('<td>(You) '+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
     else
         $("#" + data.username + "x").html('<td>'+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
-    
+
     $("#messages").append(data.username + " has moved their point to (" + data.x_coord + "," + data.y_coord + ").<br/>");
-}); //changes the innerHTML of the group member that pressed a button
+}); //changes the innerHTML of the group member that pressed a button and prints a message for the change
 
 
