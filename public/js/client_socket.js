@@ -186,6 +186,10 @@ socket.on('groups_info_response', function(data){
         $("#table_gen").append(table_entry);
     }
     $("#number").html('Group : ' +data.group_id);
+    if (data.group_leave)
+        $("#messages").append(data.username + " has left the group.<br/>");
+    else
+        $("#messages").append(data.username + " has joined the group.<br/>");
 }); //attaches group user info to the /groups page 
 socket.on('coordinate_change_response', function(data){
     console.log(data);
@@ -193,6 +197,7 @@ socket.on('coordinate_change_response', function(data){
         $("#" + data.username + "x").html('<td>(You) '+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
     else
         $("#" + data.username + "x").html('<td>'+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
+    $("#messages").append(data.username + " has moved their point to (" + data.x_coord + "," + data.y_coord + ").<br/>");
 }); //changes the innerHTML of the group member that pressed a button
 
 

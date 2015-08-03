@@ -149,7 +149,8 @@ io.on('connection', function(socket){
             username : data.username,
             class_id : data.class_id,
             group_id : data.group_id,
-            other_members : other_members
+            other_members : other_members,
+            group_leave : data.group_leave
         }
         console.log(io.sockets.adapter.rooms);
         if(data.group_leave)
