@@ -152,7 +152,7 @@ io.on('connection', function(socket){
             other_members : other_members,
             group_leave : data.group_leave
         }
-        console.log(io.sockets.adapter.rooms);
+        console.log(other_members);
         if(data.group_leave)
             socket.broadcast.to(data.class_id + data.group_id).emit('groups_info_response', response);
         else

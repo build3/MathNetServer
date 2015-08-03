@@ -1,10 +1,18 @@
 //this is the js file for all the client socket calls
 
-var socket = io.connect('http://localhost:8888');
+var socket = io();
 
 var current_path = window.location.pathname.split('/').pop();
 current_path = "/" + current_path;
 
+if(current_path == "/"){
+    console.log(localStorage.getItem('error_message'));
+    if(localStorage.getItem('error_message') != null){
+        console.log('another thing');
+        $("#errors").html("some filler text" + localStorage.getItem('error_message'));
+    }
+    localStorage.removeItem('error_message')
+}
 if (current_path == "/class"){
 
     var send_object = {
@@ -12,7 +20,6 @@ if (current_path == "/class"){
         username : localStorage.getItem('username'),
         class_id : localStorage.getItem('class_id')
     }
-    console.log("groups get");
     socket.emit('groups_get', send_object);
 }//emit call for group_get when the page /class loads
 
@@ -24,7 +31,6 @@ if (current_path == "/groups"){
         group_id : localStorage.getItem('group_id'),
         group_leave : false
     }
-    console.log("group info");
     socket.emit('group_info', send_object);
 } //emit call for group_info when the page /groups loads
 
@@ -39,7 +45,6 @@ $(document).ready(function(){
             username : nickname,
             class_id : class_id
         }
-        console.log("sent object");
         socket.emit('login', send_object);
     }); //onclick for login button
 
@@ -51,7 +56,6 @@ $(document).ready(function(){
             username : localStorage.getItem('username'),
             class_id : localStorage.getItem('class_id')
         }
-        console.log("logging out");
         socket.emit('logout', send_object);
     }); //onclick for logout button
 
@@ -64,7 +68,6 @@ $(document).ready(function(){
             class_id : localStorage.getItem('class_id'),
             group_id : localStorage.getItem('group_id')
         }
-        console.log("leaving group");
         socket.emit('group_leave', send_object);
     }); //onclick for leave group button
 
@@ -110,6 +113,7 @@ socket.on('login_response', function(data){
     }
     else{
         console.log(data.error_message);
+        localStorage.setItem('error_message', data.error_message);
         //print error message to page
         location.href = '/';
     }
@@ -117,6 +121,7 @@ socket.on('login_response', function(data){
 
 socket.on('logout_response', function(data){
     if (!data.logged_in){
+        localStorage.setItem('logged_in', false);
         localStorage.removeItem('class_id');
         localStorage.removeItem('username');
         location.href = '/';
@@ -124,7 +129,6 @@ socket.on('logout_response', function(data){
 }); //clears out localStorage and redirects to login page
 
 socket.on('groups_get_response', function(data){
-    console.log("got some kind of group response" + data.groups);
     for (var i in data.groups){
         var button = '<input type="button" value="Group' + data.groups[i].grp_name + '- '+ data.groups[i].num
                    + '" id="'+ data.groups[i].grp_name + '" onclick=group_btn_onclick(' + data.groups[i].grp_name +') /><br/>';
@@ -167,7 +171,6 @@ socket.on('group_leave_response', function(data){
 }); //redirects user back to /class and removes group ID from localStorage (updates group info)
 
 socket.on('groups_info_response', function(data){
-    console.log(socket.rooms);
     $(".table_entry").remove();
     for (var i in data.other_members){
         if(data.other_members[i].member_name == localStorage.getItem('username')){
@@ -187,7 +190,7 @@ socket.on('groups_info_response', function(data){
         $("#messages").append(data.username + " has joined the group.<br/>");
 }); //updates group user info to the /groups page, and prints message about leave/join 
 socket.on('coordinate_change_response', function(data){
-    console.log(data);
+
     if(data.username == localStorage.getItem('username'))
         $("#" + data.username + "x").html('<td>(You) '+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
     else
