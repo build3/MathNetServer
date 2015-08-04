@@ -14,7 +14,9 @@ $(function() {
     var $add_button = $('.add_button'); // Button for adding a group
     var $delete_button = $('.delete_button'); // Button for deleting a group
 
+    // Connect to the server using the Admin.Socket object constructor
     var socket = Admin.Socket(io(location.host + '/admins'));
+
     // Start with create view visible and manage view hidden
     $manage_view.hide();
 
@@ -23,6 +25,7 @@ $(function() {
         localStorage.setItem('class_name',$class_input.val().trim());
         localStorage.setItem('group_count',$group_input.val().trim());
 
+        // Tell the server to create a class in the database
         socket.add_class($class_input.val().trim(), parseInt($group_input.val().trim()));
         set_up_management_view();
 
@@ -48,6 +51,9 @@ $(function() {
 
         new_group += "<li>Group " + group_number + "</li>";
         $groups.append(new_group);
+
+        // Tell the server to create a new group for the class in the database
+        socket.add_group($class_input.val().trim());
 
         // Update localStorage count of groups
         localStorage['group_count'] = parseInt(localStorage['group_count']) + 1;

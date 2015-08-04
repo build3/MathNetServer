@@ -31,12 +31,18 @@
         };
 
         // This function takes a class name and group count provided by the 
-        // user. The socket then emits this data to the client to create the
-        // class and groups on the server
+        // user. The socket then emits this data to create the class and groups 
+        // on the server.
         var add_class = function (class_name, group_count, cb) {
             socket.emit('add-class', class_name, group_count);
         };
 
+        // This function tabkes a class name provided by the user.
+        // The socket then emits this data to create a group for the class on
+        // the server.
+        var add_group = function (class_name, cb) {
+            socket.emit('add-group', class_name);
+        }
 
         // Removes any listeners waiting on events 
         var remove_listeners = function () {
@@ -48,6 +54,7 @@
         return {
             add_event: add_event,
             add_class: add_class,
+            add_group: add_group,
             remove_listeners: remove_listeners
         };
     };
