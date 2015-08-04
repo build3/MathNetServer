@@ -20,7 +20,7 @@ exports.create_class = function(class_name, group_count) {
         query = "INSERT INTO Classes (class_name) VALUES (?);";
         connection.query(query, [class_name], function(error, rows) {
             if (error) {
-                console.log("Failed to make class");
+                console.log(error);
             }
             else {
                 // If the creation of the class was successful,
@@ -30,7 +30,7 @@ exports.create_class = function(class_name, group_count) {
                 query = "SELECT class_id FROM Classes WHERE class_name=?;";
                 connection.query(query, [class_name], function(error, rows) {
                     if(error) {
-                        console.log("Failed to make groups");
+                        console.log(error);
                     }
                     else {
                         class_id = rows[0].class_id;
@@ -47,25 +47,57 @@ exports.create_class = function(class_name, group_count) {
     });
 }
 
-// Creates N rows in Groups table where N=group_count
-// Groups belong to class found using class_name
-exports.create_groups = function(class_name, group_count) {
+// Creates a group belonging to the class found using class_name
+exports.create_group = function(class_name) {
     pool.getConnection(function(error, connection) {
-        console.log("Creating " + group_count + " groups in " + class_name);
+        console.log("Creating a group in " + class_name);
 
+        var query = "USE nsf_physics_7;";
+        connection.query(query);
         // Get the class_id and create the groups for that class
         var class_id;
         query = "SELECT class_id FROM Classes WHERE class_name=?;";
         connection.query(query, [class_name], function(error, rows) {
-            if(!error) {
+            if(error) {
+                console.log(error);
+            }
+            else {
+                // Group IDs are incremented so we need to find out what is
+                // the highest id in the Groups table for the specific class
                 class_id = rows[0].class_id;
-                for (var group=1; group < group_count + 1; group++) {
-                    query = 
-                        "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);"
-                    connection.query(query, [group, class_id]);
-                }
+                query =
+                    "SELECT group_id FROM Groups WHERE class_id=? ORDER BY group_id DESC;";
+                connection.query(query, [class_id], function(error, rows) {
+                    if(error) {
+                        console.log(error);
+                    }
+                    else {
+                        // Insert a new group row using the next highest group id
+                        var group = parseInt(rows[0].group_id) + 1;
+                        query = "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);";
+                        connection.query(query, [group, class_id]);
+                    }
+                });
             }
         });
         connection.release();
+    });
+}
+
+// Deletes a group from the Groups table using a provided class id and group id
+exports.delete_group = function(class_id, group_id) {
+    pool.getConnection(function(error, connection) {
+        console.log("Deleteing group " + group_id + " in class " + class_id);
+        
+        var query = "USE nsf_physics_7;";
+        connection.query(query);
+
+        query = "DELETE FROM Groups WHERE class_id=? AND group_id=?;";
+        connection.query(query, [class_id, group_id], function(error, rows) {
+            if(error) {
+                console.log(error);
+            }
+         });
+         connection.release();
     });
 }
