@@ -14,6 +14,7 @@ $(function() {
     var $add_button = $('.add_button'); // Button for adding a group
     var $delete_button = $('.delete_button'); // Button for deleting a group
 
+    var socket = Admin.Socket(io(location.host + '/admins'));
     // Start with create view visible and manage view hidden
     $manage_view.hide();
 
@@ -21,9 +22,8 @@ $(function() {
         // Loads field values into localStorage
         localStorage.setItem('class_name',$class_input.val().trim());
         localStorage.setItem('group_count',$group_input.val().trim());
-        console.log(localStorage['class_name']);
-        console.log(localStorage['group_count']);
 
+        socket.add_class($class_input.val().trim(), parseInt($group_input.val().trim()));
         set_up_management_view();
 
         // Switch to management view now that class has been created
