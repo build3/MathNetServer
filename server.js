@@ -61,14 +61,14 @@ io.on('connection', function(socket){
             } else {
                 var response = {
                     logged_in : false,
-                    error_message : 'Username already taken.'
+                    error_message : 'Username "' + data.username +'" already taken.'
                 }
             }
             //the username is not unique!
         } else {
             var response = {
                 logged_in : false,
-                error_message : 'Class ID does not exist'
+                error_message : 'Class ID "'+ data.class_id +'" does not exist'
             }
         }
         //the class does not exist
@@ -154,7 +154,7 @@ io.on('connection', function(socket){
             other_members : other_members,
             group_leave : data.group_leave
         }
-        
+
         if(data.group_leave)
             socket.broadcast.to(data.class_id + data.group_id).emit('groups_info_response', response);
         else
