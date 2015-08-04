@@ -20,11 +20,18 @@ function adminSockets(server, client) {
         };
 
         // This is the handler for the add-class client socket emission
-        // It calls a database function to the passed in class and groups
+        // It calls a database function to create a class and groups
         socket.on('add-class', function(class_name, group_count) {
             console.log(class_name, group_count);
             database.create_class(class_name, group_count);
         });
+
+        // This is the handler for the add-group client socket emission
+        // It calls a database function using to create a group for a class
+        socket.on('add-group', function(class_name) {
+            console.log(class_name);
+            database.create_group(class_name);
+        }); 
 
     });
 }
