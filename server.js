@@ -4,6 +4,7 @@ var express  = require('express');
 var app      = express();
 var port     = 8888;
 var path = require('path');
+var admin_sockets = require('./socket');
 
 //var passport = require('passport');
 //var session = require('express-session');
@@ -33,5 +34,8 @@ app.use(express.static(path.join(__dirname, '/public')));
 require('./routes/index.js')(app); // load our routes
 //require('./routes/public.js')(app);
 
-app.listen(port, '127.0.0.1');
+var server = app.listen(port, '127.0.0.1');
 console.log('The magic happens on port ' + port);
+
+// Start up admin sockets
+admin_sockets(server, "");
