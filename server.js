@@ -77,7 +77,9 @@ io.on('connection', function(socket){
         //adds in user info to datastructure if unique. else displays an error message
 
     socket.on('logout', function(data){
-
+        var index = Object.keys(head.ds[data.class_id]["user"]).indexOf(data.username);
+        if(index > -1)
+            delete head.ds[data.class_id]["user"][data.username]; //change to be some way to remove the object using the index to find the name
         var response = {
             logged_in : false
         }
@@ -152,7 +154,7 @@ io.on('connection', function(socket){
             other_members : other_members,
             group_leave : data.group_leave
         }
-        console.log(other_members);
+        
         if(data.group_leave)
             socket.broadcast.to(data.class_id + data.group_id).emit('groups_info_response', response);
         else
