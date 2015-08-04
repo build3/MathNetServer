@@ -2,12 +2,25 @@
 
 var socket = io();
 
+var current_path = window.location.pathname.split('/').pop();
+current_path = "/" + current_path;
 
+if (current_path == "/groups"){
+
+    $("#included_content").load("coord_app.html");
+    
+    var send_object = {
+        logged_in : localStorage.getItem('logged_in'),
+        username : localStorage.getItem('username'),
+        class_id : localStorage.getItem('class_id'),
+        group_id : localStorage.getItem('group_id'),
+        group_leave : false
+    }
+    socket.emit('group_info', send_object);
+} //emit call for group_info when the page /groups loads
 
 $(document).ready(function(){
-    var current_path = window.location.pathname.split('/').pop();
-    current_path = "/" + current_path;
-
+    
     if(current_path == "/"){
         console.log(localStorage.getItem('error_message'));
         if(localStorage.getItem('error_message') != null){
@@ -26,16 +39,7 @@ $(document).ready(function(){
         socket.emit('groups_get', send_object);
     }//emit call for group_get when the page /class loads
 
-    if (current_path == "/groups"){
-        var send_object = {
-            logged_in : localStorage.getItem('logged_in'),
-            username : localStorage.getItem('username'),
-            class_id : localStorage.getItem('class_id'),
-            group_id : localStorage.getItem('group_id'),
-            group_leave : false
-        }
-        socket.emit('group_info', send_object);
-    } //emit call for group_info when the page /groups loads
+
     $("#login").on("click", function(){
 
         var class_id = document.getElementById('class_id').value;
