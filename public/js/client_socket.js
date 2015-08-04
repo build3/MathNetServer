@@ -6,21 +6,55 @@ var current_path = window.location.pathname.split('/').pop();
 current_path = "/" + current_path;
 
 if (current_path == "/groups"){
+    $(function(){
+        $("#included_content").load("coord_app.html", function(){
+            var send_object = {
+                logged_in : localStorage.getItem('logged_in'),
+                username : localStorage.getItem('username'),
+                class_id : localStorage.getItem('class_id'),
+                group_id : localStorage.getItem('group_id'),
+                group_leave : false
+            }
+            socket.emit('group_info', send_object);
+            $(".change_coord").on("click", function(e){
+                var btn = $(e.target);
+                var x, y;
+                if (btn.val() == "←"){
+                    x = -1.0;
+                    y = 0.0;
+                }
+                if (btn.val() == "↑"){
+                    x = 0.0;
+                    y = 1.0;
+                }
+                if (btn.val() == "↓"){
+                    x = 0.0;
+                    y = -1.0;
+                }
+                if (btn.val() == "→"){
+                    x = 1.0;
+                    y = 0.0;
+                } 
 
-    $("#included_content").load("coord_app.html");
+                var send_object = {
+                    logged_in : true,
+                    username : localStorage.getItem('username'),
+                    class_id : localStorage.getItem('class_id'),
+                    group_id : localStorage.getItem('group_id'),
+                    x_coord : x,
+                    y_coord : y
+                }
+                socket.emit('coordinate_change', send_object);
+            }); 
+        });
+        //processes the button press to change coordinates
+        
+    });
     
-    var send_object = {
-        logged_in : localStorage.getItem('logged_in'),
-        username : localStorage.getItem('username'),
-        class_id : localStorage.getItem('class_id'),
-        group_id : localStorage.getItem('group_id'),
-        group_leave : false
-    }
-    socket.emit('group_info', send_object);
 } //emit call for group_info when the page /groups loads
 
 $(document).ready(function(){
-    
+
     if(current_path == "/"){
         console.log(localStorage.getItem('error_message'));
         if(localStorage.getItem('error_message') != null){
@@ -76,36 +110,7 @@ $(document).ready(function(){
         socket.emit('group_leave', send_object);
     }); //onclick for leave group button
 
-    $(".change_coord").on("click", function(e){
-        var btn = $(e.target);
-        var x, y;
-        if (btn.val() == "←"){
-            x = -1.0;
-            y = 0.0;
-        }
-        if (btn.val() == "↑"){
-            x = 0.0;
-            y = 1.0;
-        }
-        if (btn.val() == "↓"){
-            x = 0.0;
-            y = -1.0;
-        }
-        if (btn.val() == "→"){
-            x = 1.0;
-            y = 0.0;
-        } 
 
-        var send_object = {
-            logged_in : true,
-            username : localStorage.getItem('username'),
-            class_id : localStorage.getItem('class_id'),
-            group_id : localStorage.getItem('group_id'),
-            x_coord : x,
-            y_coord : y
-        }
-        socket.emit('coordinate_change', send_object);
-    }); //processes the button press to change coordinates
 });
 
 socket.on('login_response', function(data){
@@ -195,7 +200,7 @@ socket.on('groups_info_response', function(data){
         $("#messages").append(data.username + " has joined the group.<br/>");
 }); //updates group user info to the /groups page, and prints message about leave/join 
 socket.on('coordinate_change_response', function(data){
-
+    console.log(data);
     if(data.username == localStorage.getItem('username'))
         $("#" + data.username + "x").html('<td>(You) '+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
     else
