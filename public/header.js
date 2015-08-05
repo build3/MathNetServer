@@ -2,26 +2,45 @@
 //(maybe only need it in index.js for the routes)
 
 
-data = require('../datastructure');
+var data = require('../datastructure');
 var app = require('express')();
+var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mysql = require('mysql');
+var dbconfig = require('../config_database');
 
 var connection = mysql.createConnection(dbconfig.connection);
 connection.connect();
 
-io.once('connection', function(){
-    var classQuery = "SELECT * FROM classes";
-    connection.query(classQuery, function(rows, fields){
-        for (i in rows){
-            data.ds[rows[i].class_id] = {};
-        }
-    });
-    var groupQuery = "SELECT * FROM groups";
-    connection.query(groupQuery, function(rows, fields){
-        for (i in rows){
-            data.ds[rows[i].class_id][rows[i].group_id] = {};
-        }
-    });
-    //query the database for classes and groups 
+connection.query("USE " + dbconfig.database);
+exports.ds = data.ds;
+
+var classQuery = "SELECT * FROM classes";
+connection.query(classQuery, function(err, rows, fields){
+    if (err)
+        throw err;
+    for (var i in rows){
+        data.ds[rows[i].class_id] = {}
+        data.ds[rows[i].class_id]["class_name"] = rows[i].class_name;
+        data.ds[rows[i].class_id]["user"] = {};
+    }//creates an array for 
+    
 });
+var groupQuery = "SELECT * FROM groups";
+connection.query(groupQuery, function(err, rows, fields){
+    if (err)
+        throw err;
+    for (var j in rows){
+        if (rows[j].class_id in data.ds) {
+            data.ds[rows[j].class_id][rows[j].group_id] = {};
+            data.ds[rows[j].class_id][rows[j].group_id]["deleted"] = false;
+            data.ds[rows[j].class_id][rows[j].group_id]["students"] = [];
+        }
+    }
+});
+
+    //query the database for classes and groups 
+
+
+
+connection.end();

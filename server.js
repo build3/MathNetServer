@@ -1,9 +1,10 @@
 //server.js
-
-var express  = require('express');
-var app      = express();
+var express = require('express');
+var app  = express();
 var port     = 8888;
 var path = require('path');
+var server_sockets = require('./public/js/server_sockets');
+
 
 //var passport = require('passport');
 //var session = require('express-session');
@@ -29,9 +30,17 @@ app.engine('html', require('hbs').__express);
 
 // Sets static file location to public directory
 app.use(express.static(path.join(__dirname, '/public')));
+app.use(express.static(path.join(__dirname, '/node_modules')));
+
+var server = require('http').Server(app);
+var io = require('socket.io')(server); 
 
 require('./routes/index.js')(app); // load our routes
 //require('./routes/public.js')(app);
 
-app.listen(port, '127.0.0.1');
+server.listen(port);
 console.log('The magic happens on port ' + port);
+
+//this will contain the server side socket commnication
+
+server_sockets(server, "");

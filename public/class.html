@@ -1,13 +1,17 @@
 <!-- this page will be the main groups page, showing the groups based upon the given class ID from login.
      when this page is loaded it should emit the event to pull all the groups, to allow the student to choose which one they would like to join.-->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+<script src="/js/client_functions.js"></script>
+<script src="/js/client_socket.js"></script>
 <div id="main">
   <div id="page">
     <head> 
         <title> Class </title> 
     </head>
-
-    <h2> Student Groups :  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
+    <h2 > Student Groups :  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
+    <p id="buttons"> </p>
     <!-- foreach group, create a html button with onclick to emit action to a group -->
-    <input type="button" value="Leave" onclick=""/>
+    <input type="button" value="Log Out" id="logout" />
   </div>
 </div>

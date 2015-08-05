@@ -1,4 +1,4 @@
 //you create the datastructure in this file
 
-ds = {};
-module.exports = ds;
+var ds = {};
+exports.ds = ds;
