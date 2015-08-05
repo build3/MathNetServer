@@ -22,12 +22,11 @@ $(function() {
     // Start with create view visible and manage view hidden
     $manage_view.hide();
 
-    
+   
+    //
+    // ADD CLASS
+    //
     $create_button.click(function() {
-        // Loads field values into localStorage
-        localStorage.setItem('class_name',$class_input.val().trim());
-        localStorage.setItem('group_count',$group_input.val().trim());
-
         // Tell the server to create a class in the database
         socket.add_class($class_input.val().trim(), parseInt($group_input.val().trim()), $secret.val().trim());
     });
@@ -48,7 +47,7 @@ $(function() {
 
     $class_name.on('add-class-response', function(e, d) {
         class_id = d.class_id;
-        $(this).html(localStorage.getItem('class_name') + " ID: " + class_id);
+        $(this).html($class_input.val().trim() + " ID: " + class_id);
       //  $(this).html(" " + class_id);
     });
 
@@ -56,52 +55,65 @@ $(function() {
         // Generate html for each group
         // Each group will have a delete button and a label
         var groups_html = "";
-        var group_number = parseInt(localStorage['group_count']);
+        var group_number = parseInt($group_input.val().trim());
         for (var group=1; group < group_number+1; group++) {
             groups_html += "<li>Group " + group + "</li>";
         }
         $(this).html(groups_html);
     });
 
-   
-    $leave_button.click(function() {
-        // Remove class values from localStorage
-        localStorage.removeItem('class_name');
-        localStorage.removeItem('group_count');
-
-        // Switch to creation view now that class has been left
-        $create_view.show();
-        $manage_view.hide();
-    });
-
+    //
+    // ADD GROUP
+    //
+    //
     $add_button.click(function() {
-        // Append new group list element to html
-        var new_group = "";
-        var group_number = parseInt(localStorage['group_count']) + 1;
-
-        new_group += "<li>Group " + group_number + "</li>";
-        $groups.append(new_group);
-
         // Tell the server to create a new group for the class in the database
         socket.add_group($class_input.val().trim(), $secret.val().trim());
-
-        // Update localStorage count of groups
-        localStorage['group_count'] = parseInt(localStorage['group_count']) + 1;
     });
 
+    socket.add_event('add-group-response', $groups)
+
+    $groups.on('add-group-response', function (e, d) {
+        // Append new group list element to html
+        var new_group = "";
+        var group_number = $('.groups li:last').index() + 2;        
+        new_group += "<li>Group " + group_number + "</li>";
+        $(this).append(new_group);
+    });
+
+    //
+    // DELETE GROUP
+    //
     $delete_button.click(function() {
         // Only remove if there are groups
         if ($('.groups li').length > 0) {
-
             socket.delete_group(parseInt(class_id), $('.groups li:last').index() + 1, $secret.val().trim());
-            
-            // Remove last group element in list
-            $('.groups li:last').remove();
-
-            // Update localStorage value
-            localStorage['group_count'] =
-                parseInt(localStorage['group_count']) - 1;
         }
     });
 
+    socket.add_event('delete-group-response', $groups);
+
+    $groups.on('delete-group-response', function(e, d) {
+        // Remove last group element in list
+        $('.groups li:last').remove();
+    });
+
+    //
+    // LEAVE CLASS
+    //
+    $leave_button.click(function() {
+        socket.leave_class($secret.val().trim());
+    });
+
+    socket.add_event('leave-class-response', $create_view);
+    socket.add_event('leave-class-response', $manage_view);
+
+    // Switch to creation view now that class has been left
+    $create_view.on('leave-class-response', function(e, d) {
+        $(this).show();
+    });
+
+    $manage_view.on('leave-class-response', function(e, d) {
+        $(this).hide();
+    });
 });
