@@ -11,7 +11,8 @@ var pool = mysql.createPool({
 });
 
 // Creates row in Classes table using class_name
-exports.create_class = function(class_name, group_count) {
+exports.create_class = function(class_name, group_count, callback) {
+    var class_id = 0;
     pool.getConnection(function(error, connection) {
         console.log("Creating " + class_name);
         var query = "USE nsf_physics_7;";
@@ -26,7 +27,6 @@ exports.create_class = function(class_name, group_count) {
                 // If the creation of the class was successful,
                 //   the callback then gets the class_id
                 //   and makes group_count many groups
-                var class_id;
                 query = "SELECT class_id FROM Classes WHERE class_name=?;";
                 connection.query(query, [class_name], function(error, rows) {
                     if(error) {
@@ -39,12 +39,14 @@ exports.create_class = function(class_name, group_count) {
                                 "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);"
                             connection.query(query, [group, class_id]);
                         }
+                        callback(class_id);
                     }
                 });
             }
         });
         connection.release();
     });
+    
 }
 
 // Creates a group belonging to the class found using class_name
