@@ -50,7 +50,7 @@ exports.create_class = function(class_name, group_count, callback) {
 }
 
 // Creates a group belonging to the class found using class_name
-exports.create_group = function(class_name) {
+exports.create_group = function(class_name, callback) {
     pool.getConnection(function(error, connection) {
         console.log("Creating a group in " + class_name);
 
@@ -78,6 +78,7 @@ exports.create_group = function(class_name) {
                         var group = parseInt(rows[0].group_id) + 1;
                         query = "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);";
                         connection.query(query, [group, class_id]);
+                        callback();
                     }
                 });
             }
@@ -87,7 +88,7 @@ exports.create_group = function(class_name) {
 }
 
 // Deletes a group from the Groups table using a provided class id and group id
-exports.delete_group = function(class_id, group_id) {
+exports.delete_group = function(class_id, group_id, callback) {
     pool.getConnection(function(error, connection) {
         console.log("Deleteing group " + group_id + " in class " + class_id);
         
@@ -98,6 +99,9 @@ exports.delete_group = function(class_id, group_id) {
         connection.query(query, [class_id, group_id], function(error, rows) {
             if(error) {
                 console.log(error);
+            }
+            else {
+                callback();
             }
          });
          connection.release();
