@@ -24,10 +24,9 @@ function admin_sockets(server) {
             if (secret == "ucd_247") {
                 console.log(class_name, group_count);
                 var class_id;
-                database.create_class(class_name, group_count, 
-                                      function(result) {
-                                          socket.emit('add-class-response', {class_id: result});
-                                      });
+                database.create_class(class_name, group_count, function(result) {
+                    socket.emit('add-class-response', {class_id: result});
+                });
             }
         });
 
@@ -36,8 +35,9 @@ function admin_sockets(server) {
         socket.on('add-group', function(class_name, secret) {
             if (secret == "ucd_247") {
                 console.log(class_name);
-                database.create_group(class_name);
-                socket.emit('add-group-response', {});
+                database.create_group(class_name, function() {
+                    socket.emit('add-group-response', {});
+                });
             }
         }); 
 
@@ -46,13 +46,14 @@ function admin_sockets(server) {
         socket.on('delete-group', function(class_id, group_id, secret) {
             if (secret == "ucd_247") {
                 console.log(class_id, group_id);
-                database.delete_group(class_id, group_id);
-                socket.emit('delete-group-response', {});
+                database.delete_group(class_id, group_id, function() {
+                    socket.emit('delete-group-response', {});
+                });
             }
         });
 
         // This is the handler for the leave-class client socket emission
-        socket.on('leave-class', function() {
+        socket.on('leave-class', function(secret) {
             if (secret == "ucd_247") {
                 console.log("Leaving class!");
                 socket.emit('leave-class-response', {});

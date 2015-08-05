@@ -48,13 +48,13 @@
         // The socket then emits this data to the server to delete a group
         // from the class.
         var delete_group = function (class_id, group_id, secret) {
-            socket.emit('delete-group', class_id, group_id);
+            socket.emit('delete-group', class_id, group_id, secret);
         }
 
         // This function calls the socket to tell the server, the user has left
         // the class
-        var leave_class = function () {
-            socket.emit('leave-class');
+        var leave_class = function (secret) {
+            socket.emit('leave-class', secret);
         }
 
         // Removes any listeners waiting on events 
