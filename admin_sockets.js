@@ -37,6 +37,7 @@ function admin_sockets(server) {
             if (secret == "ucd_247") {
                 console.log(class_name);
                 database.create_group(class_name);
+                socket.emit('add-group-response', {});
             }
         }); 
 
@@ -46,6 +47,15 @@ function admin_sockets(server) {
             if (secret == "ucd_247") {
                 console.log(class_id, group_id);
                 database.delete_group(class_id, group_id);
+                socket.emit('delete-group-response', {});
+            }
+        });
+
+        // This is the handler for the leave-class client socket emission
+        socket.on('leave-class', function() {
+            if (secret == "ucd_247") {
+                console.log("Leaving class!");
+                socket.emit('leave-class-response', {});
             }
         });
     });

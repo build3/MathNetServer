@@ -51,6 +51,12 @@
             socket.emit('delete-group', class_id, group_id);
         }
 
+        // This function calls the socket to tell the server, the user has left
+        // the class
+        var leave_class = function () {
+            socket.emit('leave-class');
+        }
+
         // Removes any listeners waiting on events 
         var remove_listeners = function () {
             for (var i = 0; i < listeners.length; i++) {
@@ -63,6 +69,7 @@
             add_class: add_class,
             add_group: add_group,
             delete_group: delete_group,
+            leave_class: leave_class,
             remove_listeners: remove_listeners
         };
     };
