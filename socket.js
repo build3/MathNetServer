@@ -6,9 +6,7 @@ module.exports = adminSockets;
 function adminSockets(server, client) {
     var io = socketio.listen(server);
 
-    // These socket functions and triggers only occur for sockets belonging to
-    // the admins namespace
-    var admins = io.of('/admins').on('connection', function (socket) {
+    io.on('connection', function (socket) {
         var admin;
         console.log("Someone has connected!");
 
@@ -21,23 +19,34 @@ function adminSockets(server, client) {
 
         // This is the handler for the add-class client socket emission
         // It calls a database function to create a class and groups
-        socket.on('add-class', function(class_name, group_count) {
-            console.log(class_name, group_count);
-            database.create_class(class_name, group_count);
+        socket.on('add-class', function(class_name, group_count, secret) {
+            console.log(secret);
+            if (secret == "ucd_247") {
+                console.log(class_name, group_count);
+                var class_id;
+                database.create_class(class_name, group_count, 
+                                      function(result) {
+                                          socket.emit('add-class-response', {class_id: result});
+                                      });
+            }
         });
 
         // This is the handler for the add-group client socket emission
         // It calls a database function to create a group for a class
-        socket.on('add-group', function(class_name) {
-            console.log(class_name);
-            database.create_group(class_name);
+        socket.on('add-group', function(class_name, secret) {
+            if (secret == "ucd_247") {
+                console.log(class_name);
+                database.create_group(class_name);
+            }
         }); 
 
         // This is the handler for the delete-group client socket emission
         // It calls a database function to delete a group for a class
-        socket.on('delete-group', function(class_id, group_id) {
-            console.log(class_id, group_id);
-            database.delete_group(class_id, group_id);
+        socket.on('delete-group', function(class_id, group_id, secret) {
+            if (secret == "ucd_247") {
+                console.log(class_id, group_id);
+                database.delete_group(class_id, group_id);
+            }
         });
     });
 }
