@@ -1,9 +1,9 @@
 var socketio = require('socket.io'),
     database = require('./database_actions');
 
-module.exports = adminSockets;
+module.exports = admin_sockets;
 
-function adminSockets(server, client) {
+function admin_sockets(server) {
     var io = socketio.listen(server);
 
     io.on('connection', function (socket) {
