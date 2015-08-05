@@ -63,6 +63,9 @@ $(function() {
         // Only remove if there are groups
         if ($('.groups li').length > 0) {
 
+            // Need to dynamically get class_id
+            //socket.delete_group(21, $('.groups li:last').index() + 1);
+            
             // Remove last group element in list
             $('.groups li:last').remove();
 

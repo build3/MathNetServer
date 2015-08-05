@@ -31,17 +31,24 @@
         };
 
         // This function takes a class name and group count provided by the 
-        // user. The socket then emits this data to create the class and groups 
-        // on the server.
+        // user. The socket then emits this data to the server to create 
+        // the class and groups. 
         var add_class = function (class_name, group_count, cb) {
             socket.emit('add-class', class_name, group_count);
         };
 
         // This function tabkes a class name provided by the user.
-        // The socket then emits this data to create a group for the class on
-        // the server.
+        // The socket then emits this data to the server to create a 
+        // group for the class.
         var add_group = function (class_name, cb) {
             socket.emit('add-group', class_name);
+        }
+
+        // This function takes a class id and group id provided by the user.
+        // The socket then emits this data to the server to delete a group
+        // from the class.
+        var delete_group = function (class_id, group_id, cb) {
+            socket.emit('delete-group', class_id, group_id);
         }
 
         // Removes any listeners waiting on events 
@@ -55,6 +62,7 @@
             add_event: add_event,
             add_class: add_class,
             add_group: add_group,
+            delete_group: delete_group,
             remove_listeners: remove_listeners
         };
     };

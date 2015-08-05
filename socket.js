@@ -27,11 +27,17 @@ function adminSockets(server, client) {
         });
 
         // This is the handler for the add-group client socket emission
-        // It calls a database function using to create a group for a class
+        // It calls a database function to create a group for a class
         socket.on('add-group', function(class_name) {
             console.log(class_name);
             database.create_group(class_name);
         }); 
 
+        // This is the handler for the delete-group client socket emission
+        // It calls a database function to delete a group for a class
+        socket.on('delete-group', function(class_id, group_id) {
+            console.log(class_id, group_id);
+            database.delete_group(class_id, group_id);
+        });
     });
 }
