@@ -77,6 +77,7 @@ io.on('connection', function(socket){
         //adds in user info to datastructure if unique. else displays an error message
 
     socket.on('logout', function(data){
+        socket.leave(data.class_id + "x");
         var index = Object.keys(head.ds[data.class_id]["user"]).indexOf(data.username);
         if(index > -1)
             delete head.ds[data.class_id]["user"][data.username]; //change to be some way to remove the object using the index to find the name
@@ -87,6 +88,7 @@ io.on('connection', function(socket){
     }); //returns logged_in false
 
     socket.on('groups_get', function(data){
+        socket.join(data.class_id + "x");
         var groups = [];
         if(data.logged_in){
             for (var i in head.ds[data.class_id]){
@@ -130,11 +132,12 @@ io.on('connection', function(socket){
             class_id : data.class_id,
             group_id : data.group_id
         }
-        socket.leave(data.class_id + data.group_id);
+        socket.leave(data.class_id + "x" +data.group_id);
         socket.emit('group_leave_response', response);
     }); //resets user coordinates and removes them from the students array in current group, leaves your socket group
     socket.on('group_info', function(data){
-        socket.join(data.class_id + data.group_id);
+        socket.join(data.class_id + "x");
+        socket.join(data.class_id + "x" +data.group_id);
         var other_members = [];
         if(data.logged_in){
             for (var i in head.ds[data.class_id][data.group_id]["students"]){
@@ -156,9 +159,9 @@ io.on('connection', function(socket){
         }
 
         if(data.group_leave)
-            socket.broadcast.to(data.class_id + data.group_id).emit('groups_info_response', response);
+            socket.broadcast.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
         else
-            io.sockets.to(data.class_id + data.group_id).emit('groups_info_response', response);
+            io.sockets.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
     }); //populates array other_members with the other students and their coordinates in the given group, 
         //emits different response if user is leaving or joining.
     socket.on('coordinate_change', function(data){
@@ -173,7 +176,7 @@ io.on('connection', function(socket){
             x_coord : head.ds[data.class_id]["user"][data.username]["x"],
             y_coord : head.ds[data.class_id]["user"][data.username]["y"]
         }
-        io.sockets.to(data.class_id + data.group_id).emit('coordinate_change_response', response);
+        io.sockets.to(data.class_id + "x" +data.group_id).emit('coordinate_change_response', response);
 
     }); //registers the change of coordinates in the datastructure and passes them back to group
 });
