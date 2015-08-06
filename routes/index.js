@@ -2,7 +2,6 @@ module.exports = function(app) {
 //    var express = require('express');
 //    var router = express.Router();
    
-    var head = require('../public/header');
     /* GET home page. */
     app.get('/', function(req, res, next) {
         res.render('index', {title:"Student Login"});
