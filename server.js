@@ -38,14 +38,8 @@ app.use(express.static(path.join(__dirname, '/public')));
 require('./routes/index.js')(app); // load our routes
 //require('./routes/public.js')(app);
 
-//<<<<<<< HEAD
-//server.listen(port);
-//console.log('The magic happens on port ' + port);
 
-//this will contain the server side socket commnication
-
-//=======
-var server = app.listen(port, '127.0.0.1');
+var server = app.listen(port);
 console.log('The magic happens on port ' + port);
 
 // Start up admin sockets

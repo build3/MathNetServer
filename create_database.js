@@ -7,7 +7,7 @@ var dbconfig = require('./config_database');
 var connection = mysql.createConnection(dbconfig.connection);
 connection.connect();
 
-connection.query('CREATE DATABASE ' + dbconfig.database + ';');
+//connection.query('CREATE DATABASE ' + dbconfig.database + ';');
 
 connection.query('SET foreign_key_checks = 0;');
 
