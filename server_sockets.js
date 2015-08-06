@@ -65,7 +65,7 @@ function server_sockets(server, client){
                 class_id : data.class_id,
                 groups : groups
             }
-            socket.emit('groups_get_response', response);
+            io.sockets.to(data.class_id + "x").emit('groups_get_response', response);
         }); //populates groups array with groups with the given class id and returns it to client.
 
         socket.on('group_join', function(data){
@@ -94,6 +94,7 @@ function server_sockets(server, client){
                 group_id : data.group_id
             }
             socket.leave(data.class_id + "x" +data.group_id);
+
             socket.emit('group_leave_response', response);
         }); //resets user coordinates and removes them from the students array in current group, leaves your socket group
 
@@ -119,11 +120,20 @@ function server_sockets(server, client){
                 other_members : other_members,
                 group_leave : data.group_leave
             }
+            var list_response = {
+                logged_in : data.logged_in,
+                class_id : data.class_id,
+                group_id : data.group_id,
+                number : other_members.length
+            }
 
-            if(data.group_leave)
+            io.sockets.to(data.class_id + "x").emit('groups_change_response', list_response);
+
+            if(data.group_leave){
                 socket.broadcast.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
-            else
+            } else {
                 io.sockets.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
+            }
         }); //populates array other_members with the other students and their coordinates in the given group, 
         //emits different response if user is leaving or joining.
 
@@ -142,7 +152,6 @@ function server_sockets(server, client){
             io.sockets.to(data.class_id + "x" +data.group_id).emit('coordinate_change_response', response);
 
         }); //registers the change of coordinates in the datastructure and passes them back to group
-
         // This function will notify the client when an error has occurred 
         // due to a client socket emission
         function server_error(error, message) {
