@@ -46,9 +46,10 @@ function login_response(data){
     }
 }
 function groups_get_response(groups){
+    $("#buttons").empty();
     console.log("made it to groups_get_response");
     for (var i in groups){
-        var button = '<input type="button" value="Group' + groups[i].grp_name + '- '+ groups[i].num
+        var button = '<input type="button" value="Group' + groups[i].grp_name + ' - '+ groups[i].num
                    + '" id="'+ groups[i].grp_name + '" onclick=group_btn_onclick(' + groups[i].grp_name +') /><br/>';
         $("#buttons").append(button);
     }

@@ -140,5 +140,8 @@ socket.on('groups_info_response', function(data){
 socket.on('coordinate_change_response', function(data){
     coord_message(data);
 }); //changes the innerHTML of the group member that pressed a button and prints a message for the change
+socket.on('groups_change_response', function(data){
+    $('#'+data.group_id).val("Group" + data.group_id + " - " + data.number );
+}); //triggered in groups_get, updates the count of members in a group when someone joins/leaves
 
 
