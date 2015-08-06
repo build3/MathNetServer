@@ -153,13 +153,17 @@ function server_sockets(server, client){
         // This is the handler for the add-class client socket emission
         // It calls a database function to create a class and groups
         socket.on('add-class', function(class_name, group_count, secret) {
-            console.log(secret);
             if (secret == "ucd_247") {
-                console.log(class_name, group_count);
-                var class_id;
-                database.create_class(class_name, group_count, function(result) {
-                    socket.emit('add-class-response', {class_id: result});
+                database.create_class(class_name, group_count, function(class_id) {
+                    head.ds[class_id] = {}
+                    for(var i=0; i<group_count; i++) {
+                        head.ds[class_id][i+1] = {students:[], deleted:false};
+                    }
+                    head.ds[class_id]['user'] = {}
+                    head.ds[class_id]['class_name'] = class_name;
+                    socket.emit('add-class-response', {class_id: class_id});
                 });
+
             }
         });
 
@@ -167,8 +171,8 @@ function server_sockets(server, client){
         // It calls a database function to create a group for a class
         socket.on('add-group', function(class_name, secret) {
             if (secret == "ucd_247") {
-                console.log(class_name);
-                database.create_group(class_name, function() {
+                database.create_group(class_name, function(class_id, group_id) {
+                    head.ds[class_id][group_id] = {students:[], deleted:false};
                     socket.emit('add-group-response', {});
                 });
             }
@@ -178,17 +182,18 @@ function server_sockets(server, client){
         // It calls a database function to delete a group for a class
         socket.on('delete-group', function(class_id, group_id, secret) {
             if (secret == "ucd_247") {
-                console.log(class_id, group_id);
                 database.delete_group(class_id, group_id, function() {
+                    delete head.ds[class_id][group_id];
                     socket.emit('delete-group-response', {});
                 });
             }
         });
 
         // This is the handler for the leave-class client socket emission
-        socket.on('leave-class', function(secret) {
+        socket.on('leave-class', function(class_id, secret) {
             if (secret == "ucd_247") {
-                console.log("Leaving class!");
+                delete head.ds[class_id];
+                console.log(head.ds);
                 socket.emit('leave-class-response', {});
             }
         });
