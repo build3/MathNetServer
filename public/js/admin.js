@@ -46,7 +46,7 @@ $(function() {
     });
 
     $class_name.on('add-class-response', function(e, d) {
-        class_id = d.class_id;
+        class_id = parseInt(d.class_id);
         $(this).html($class_input.val().trim() + " ID: " + class_id);
       //  $(this).html(" " + class_id);
     });
@@ -87,7 +87,7 @@ $(function() {
     $delete_button.click(function() {
         // Only remove if there are groups
         if ($('.groups li').length > 0) {
-            socket.delete_group(parseInt(class_id), $('.groups li:last').index() + 1, $secret.val().trim());
+            socket.delete_group(class_id, $('.groups li:last').index() + 1, $secret.val().trim());
         }
     });
 
@@ -102,7 +102,7 @@ $(function() {
     // LEAVE CLASS
     //
     $leave_button.click(function() {
-        socket.leave_class($secret.val().trim());
+        socket.leave_class(class_id, $secret.val().trim());
     });
 
     socket.add_event('leave-class-response', $create_view);

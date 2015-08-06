@@ -53,8 +53,8 @@
 
         // This function calls the socket to tell the server, the user has left
         // the class
-        var leave_class = function (secret) {
-            socket.emit('leave-class', secret);
+        var leave_class = function (class_id, secret) {
+            socket.emit('leave-class', class_id, secret);
         }
 
         // Removes any listeners waiting on events 
