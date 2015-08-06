@@ -7,13 +7,13 @@ var dbconfig = require('./config_database');
 var connection = mysql.createConnection(dbconfig.connection);
 connection.connect();
 
-//connection.query('CREATE DATABASE ' + dbconfig.database + ';');
+connection.query('CREATE DATABASE IF NOT EXISTS ' + dbconfig.database + ';');
 
 connection.query('SET foreign_key_checks = 0;');
 
 /********************************** Classes *************************************************/
 connection.query('\
-                 CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.class_table + '` ( \
+                 CREATE TABLE IF NOT EXISTS `' + dbconfig.database + '`.`' + dbconfig.class_table + '` ( \
                  `class_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, \
                  `class_name` VARCHAR(40) NOT NULL, \
                  `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
@@ -25,7 +25,7 @@ connection.query('\
 
 /********************************** Groups *************************************************/
 connection.query('\
-                 CREATE TABLE `' + dbconfig.database + '`.`' + dbconfig.group_table + '` ( \
+                 CREATE TABLE IF NOT EXISTS `' + dbconfig.database + '`.`' + dbconfig.group_table + '` ( \
                  `group_id` INT UNSIGNED NOT NULL, \
                  `class_id` INT UNSIGNED NOT NULL, \
                  `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
