@@ -74,11 +74,18 @@ exports.create_group = function(class_name, callback) {
                         console.log(error);
                     }
                     else {
+                        var group;
                         // Insert a new group row using the next highest group id
-                        var group = parseInt(rows[0].group_id) + 1;
+                        console.log(rows);
+                        if(rows.length > 0) {
+                            group = parseInt(rows[0].group_id) + 1;
+                        }
+                        else {
+                            group = 1;
+                        }
                         query = "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);";
                         connection.query(query, [group, class_id]);
-                        callback();
+                        callback(class_id, group);
                     }
                 });
             }
