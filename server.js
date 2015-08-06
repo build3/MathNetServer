@@ -3,8 +3,8 @@ var express = require('express');
 var app  = express();
 var port     = 8888;
 var path = require('path');
-var server_sockets = require('./public/js/server_sockets');
-var admin_sockets = require('./admin_sockets');
+var server_sockets = require('./server_sockets');
+//var admin_sockets = require('./admin_sockets');
 
 //var passport = require('passport');
 //var session = require('express-session');
@@ -49,5 +49,5 @@ var server = app.listen(port, '127.0.0.1');
 console.log('The magic happens on port ' + port);
 
 // Start up admin sockets
-admin_sockets(server);
+//admin_sockets(server);
 server_sockets(server, "");

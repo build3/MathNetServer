@@ -1,6 +1,6 @@
-var head = require('../header');
+var head = require('./public/header');
 var socketio = require('socket.io');
-
+var database = require('./database_actions');
 module.exports = server_sockets;
 
 function server_sockets(server, client){
@@ -33,7 +33,7 @@ function server_sockets(server, client){
             }//the class does not exist
             socket.emit('login_response', response);
         }); //authenticates class ID and makes sure there is not another user with the same name. 
-            //adds in user info to datastructure if unique. else displays an error message
+        //adds in user info to datastructure if unique. else displays an error message
 
         socket.on('logout', function(data){
             socket.leave(data.class_id + "x");
@@ -125,7 +125,7 @@ function server_sockets(server, client){
             else
                 io.sockets.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
         }); //populates array other_members with the other students and their coordinates in the given group, 
-            //emits different response if user is leaving or joining.
+        //emits different response if user is leaving or joining.
 
         socket.on('coordinate_change', function(data){
             head.ds[data.class_id]["user"][data.username]["x"] += data.x_coord;
@@ -142,6 +142,57 @@ function server_sockets(server, client){
             io.sockets.to(data.class_id + "x" +data.group_id).emit('coordinate_change_response', response);
 
         }); //registers the change of coordinates in the datastructure and passes them back to group
+
+        // This function will notify the client when an error has occurred 
+        // due to a client socket emission
+        function server_error(error, message) {
+            console.log(error);
+            socket.emit('server-error', {message: message});
+        };
+
+        // This is the handler for the add-class client socket emission
+        // It calls a database function to create a class and groups
+        socket.on('add-class', function(class_name, group_count, secret) {
+            console.log(secret);
+            if (secret == "ucd_247") {
+                console.log(class_name, group_count);
+                var class_id;
+                database.create_class(class_name, group_count, function(result) {
+                    socket.emit('add-class-response', {class_id: result});
+                });
+            }
+        });
+
+        // This is the handler for the add-group client socket emission
+        // It calls a database function to create a group for a class
+        socket.on('add-group', function(class_name, secret) {
+            if (secret == "ucd_247") {
+                console.log(class_name);
+                database.create_group(class_name, function() {
+                    socket.emit('add-group-response', {});
+                });
+            }
+        }); 
+
+        // This is the handler for the delete-group client socket emission
+        // It calls a database function to delete a group for a class
+        socket.on('delete-group', function(class_id, group_id, secret) {
+            if (secret == "ucd_247") {
+                console.log(class_id, group_id);
+                database.delete_group(class_id, group_id, function() {
+                    socket.emit('delete-group-response', {});
+                });
+            }
+        });
+
+        // This is the handler for the leave-class client socket emission
+        socket.on('leave-class', function(secret) {
+            if (secret == "ucd_247") {
+                console.log("Leaving class!");
+                socket.emit('leave-class-response', {});
+            }
+        });
+
     });
 }
 
