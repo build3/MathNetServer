@@ -12,17 +12,17 @@ connection.connect();
 
 connection.query("USE " + dbconfig.database);
 
-var avaliable_classes = {};
-exports.avaliable_classes = avaliable_classes;
+var available_classes = {};
+exports.available_classes = available_classes;
 
 var classQuery = "SELECT * FROM Classes";
 connection.query(classQuery, function(err, rows, fields){
     if (err)
         throw err;
     for (var i in rows){
-        avaliable_classes[rows[i].class_id] = {}
-        avaliable_classes[rows[i].class_id]["class_name"] = rows[i].class_name;
-        avaliable_classes[rows[i].class_id]["user"] = {};
+        available_classes[rows[i].class_id] = {}
+        available_classes[rows[i].class_id]["class_name"] = rows[i].class_name;
+        available_classes[rows[i].class_id]["user"] = {};
     }//creates an array for 
     
 });
@@ -31,10 +31,10 @@ connection.query(groupQuery, function(err, rows, fields){
     if (err)
         throw err;
     for (var j in rows){
-        if (rows[j].class_id in avaliable_classes) {
-            avaliable_classes[rows[j].class_id][rows[j].group_id] = {};
-            avaliable_classes[rows[j].class_id][rows[j].group_id]["deleted"] = false;
-            avaliable_classes[rows[j].class_id][rows[j].group_id]["students"] = [];
+        if (rows[j].class_id in available_classes) {
+            available_classes[rows[j].class_id][rows[j].group_id] = {};
+            available_classes[rows[j].class_id][rows[j].group_id]["deleted"] = false;
+            available_classes[rows[j].class_id][rows[j].group_id]["students"] = [];
         }
     }
 });

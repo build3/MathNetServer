@@ -1,4 +1,4 @@
-var classes = require('./public/avaliable_classes');
+var classes = require('./public/available_classes');
 var socketio = require('socket.io');
 var database = require('./database_actions');
 module.exports = server_sockets;
@@ -9,11 +9,11 @@ function server_sockets(server, client){
     io.on('connection', function(socket) {
 
         socket.on('login', function(data){
-            if (Object.keys(classes.avaliable_classes).indexOf(data.class_id) >= 0){
-                if (! (Object.keys(classes.avaliable_classes[data.class_id]["user"]).indexOf(data.username) >= 0 )){
-                    classes.avaliable_classes[data.class_id]["user"][data.username] = {};
-                    classes.avaliable_classes[data.class_id]["user"][data.username]["x"] = 0.0;
-                    classes.avaliable_classes[data.class_id]["user"][data.username]["y"] = 0.0;
+            if (Object.keys(classes.available_classes).indexOf(data.class_id) >= 0){
+                if (! (Object.keys(classes.available_classes[data.class_id]["user"]).indexOf(data.username) >= 0 )){
+                    classes.available_classes[data.class_id]["user"][data.username] = {};
+                    classes.available_classes[data.class_id]["user"][data.username]["x"] = 0.0;
+                    classes.available_classes[data.class_id]["user"][data.username]["y"] = 0.0;
                     var response = {
                         logged_in : true,
                         username : data.username,
@@ -37,9 +37,9 @@ function server_sockets(server, client){
 
         socket.on('logout', function(data){
             socket.leave(data.class_id + "x");
-            var index = Object.keys(classes.avaliable_classes[data.class_id]["user"]).indexOf(data.username);
+            var index = Object.keys(classes.available_classes[data.class_id]["user"]).indexOf(data.username);
             if (index > -1)
-                delete classes.avaliable_classes[data.class_id]["user"][data.username]; 
+                delete classes.available_classes[data.class_id]["user"][data.username]; 
             var response = {
                 logged_in : false
             }
@@ -50,11 +50,11 @@ function server_sockets(server, client){
             socket.join(data.class_id + "x");
             var groups = [];
             if (data.logged_in){
-                for (var i in classes.avaliable_classes[data.class_id]){
+                for (var i in classes.available_classes[data.class_id]){
                     if (i != "user" && i != "class_name"){
                         groups.push({
                             grp_name : i,
-                            num : classes.avaliable_classes[data.class_id][i]["students"].length
+                            num : classes.available_classes[data.class_id][i]["students"].length
                         });
                     }
                 }
@@ -70,7 +70,7 @@ function server_sockets(server, client){
 
         socket.on('group_join', function(data){
 
-            classes.avaliable_classes[data.class_id][data.group_id]["students"].push(data.username);
+            classes.available_classes[data.class_id][data.group_id]["students"].push(data.username);
 
             var response = {
                 logged_in : data.logged_in,
@@ -82,11 +82,11 @@ function server_sockets(server, client){
         }); //adds user to the students array of given group
 
         socket.on('group_leave', function(data){
-            var index = classes.avaliable_classes[data.class_id][data.group_id]["students"].indexOf(data.username);
+            var index = classes.available_classes[data.class_id][data.group_id]["students"].indexOf(data.username);
             if (index > -1)
-                classes.avaliable_classes[data.class_id][data.group_id]["students"].splice(index, 1);
-            classes.avaliable_classes[data.class_id]["user"][data.username]["x"] = 0.0;
-            classes.avaliable_classes[data.class_id]["user"][data.username]["y"] = 0.0;
+                classes.available_classes[data.class_id][data.group_id]["students"].splice(index, 1);
+            classes.available_classes[data.class_id]["user"][data.username]["x"] = 0.0;
+            classes.available_classes[data.class_id]["user"][data.username]["y"] = 0.0;
             var response = {
                 logged_in : data.logged_in,
                 username : data.username,
@@ -103,12 +103,12 @@ function server_sockets(server, client){
             socket.join(data.class_id + "x" +data.group_id);
             var other_members = [];
             if (data.logged_in){
-                for (var i in classes.avaliable_classes[data.class_id][data.group_id]["students"]){
-                    var student_name = classes.avaliable_classes[data.class_id][data.group_id]["students"][i];
+                for (var i in classes.available_classes[data.class_id][data.group_id]["students"]){
+                    var student_name = classes.available_classes[data.class_id][data.group_id]["students"][i];
                     other_members.push({
                         member_name : student_name,
-                        member_x : classes.avaliable_classes[data.class_id]["user"][student_name]["x"], 
-                        member_y : classes.avaliable_classes[data.class_id]["user"][student_name]["y"]
+                        member_x : classes.available_classes[data.class_id]["user"][student_name]["x"], 
+                        member_y : classes.available_classes[data.class_id]["user"][student_name]["y"]
                     });
                 }
             }
@@ -139,16 +139,16 @@ function server_sockets(server, client){
             //emits different response if user is leaving or joining. updates number of members in the group in class.html
 
         socket.on('coordinate_change', function(data){
-            classes.avaliable_classes[data.class_id]["user"][data.username]["x"] += data.x_coord;
-            classes.avaliable_classes[data.class_id]["user"][data.username]["y"] += data.y_coord;
+            classes.available_classes[data.class_id]["user"][data.username]["x"] += data.x_coord;
+            classes.available_classes[data.class_id]["user"][data.username]["y"] += data.y_coord;
 
             var response = {
                 logged_in : data.logged_in,
                 username : data.username,
                 class_id : data.class_id,
                 group_id : data.group_id,
-                x_coord : classes.avaliable_classes[data.class_id]["user"][data.username]["x"],
-                y_coord : classes.avaliable_classes[data.class_id]["user"][data.username]["y"]
+                x_coord : classes.available_classes[data.class_id]["user"][data.username]["x"],
+                y_coord : classes.available_classes[data.class_id]["user"][data.username]["y"]
             }
             io.sockets.to(data.class_id + "x" + data.group_id).emit('coordinate_change_response', response);
 
@@ -166,6 +166,7 @@ function server_sockets(server, client){
         socket.on('add-class', function(class_name, group_count, secret) {
             if (secret == "ucd_247") {
                 database.create_class(class_name, group_count, function(class_id) {
+                    console.log(class_id);
                     classes.available_classes[class_id] = {}
                     for(var i=0; i<group_count; i++) {
                         classes.available_classes[class_id][i+1] = {students:[], deleted:false};
