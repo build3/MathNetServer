@@ -195,8 +195,16 @@ function server_sockets(server, client){
         socket.on('delete-group', function(class_id, group_id, secret) {
             if (secret == "ucd_247") {
                 database.delete_group(class_id, group_id, function() {
-                    delete classes.available_classes[class_id][group_id];
                     socket.emit('delete-group-response', {});
+           //         io.to(class_id + "x" + group_id)
+           //             .emit('group_leave_response', 
+           //                   {
+           //                       logged_in: true,
+           //                       username: "",
+           //                       class_id: class_id,
+           //                       group_id: group_id});
+
+                    delete classes.available_classes[class_id][group_id];
                 });
             }
         });
@@ -205,8 +213,8 @@ function server_sockets(server, client){
         socket.on('leave-class', function(class_id, secret) {
             if (secret == "ucd_247") {
                 delete classes.available_classes[class_id];
-                console.log(classes.available_classes);
                 socket.emit('leave-class-response', {});
+                io.to(class_id + "x").emit('logout_response', {logged_in: false});
             }
         });
 

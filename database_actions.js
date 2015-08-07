@@ -76,7 +76,6 @@ exports.create_group = function(class_name, callback) {
                     else {
                         var group;
                         // Insert a new group row using the next highest group id
-                        console.log(rows);
                         if(rows.length > 0) {
                             group = parseInt(rows[0].group_id) + 1;
                         }
