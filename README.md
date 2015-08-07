@@ -12,6 +12,11 @@ A client-server project using Node.js. Students in groups will plot linear funct
 * MySQL
 
 
+### Important Note ###
+
+When creating a class, the page requires a secret. The current secret is **ucd_247**.
+
+
 
 ### Installation & Setup ###
 
