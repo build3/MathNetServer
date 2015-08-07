@@ -10,7 +10,7 @@ function server_sockets(server, client){
 
         socket.on('login', function(data){
             if (Object.keys(classes.avaliable_classes).indexOf(data.class_id) >= 0){
-                if(!(Object.keys(classes.avaliable_classes[data.class_id]["user"]).indexOf(data.username) >= 0 )){
+                if (! (Object.keys(classes.avaliable_classes[data.class_id]["user"]).indexOf(data.username) >= 0 )){
                     classes.avaliable_classes[data.class_id]["user"][data.username] = {};
                     classes.avaliable_classes[data.class_id]["user"][data.username]["x"] = 0.0;
                     classes.avaliable_classes[data.class_id]["user"][data.username]["y"] = 0.0;
@@ -33,13 +33,13 @@ function server_sockets(server, client){
             }//the class does not exist
             socket.emit('login_response', response);
         }); //authenticates class ID and makes sure there is not another user with the same name. 
-        //adds in user info to datastructure if unique. else displays an error message
+            //adds in user info to datastructure if unique. else displays an error message
 
         socket.on('logout', function(data){
             socket.leave(data.class_id + "x");
             var index = Object.keys(classes.avaliable_classes[data.class_id]["user"]).indexOf(data.username);
-            if(index > -1)
-                delete classes.avaliable_classes[data.class_id]["user"][data.username]; //change to be some way to remove the object using the index to find the name
+            if (index > -1)
+                delete classes.avaliable_classes[data.class_id]["user"][data.username]; 
             var response = {
                 logged_in : false
             }
@@ -49,7 +49,7 @@ function server_sockets(server, client){
         socket.on('groups_get', function(data){
             socket.join(data.class_id + "x");
             var groups = [];
-            if(data.logged_in){
+            if (data.logged_in){
                 for (var i in classes.avaliable_classes[data.class_id]){
                     if (i != "user" && i != "class_name"){
                         groups.push({
@@ -83,7 +83,7 @@ function server_sockets(server, client){
 
         socket.on('group_leave', function(data){
             var index = classes.avaliable_classes[data.class_id][data.group_id]["students"].indexOf(data.username);
-            if(index > -1)
+            if (index > -1)
                 classes.avaliable_classes[data.class_id][data.group_id]["students"].splice(index, 1);
             classes.avaliable_classes[data.class_id]["user"][data.username]["x"] = 0.0;
             classes.avaliable_classes[data.class_id]["user"][data.username]["y"] = 0.0;
@@ -102,7 +102,7 @@ function server_sockets(server, client){
             socket.join(data.class_id + "x");
             socket.join(data.class_id + "x" +data.group_id);
             var other_members = [];
-            if(data.logged_in){
+            if (data.logged_in){
                 for (var i in classes.avaliable_classes[data.class_id][data.group_id]["students"]){
                     var student_name = classes.avaliable_classes[data.class_id][data.group_id]["students"][i];
                     other_members.push({
@@ -120,6 +120,7 @@ function server_sockets(server, client){
                 other_members : other_members,
                 group_leave : data.group_leave
             }
+
             var list_response = {
                 logged_in : data.logged_in,
                 class_id : data.class_id,
@@ -129,13 +130,13 @@ function server_sockets(server, client){
 
             io.sockets.to(data.class_id + "x").emit('groups_change_response', list_response);
 
-            if(data.group_leave){
+            if (data.group_leave){
                 socket.broadcast.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
             } else {
                 io.sockets.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
             }
         }); //populates array other_members with the other students and their coordinates in the given group, 
-        //emits different response if user is leaving or joining.
+            //emits different response if user is leaving or joining. updates number of members in the group in class.html
 
         socket.on('coordinate_change', function(data){
             classes.avaliable_classes[data.class_id]["user"][data.username]["x"] += data.x_coord;
@@ -149,9 +150,10 @@ function server_sockets(server, client){
                 x_coord : classes.avaliable_classes[data.class_id]["user"][data.username]["x"],
                 y_coord : classes.avaliable_classes[data.class_id]["user"][data.username]["y"]
             }
-            io.sockets.to(data.class_id + "x" +data.group_id).emit('coordinate_change_response', response);
+            io.sockets.to(data.class_id + "x" + data.group_id).emit('coordinate_change_response', response);
 
         }); //registers the change of coordinates in the datastructure and passes them back to group
+        
         // This function will notify the client when an error has occurred 
         // due to a client socket emission
         function server_error(error, message) {

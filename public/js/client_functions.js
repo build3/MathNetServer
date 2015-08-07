@@ -36,7 +36,6 @@ function login_response(data){
         localStorage.setItem('username', data.username);
         localStorage.setItem('logged_in', data.logged_in);
         location.href = '../class';
-        
     }
     else {
         console.log(data.error_message);
@@ -86,6 +85,6 @@ function coord_message(data){
         $("#" + data.username + "x").html('<td>(You) '+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
     else
         $("#" + data.username + "x").html('<td>'+ data.username +'</td><td>('+ data.x_coord +','+ data.y_coord +')</td>');
-
+    
     $("#messages").append(data.username + " has moved their point to (" + data.x_coord + "," + data.y_coord + ").<br/>");
 }

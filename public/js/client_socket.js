@@ -15,7 +15,9 @@ if (current_path == "/groups"){
                 group_id : localStorage.getItem('group_id'),
                 group_leave : false
             }
+
             socket.emit('group_info', send_object);
+
             $(".change_coord").on("click", function(e){
                 var send_object = change_coords(e);
                 socket.emit('coordinate_change', send_object);
@@ -29,14 +31,14 @@ if (current_path == "/groups"){
 
 $(document).ready(function(){
 
-    if(current_path == "/"){
-        if(localStorage.getItem('error_message') != null){
+    if (current_path == "/"){
+        if (localStorage.getItem('error_message') != null){
             $("#error_frame").append(localStorage.getItem('error_message'));
         }
         localStorage.removeItem('error_message');
     }//show errors if there are any when the page / loads
-    if (current_path == "/class"){
 
+    if (current_path == "/class"){
         var send_object = {
             logged_in : localStorage.getItem('logged_in'),
             username : localStorage.getItem('username'),
@@ -47,7 +49,6 @@ $(document).ready(function(){
 
 
     $("#login").on("click", function(){
-
         var class_id = document.getElementById('class_id').value;
         var nickname = document.getElementById('nickname').value;
         
@@ -60,7 +61,6 @@ $(document).ready(function(){
     }); //onclick for login button
 
     $("#logout").on("click", function(){
-
         var send_object = {
             logged_in : false,
             username : localStorage.getItem('username'),
@@ -70,8 +70,6 @@ $(document).ready(function(){
     }); //onclick for logout button
 
     $("#leave_group").on("click", function(){
-
-
         var send_object = {
             logged_in : true,
             username : localStorage.getItem('username'),
@@ -142,6 +140,6 @@ socket.on('coordinate_change_response', function(data){
 }); //changes the innerHTML of the group member that pressed a button and prints a message for the change
 socket.on('groups_change_response', function(data){
     $('#'+data.group_id).val("Group" + data.group_id + " - " + data.number );
-}); //triggered in groups_get, updates the count of members in a group when someone joins/leaves
+}); //triggered in group_info, updates the count of members in a group when someone joins/leaves
 
 
