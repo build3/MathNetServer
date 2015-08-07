@@ -26,7 +26,7 @@ brew doctor
 
 If you had to install MySQL, you'll need to set it up. 
 
-Once MySQL is setup, **be sure to start the MySQL server.**
+Once MySQL is setup, be sure to start the MySQL server. **Your MySQL server needs to be at least version 5.6.**
 
 Next, you'll want to clone this repository `git clone https://bitbucket.org/psalessi/nsf-physics-7-communication-project.git` and move into this new directory.
 
@@ -34,7 +34,6 @@ From there, you'll need to create a `secrets.js` file. The format should be the 
 
 ```
 #!javascript
-
 module.exports = {
     host:"localhost",
     user:"root",
@@ -49,6 +48,18 @@ Now, you are ready to run the server. To do so, run `node server.js`. You can th
 For example, if running on `localhost` and `port 8888`, you would go to [localhost:8888](http://localhost:8888/).
 
 By default, the port number is set to `8888`, but if you wish to change it, simply open `server.js` and edit the port number on line 4. It should look like this `var port = 8888;`.
+
+#### Linux (Ubuntu) ####
+
+First, you will want to install git, npm, Node.js, and MySQL if you haven't already using `apt-get`.
+
+```
+sudo apt-get update
+sudo apt-get install git nodejs mysql-server-5.6
+```
+
+The server setup is the same as OSX except instead of using the command `node` to start the server and create the database, you want to use the command `nodejs`.
+
 
 
 ### Versions ###
