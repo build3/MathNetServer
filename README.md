@@ -11,6 +11,8 @@ A client-server project using Node.js. Students in groups will plot linear funct
 * Express.js
 * MySQL
 
+
+
 ### Installation ###
 
 #### OSX ####
@@ -47,7 +49,9 @@ Now, you are ready to run the server. To do so, run `node server.js`. You can th
 For example, if running on `localhost` and `port 8888`, you would go to [localhost:8888](http://localhost:8888/).
 
 By default, the port number is set to `8888`, but if you wish to change it, simply open `server.js` and edit the port number on line 4. It should look like this `var port = 8888;`.
- 
+
+
+### Versions ###
 #### Version 1 Functionality by August 10th: ####
 * A teacher should be able to create/delete a class.
 * A teacher should be able to create/delete any number of groups in a class.
