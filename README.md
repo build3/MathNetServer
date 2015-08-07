@@ -43,7 +43,7 @@ module.exports = {
 }
 ```
 
-Once you have created `secrets.js`, you need to install the node modules for the project by running `npm install`.
+Once you have created secrets.js, you need to install the node modules for the project by running `npm install`.
 
 After installation, you then run `node create_database.js` to create the necessary schema in MySQL.
 
