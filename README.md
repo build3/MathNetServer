@@ -13,7 +13,7 @@ A client-server project using Node.js. Students in groups will plot linear funct
 
 
 
-### Installation ###
+### Installation & Setup ###
 
 #### OSX ####
 
