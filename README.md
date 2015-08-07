@@ -72,7 +72,7 @@ The server setup is the same as OSX except instead of using the command `node` t
 
 ### Versions ###
 #### Version 1 Functionality by August 10th: ####
-* A teacher should be able to create/delete a class.
+* A teacher should be able to create/leave a class.
 * A teacher should be able to create/delete any number of groups in a class.
 * A student should be able to login and set name.
 * A student should be able to join/leave a class.
