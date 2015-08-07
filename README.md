@@ -33,7 +33,7 @@ If you had to install MySQL, you'll need to set it up.
 
 Once MySQL is setup, be sure to start the MySQL server. **Your MySQL server needs to be at least version 5.6.**
 
-Next, you'll want to clone this repository `git clone -b v1.x.x https://bitbucket.org/psalessi/nsf-physics-7-communication-project.git` 
+Next, you'll want to clone this repository `git clone -b v1.0 https://bitbucket.org/psalessi/nsf-physics-7-communication-project.git` 
 
 Move into this new directory.
 
