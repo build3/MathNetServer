@@ -99,16 +99,6 @@ socket.on('groups_get_response', function(data){
     groups_get_response(data.groups);
 }); //creates group buttons to attach to /class page
 
-function group_btn_onclick(grp_num){
-    var send_object = {
-        logged_in : localStorage.getItem('logged_in'),
-        username : localStorage.getItem('username'),
-        class_id : localStorage.getItem('class_id'),
-        group_id : grp_num
-    }
-    socket.emit('group_join', send_object);
-}//onclick function for the group buttons created in groups_get_response
-
 socket.on('group_join_response', function(data){
     group_join_response(data);
 }); //redirects user to /groups page and sets group ID in localStorage

@@ -5,11 +5,12 @@ To adapt the communications project for another application, you have to do a va
 These socket calls will replace those for coordinate_change, so your page has to have some way to call them.
 
 • Have your own application HTML file, and load that in the load in (if (current_path == '/groups')).
+For this you would need to append your own socket calls that are associated with your application to make sure they go through.
 
 //TODO on that -- Add in a socket call to just load from what the server gives you as a file path, 
 and the same for the associated functions with a .js file 
 (for functionality like onclicks on their app -- otherwise the page will be mostly static)
 
 • Add your own groups_info socket call equivalent, so your data can be updated on the page 
-(it can obey the same table format, just you print different things in said table)
+(it can obey the same table format, just you print different things in said table/your display for the information)
 
