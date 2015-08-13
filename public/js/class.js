@@ -1,61 +1,39 @@
-$(function() {
+function groups_get_response(username, class_id, groups) {
     var $groups = $('#buttons');
-    var $logout_button = $('#logout');
-
-    var socket = Student.Socket(io(location.host));
-    var username = localStorage.getItem('username');
-    var class_id = localStorage.getItem('class_id');
-
-    //
-    // Groups Get
-    //
-
-    socket.groups_get(username, class_id);
-
-    socket.add_event('groups_get_response', $groups);
-
-    $groups.on('groups_get_response', function(e, d) {
-        $(this).empty();
-        for (var i in d.groups){
-            var button = '<input type="button" value="Group ';
-            button += d.groups[i].grp_name + ' - '+ d.groups[i].num;
-            button += '" /><br/>';
-            $(this).append(button);
-        }
-        bindGroupClick();
-    });
-
-    //
-    // Group Join
-    //
-
-    function bindGroupClick() {
-        $('#buttons :input').click(function() {
-            socket.group_join(username, class_id, $(this).index('#buttons :input') + 1);
-        });
+    $groups.empty();
+    for (var i in groups){
+        var button = '<input type="button" value="Group ';
+        button += groups[i].grp_name + ' - '+ groups[i].num;
+        button += '" /><br/>';
+        $groups.append(button);
     }
+    bindGroupClick();
+}
 
-    socket.add_event('group_join_response', $(window));
+function group_join_response(username, class_id, group_id) {
+    localStorage.setItem('group_id', group_id);
+    location.href = '/groups';
+}
 
-    $(window).on('group_join_response', function(e, d) {
-        localStorage.setItem('group_id', d.group_id);
-        location.href = '/groups';
+function logout_response() {
+    localStorage.removeItem('class_id');
+    localStorage.removeItem('username');
+    location.href = '/';
+}
+
+function bindGroupClick() {
+    $('#buttons :input').click(function() {
+        socket.group_join(username, class_id, $(this).index('#buttons :input') + 1);
     });
+}
 
-    //
-    // Logout 
-    //
+var socket = Student.Socket(io(location.host));
+var username = localStorage.getItem('username');
+var class_id = localStorage.getItem('class_id');
+var $logout_button = $('#logout');
 
-    $logout_button.click(function() {
-        socket.logout(username, class_id);
-    });
-
-    socket.add_event('logout_response', $logout_button);
-
-    $logout_button.on('logout_response', function(e, d) {
-        localStorage.removeItem('class_id');
-        localStorage.removeItem('username');
-        location.href = '/';
-    });
-
+$logout_button.click(function() {
+    socket.logout(username, class_id);
 });
+
+socket.groups_get(username, class_id);

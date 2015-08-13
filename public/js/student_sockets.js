@@ -1,6 +1,5 @@
 (function (Student, $) {
-    var sock,
-        listeners = [];
+    var listeners = [];
 
     Student.Socket = function (socket) {
         return init(socket);
@@ -49,6 +48,36 @@
                 socket.removeListener(listeners[i].name, listeners[i].func);
             }
         }
+       
+        socket.on('login_response', function(data) {
+            login_response(data.username, data.class_id);
+        });
+
+        socket.on('logout_response', function(data) {
+            logout_response();
+        });
+
+        socket.on('groups_get_response', function(data) {
+            groups_get_response(data.username, data.class_id, data.groups);
+        });
+
+        socket.on('group_join_response', function(data) {
+            group_join_response(data.username, data.class_id, data.group_id);
+        });
+
+        socket.on('group_leave_response', function(data) {
+            group_leave_response(data.username, data.class_id, data.group_id);
+        });
+
+        socket.on('group_info_response', function(data) {
+            group_info_response(data.username, data.class_id, data.group_id, 
+                                data.other_members);
+        });
+
+        socket.on('coordinate_change_response', function(data) {
+            coordinate_change_response(data.username, data.class_id, 
+                                       data.group_id, data.x_coord, data.y_coord);
+        });  
 
         return {
             add_event: add_event,
@@ -62,4 +91,5 @@
             remove_listeners: remove_listeners
         };
     }
+    
 })(window.Student = window.Student || {}, window.jQuery);

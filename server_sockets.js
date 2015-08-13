@@ -91,28 +91,28 @@ function server_sockets(server, client){
 
             socket.emit('group_leave_response', response);
         }); //resets user coordinates and removes them from the students array in current group, leaves your socket group
-
-        socket.on('group_info', function(data){
-            socket.join(data.class_id + "x");
-            socket.join(data.class_id + "x" +data.group_id);
+*/
+        socket.on('group_info', function(username, class_id, group_id){
+            socket.join(class_id + "x");
+            socket.join(class_id + "x" + group_id);
             var other_members = [];
-            if (data.logged_in){
-                for (var i in classes.available_classes[data.class_id][data.group_id]["students"]){
-                    var student_name = classes.available_classes[data.class_id][data.group_id]["students"][i];
+           // if (data.logged_in){
+                for (var i in classes.available_classes[class_id][group_id]["students"]){
+                    var student_name = classes.available_classes[class_id][group_id]["students"][i];
                     other_members.push({
                         member_name : student_name,
-                        member_x : classes.available_classes[data.class_id]["user"][student_name]["x"], 
-                        member_y : classes.available_classes[data.class_id]["user"][student_name]["y"]
+                        member_x : classes.available_classes[class_id]["user"][student_name]["x"], 
+                        member_y : classes.available_classes[class_id]["user"][student_name]["y"]
                     });
                 }
-            }
+         //   }
             var response = {
-                logged_in : data.logged_in,
-                username : data.username,
-                class_id : data.class_id,
-                group_id : data.group_id,
+                logged_in : logged_in,
+                username : username,
+                class_id : class_id,
+                group_id : group_id,
                 other_members : other_members,
-                group_leave : data.group_leave
+                group_leave : group_leave
             }
 
             var list_response = {
@@ -122,16 +122,16 @@ function server_sockets(server, client){
                 number : other_members.length
             }
 
-            io.sockets.to(data.class_id + "x").emit('groups_change_response', list_response);
+           // io.sockets.to(data.class_id + "x").emit('groups_change_response', list_response);
 
-            if (data.group_leave){
-                socket.broadcast.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
-            } else {
-                io.sockets.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
-            }
+       //     if (data.group_leave){
+       //         socket.broadcast.to(data.class_id + "x" + data.group_id).emit('groups_info_response', response);
+       //     } else {
+                io.sockets.to(class_id + "x" + group_id).emit('groups_info_response', response);
+       //     }
         }); //populates array other_members with the other students and their coordinates in the given group, 
             //emits different response if user is leaving or joining. updates number of members in the group in class.html
-
+/*
         socket.on('coordinate_change', function(data){
             classes.available_classes[data.class_id]["user"][data.username]["x"] += data.x_coord;
             classes.available_classes[data.class_id]["user"][data.username]["y"] += data.y_coord;
