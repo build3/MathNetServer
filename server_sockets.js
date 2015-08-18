@@ -11,7 +11,7 @@ function add_user_to_class(username, class_id) {
             classes.available_classes[class_id]["user"][username]["y"] = 0.0; 
         }
     }
-}//redirect to main groups page
+}
 
 function remove_user_from_class(username, class_id) {
     if (username in classes.available_classes[class_id]["user"]) {
@@ -189,7 +189,14 @@ function server_sockets(server, client){
             if (secret == "ucd_247") {
                 database.create_group(class_name, function(class_id, group_id) {
                     classes.available_classes[class_id][group_id] = {students:[], deleted:false};
+                    var groups = get_all_groups_from_class(class_id);
+                    var response = {
+                        username : "Admin",
+                        class_id : class_id,
+                        groups : groups
+                    }
                     socket.emit('add-group-response', {});
+                    io.sockets.to(class_id + "x").emit('groups_get_response', response);
                 });
             }
         }); 
@@ -199,16 +206,17 @@ function server_sockets(server, client){
         socket.on('delete-group', function(class_id, group_id, secret) {
             if (secret == "ucd_247") {
                 database.delete_group(class_id, group_id, function() {
-                    socket.emit('delete-group-response', {});
-           //         io.to(class_id + "x" + group_id)
-           //             .emit('group_leave_response', 
-           //                   {
-           //                       logged_in: true,
-           //                       username: "",
-           //                       class_id: class_id,
-           //                       group_id: group_id});
-
                     delete classes.available_classes[class_id][group_id];
+                    var groups = get_all_groups_from_class(class_id);
+                    var response = {
+                        username : "Admin",
+                        class_id : class_id,
+                        group_id : group_id,
+                        groups : groups
+                    }
+                    socket.emit('delete-group-response', {});
+                    io.sockets.to(class_id + "x" + group_id).emit('group_leave_response', response);
+                    io.sockets.to(class_id + "x").emit('groups_get_response', response);
                 });
             }
         });
