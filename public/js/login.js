@@ -1,10 +1,3 @@
-function login_response(username, class_id) {
-    localStorage.setItem('class_id', class_id);
-    localStorage.setItem('username', username);
-    location.href = '../class';
-    console.log(username, class_id);
-}
-
 $(function() {
     var $login_button = $('#login');
     var $class_id = $('#class_id');

@@ -76,7 +76,7 @@
 
         socket.on('coordinate_change_response', function(data) {
             coordinate_change_response(data.username, data.class_id, 
-                                       data.group_id, data.x_coord, data.y_coord);
+                                       data.group_id, data.x, data.y);
         });  
 
         return {
