@@ -50,43 +50,34 @@ exports.create_class = function(class_name, group_count, callback) {
 }
 
 // Creates a group belonging to the class found using class_name
-exports.create_group = function(class_name, callback) {
+exports.create_group = function(class_id, callback) {
     pool.getConnection(function(error, connection) {
-        console.log("Creating a group in " + class_name);
+        console.log("Creating a group in " + class_id);
 
         var query = "USE nsf_physics_7;";
         connection.query(query);
         // Get the class_id and create the groups for that class
-        var class_id;
-        query = "SELECT class_id FROM Classes WHERE class_name=?;";
-        connection.query(query, [class_name], function(error, rows) {
+        query = 
+            "SELECT group_id FROM Groups WHERE class_id=? ORDER BY group_id DESC;";
+
+        // Group IDs are incremented so we need to find out what is
+        // the highest id in the Groups table for the specific class
+        connection.query(query, [class_id], function(error, rows) {
             if(error) {
                 console.log(error);
             }
             else {
-                // Group IDs are incremented so we need to find out what is
-                // the highest id in the Groups table for the specific class
-                class_id = rows[0].class_id;
-                query =
-                    "SELECT group_id FROM Groups WHERE class_id=? ORDER BY group_id DESC;";
-                connection.query(query, [class_id], function(error, rows) {
-                    if(error) {
-                        console.log(error);
-                    }
-                    else {
-                        var group;
-                        // Insert a new group row using the next highest group id
-                        if(rows.length > 0) {
-                            group = parseInt(rows[0].group_id) + 1;
-                        }
-                        else {
-                            group = 1;
-                        }
-                        query = "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);";
-                        connection.query(query, [group, class_id]);
-                        callback(class_id, group);
-                    }
-                });
+                var group;
+                // Insert a new group row using the next highest group id
+                if(rows.length > 0) {
+                    group = parseInt(rows[0].group_id) + 1;
+                }
+                else {
+                    group = 1;
+                }
+                query = "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);";
+                connection.query(query, [group, class_id]);
+                callback(group);
             }
         });
         connection.release();

@@ -1,6 +1,7 @@
 var classes = require('./public/available_classes');
 var socketio = require('socket.io');
 var database = require('./database_actions');
+var hash = require('./hashes');
 module.exports = server_sockets;
 
 function add_user_to_class(username, class_id) {
@@ -170,14 +171,16 @@ function server_sockets(server, client){
         socket.on('add-class', function(class_name, group_count, secret) {
             if (secret == "ucd_247") {
                 database.create_class(class_name, group_count, function(class_id) {
+                    var id_hash = hash.add_hash(class_id);
                     console.log(class_id);
-                    classes.available_classes[class_id] = {}
+                    console.log(id_hash);
+                    classes.available_classes[id_hash] = {}
                     for(var i=0; i<group_count; i++) {
-                        classes.available_classes[class_id][i+1] = {students:[], deleted:false};
+                        classes.available_classes[id_hash][i+1] = {students:[], deleted:false};
                     }
-                    classes.available_classes[class_id]['user'] = {}
-                    classes.available_classes[class_id]['class_name'] = class_name;
-                    socket.emit('add-class-response', {class_id: class_id});
+                    classes.available_classes[id_hash]['user'] = {}
+                    classes.available_classes[id_hash]['class_name'] = class_name;
+                    socket.emit('add-class-response', {class_id: id_hash});
                 });
 
             }
@@ -185,18 +188,24 @@ function server_sockets(server, client){
 
         // This is the handler for the add-group client socket emission
         // It calls a database function to create a group for a class
-        socket.on('add-group', function(class_name, secret) {
+        socket.on('add-group', function(class_id, secret) {
             if (secret == "ucd_247") {
-                database.create_group(class_name, function(class_id, group_id) {
-                    classes.available_classes[class_id][group_id] = {students:[], deleted:false};
-                    var groups = get_all_groups_from_class(class_id);
-                    var response = {
-                        username : "Admin",
-                        class_id : class_id,
-                        groups : groups
-                    }
-                    socket.emit('add-group-response', {});
-                    io.sockets.to(class_id + "x").emit('groups_get_response', response);
+                hash.find_id(class_id, function(unhashed_id) {
+                    database.create_group(unhashed_id, function(group_id) {
+                        console.log(group_id, unhashed_id);
+                        classes.available_classes[class_id][group_id] = {students:[], deleted:false};
+                        var groups = get_all_groups_from_class(class_id);
+                        var response = {
+                            username : "Admin",
+                            class_id : class_id,
+                            groups : groups
+                        }
+                        //console.log(JSON.stringify(classes.available_classes, null, 2));
+                        //console.log(JSON.stringify(groups, null, 2));
+
+                        socket.emit('add-group-response', {});
+                        io.sockets.to(class_id + "x").emit('groups_get_response', response);
+                    });
                 });
             }
         }); 
@@ -205,18 +214,20 @@ function server_sockets(server, client){
         // It calls a database function to delete a group for a class
         socket.on('delete-group', function(class_id, group_id, secret) {
             if (secret == "ucd_247") {
-                database.delete_group(class_id, group_id, function() {
-                    delete classes.available_classes[class_id][group_id];
-                    var groups = get_all_groups_from_class(class_id);
-                    var response = {
-                        username : "Admin",
-                        class_id : class_id,
-                        group_id : group_id,
-                        groups : groups
-                    }
-                    socket.emit('delete-group-response', {});
-                    io.sockets.to(class_id + "x" + group_id).emit('group_leave_response', response);
-                    io.sockets.to(class_id + "x").emit('groups_get_response', response);
+                hash.find_id(class_id, function (unhashed_id) {
+                    database.delete_group(unhashed_id, group_id, function() {
+                        delete classes.available_classes[class_id][group_id];
+                        var groups = get_all_groups_from_class(class_id);
+                        var response = {
+                            username : "Admin",
+                            class_id : class_id,
+                            group_id : group_id,
+                            groups : groups
+                        }
+                        socket.emit('delete-group-response', {});
+                        io.sockets.to(class_id + "x" + group_id).emit('group_leave_response', response);
+                        io.sockets.to(class_id + "x").emit('groups_get_response', response);
+                    });
                 });
             }
         });
@@ -224,6 +235,8 @@ function server_sockets(server, client){
         // This is the handler for the leave-class client socket emission
         socket.on('leave-class', function(class_id, secret) {
             if (secret == "ucd_247") {
+                console.log(class_id);
+                hash.remove_hash(class_id);
                 delete classes.available_classes[class_id];
                 socket.emit('leave-class-response', {});
                 io.to(class_id + "x").emit('logout_response', {});

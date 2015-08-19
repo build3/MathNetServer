@@ -46,7 +46,7 @@ $(function() {
     });
 
     $class_name.on('add-class-response', function(e, d) {
-        class_id = parseInt(d.class_id);
+        class_id = d.class_id;
         $(this).html($class_input.val().trim() + " ID: " + class_id);
       //  $(this).html(" " + class_id);
     });
@@ -68,7 +68,7 @@ $(function() {
     //
     $add_button.click(function() {
         // Tell the server to create a new group for the class in the database
-        socket.add_group($class_input.val().trim(), $secret.val().trim());
+        socket.add_group(class_id, $secret.val().trim());
     });
 
     socket.add_event('add-group-response', $groups)
