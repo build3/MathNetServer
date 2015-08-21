@@ -48,6 +48,10 @@
                 socket.removeListener(listeners[i].name, listeners[i].func);
             }
         }
+
+        socket.on('server_error', function(data) {
+            server_error(data.message);      
+        });
        
         socket.on('login_response', function(data) {
             login_response(data.username, data.class_id);
