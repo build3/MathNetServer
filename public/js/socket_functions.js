@@ -1,6 +1,7 @@
 function server_error(error) {
     console.log(error);
     location.href = '/';
+    localStorage.setItem('error', error);
 }
 
 function login_response(username, class_id) {
