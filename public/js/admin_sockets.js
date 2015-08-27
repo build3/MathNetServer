@@ -13,23 +13,6 @@
     var init = function (socket) {
        // sock = socket;
 
-        // This listens for return events from the server
-        // Objects can call add_event to add themselves to the list 
-        // of listeners who get notified upon the event. It is essentially
-        // an observer pattern.
-        // Example using the create class button:
-        //   socket.addEvent('server-error', $('.create_class_button'));
-        //   $('create_class_button').on('server-error, function (error) {
-        //      console.log(error);
-        //   });
-        var add_event = function (name, obj) {
-            var proxy = function (d) {
-                $(obj).trigger(name, d);
-            };
-            socket.on(name, proxy);
-            listeners.push({name: name, func: proxy});
-        };
-
         // This function takes a class name and group count provided by the 
         // user. The socket then emits this data to the server to create 
         // the class and groups. 
@@ -57,20 +40,32 @@
             socket.emit('leave-class', class_id, secret);
         }
 
-        // Removes any listeners waiting on events 
-        var remove_listeners = function () {
-            for (var i = 0; i < listeners.length; i++) {
-                socket.removeListener(listeners[i].name, listeners[i].func);
-            }
-        }
+        socket.on('server_error', function(data) {
+            server_error(data.message);
+        });
+
+        socket.on('add-class-response', function(data) {
+            console.log('weeeeee');
+            add_class_response(data.class_id, data.class_name, data.group_count);
+        });
+
+        socket.on('add-group-response', function(data) {
+            add_group_response();
+        });
+
+        socket.on('delete-group-response', function(data) {
+            delete_group_response();
+        });
+
+        socket.on('leave-class-response', function(data) {
+            leave_class_response();
+        });
 
         return {
-            add_event: add_event,
             add_class: add_class,
             add_group: add_group,
             delete_group: delete_group,
             leave_class: leave_class,
-            remove_listeners: remove_listeners
         };
     };
 

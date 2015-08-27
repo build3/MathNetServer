@@ -31,54 +31,13 @@ $(function() {
         socket.add_class($class_input.val().trim(), parseInt($group_input.val().trim()), $secret.val().trim());
     });
 
-
-    socket.add_event('add-class-response', $create_view);
-    socket.add_event('add-class-response', $manage_view);
-    socket.add_event('add-class-response', $class_name);
-    socket.add_event('add-class-response', $groups);
-
-    $create_view.on('add-class-response', function(e, d) {
-        $(this).hide();
-    });
-    
-    $manage_view.on('add-class-response', function(e, d) {
-        $(this).show();
-    });
-
-    $class_name.on('add-class-response', function(e, d) {
-        class_id = d.class_id;
-        $(this).html($class_input.val().trim() + " ID: " + class_id);
-      //  $(this).html(" " + class_id);
-    });
-
-    $groups.on('add-class-response', function(e, d) {
-        // Generate html for each group
-        // Each group will have a delete button and a label
-        var groups_html = "";
-        var group_number = parseInt($group_input.val().trim());
-        for (var group=1; group < group_number+1; group++) {
-            groups_html += "<li>Group " + group + "</li>";
-        }
-        $(this).html(groups_html);
-    });
-
     //
     // ADD GROUP
     //
     //
     $add_button.click(function() {
         // Tell the server to create a new group for the class in the database
-        socket.add_group(class_id, $secret.val().trim());
-    });
-
-    socket.add_event('add-group-response', $groups)
-
-    $groups.on('add-group-response', function (e, d) {
-        // Append new group list element to html
-        var new_group = "";
-        var group_number = $('.groups li:last').index() + 2;        
-        new_group += "<li>Group " + group_number + "</li>";
-        $(this).append(new_group);
+        socket.add_group(localStorage.getItem('class_id'), $secret.val().trim());
     });
 
     //
@@ -87,33 +46,15 @@ $(function() {
     $delete_button.click(function() {
         // Only remove if there are groups
         if ($('.groups li').length > 0) {
-            socket.delete_group(class_id, $('.groups li:last').index() + 1, $secret.val().trim());
+            socket.delete_group(localStorage.getItem('class_id'), $('.groups li:last').index() + 1, $secret.val().trim());
         }
-    });
-
-    socket.add_event('delete-group-response', $groups);
-
-    $groups.on('delete-group-response', function(e, d) {
-        // Remove last group element in list
-        $('.groups li:last').remove();
     });
 
     //
     // LEAVE CLASS
     //
     $leave_button.click(function() {
-        socket.leave_class(class_id, $secret.val().trim());
+        socket.leave_class(localStorage.getItem('class_id'), $secret.val().trim());
     });
 
-    socket.add_event('leave-class-response', $create_view);
-    socket.add_event('leave-class-response', $manage_view);
-
-    // Switch to creation view now that class has been left
-    $create_view.on('leave-class-response', function(e, d) {
-        $(this).show();
-    });
-
-    $manage_view.on('leave-class-response', function(e, d) {
-        $(this).hide();
-    });
 });

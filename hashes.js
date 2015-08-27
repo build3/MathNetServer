@@ -1,20 +1,33 @@
+var Q = require('q');
+
 var hashes = {};
 
-exports.add_hash = function(class_id, callback) {
+exports.add_hash = function(class_id) {
+    var deferred = Q.defer();
     var hash = Math.random().toString(36).substr(2, 8).toLowerCase();   
     hashes[hash] = class_id;
-    return hash;
+    
+    deferred.resolve(hash);
+    return deferred.promise;
 }
 
-exports.remove_hash = function(hash, callback) {
+exports.remove_hash = function(hash) {
+    var deferred = Q.defer();
+
     delete hashes[hash];
+    deferred.resolve();
+    return deferred.promise;
 }
 
-exports.find_id = function(hash, callback) {
+exports.find_id = function(hash) {
+    var deferred = Q.defer();
+
     if (hash in hashes) {
-        callback(hashes[hash]);
+        deferred.resolve(hashes[hash]);
     }
     else {
-        callback(-1);
+        deferred.reject("Class ID does not exist");
     }
+
+    return deferred.promise;
 }

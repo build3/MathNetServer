@@ -1,4 +1,5 @@
 var mysql = require('mysql');
+var Q = require("q");
 var dbconfig = require('./config_database');
 
 var pool = mysql.createPool({
@@ -11,17 +12,18 @@ var pool = mysql.createPool({
 });
 
 // Creates row in Classes table using class_name
-exports.create_class = function(class_name, group_count, callback) {
+exports.create_class = function(class_name, group_count) {
+    var deferred = Q.defer();
+
     var class_id = 0;
     pool.getConnection(function(error, connection) {
-        console.log("Creating " + class_name);
         var query = "USE nsf_physics_7;";
         connection.query(query);
 
         query = "INSERT INTO Classes (class_name) VALUES (?);";
         connection.query(query, [class_name], function(error, rows) {
             if (error) {
-                console.log(error);
+                deferred.reject(error);
             }
             else {
                 // If the creation of the class was successful,
@@ -30,7 +32,7 @@ exports.create_class = function(class_name, group_count, callback) {
                 query = "SELECT class_id FROM Classes WHERE class_name=?;";
                 connection.query(query, [class_name], function(error, rows) {
                     if(error) {
-                        console.log(error);
+                        deferred.reject(error);
                     }
                     else {
                         class_id = rows[0].class_id;
@@ -39,20 +41,23 @@ exports.create_class = function(class_name, group_count, callback) {
                                 "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);"
                             connection.query(query, [group, class_id]);
                         }
-                        callback(class_id);
+                        deferred.resolve(class_id);
                     }
                 });
             }
         });
         connection.release();
     });
+
+    return deferred.promise;
     
 }
 
 // Creates a group belonging to the class found using class_name
-exports.create_group = function(class_id, callback) {
+exports.create_group = function(class_id) {
+    var deferred = Q.defer();
+
     pool.getConnection(function(error, connection) {
-        console.log("Creating a group in " + class_id);
 
         var query = "USE nsf_physics_7;";
         connection.query(query);
@@ -64,7 +69,7 @@ exports.create_group = function(class_id, callback) {
         // the highest id in the Groups table for the specific class
         connection.query(query, [class_id], function(error, rows) {
             if(error) {
-                console.log(error);
+                deferred.reject(error);
             }
             else {
                 var group;
@@ -77,17 +82,21 @@ exports.create_group = function(class_id, callback) {
                 }
                 query = "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);";
                 connection.query(query, [group, class_id]);
-                callback(group);
+                
+                deferred.resolve(group);
             }
         });
         connection.release();
     });
+
+    return deferred.promise;
 }
 
 // Deletes a group from the Groups table using a provided class id and group id
-exports.delete_group = function(class_id, group_id, callback) {
+exports.delete_group = function(class_id, group_id) {
+    var deferred = Q.defer();
+
     pool.getConnection(function(error, connection) {
-        console.log("Deleteing group " + group_id + " in class " + class_id);
         
         var query = "USE nsf_physics_7;";
         connection.query(query);
@@ -95,12 +104,14 @@ exports.delete_group = function(class_id, group_id, callback) {
         query = "DELETE FROM Groups WHERE class_id=? AND group_id=?;";
         connection.query(query, [class_id, group_id], function(error, rows) {
             if(error) {
-                console.log(error);
+                deferred.reject(error);
             }
             else {
-                callback();
+               deferred.resolve(); ;
             }
          });
          connection.release();
     });
+
+    return deferred.promise;
 }
