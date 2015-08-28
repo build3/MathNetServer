@@ -2,6 +2,7 @@ var classes = require('./public/available_classes');
 var socketio = require('socket.io');
 var database = require('./database_actions');
 var hash = require('./hashes');
+var logger = require('./public/js/logger_create');
 module.exports = server_sockets;
 
 function add_user_to_class(username, class_id) {
@@ -80,6 +81,7 @@ function server_sockets(server, client){
                 username : username,
                 class_id : class_id 
             }
+            logger.info(username + " has logged into class " + class_id);
             socket.emit('login_response', response);
         }); //authenticates class ID and makes sure there is not another user with the same name. 
             //adds in user info to datastructure if unique. else displays an error message
@@ -91,6 +93,7 @@ function server_sockets(server, client){
                 username : username,
                 class_id : class_id
             }
+            logger.info(username + " has logged out of class " + class_id);
             socket.emit('logout_response', {});
         }); 
 
@@ -114,6 +117,7 @@ function server_sockets(server, client){
                 group_id : group_id,
                 groups : groups
             }
+            logger.info(username + " has joined group " + group_id + " in class " + class_id);
             socket.emit('group_join_response', response);
             io.sockets.to(class_id + "x").emit('groups_get_response', response);
         }); //adds user to the students array of given group
@@ -128,6 +132,7 @@ function server_sockets(server, client){
                 group_id : group_id,
                 other_members : other_members
             }
+            logger.info(username + " has left group " + group_id + " in class " + class_id);
             socket.emit('group_leave_response', response);
             io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
         }); //resets user coordinates and removes them from the students array in current group, leaves your socket group
@@ -155,6 +160,7 @@ function server_sockets(server, client){
                 x : data.x,
                 y : data.y
             }
+            logger.info(username + " has changed their coordinates in  group " + group_id + " in class " + class_id + " to (" + data.x + "," + data.y + ") from  (" + (data.x-x) + "," + (data.y-y) + ")");
             io.sockets.to(class_id + "x" + group_id).emit('coordinate_change_response', response);
 
         }); //registers the change of coordinates in the datastructure and passes them back to group
@@ -180,6 +186,7 @@ function server_sockets(server, client){
                     }
                     classes.available_classes[id_hash]['user'] = {}
                     classes.available_classes[id_hash]['class_name'] = class_name;
+                    logger.info("Admin created class " + id_hash + "with " + group_count + " groups");
                     socket.emit('add-class-response', {class_id: id_hash});
                 });
 
@@ -202,7 +209,7 @@ function server_sockets(server, client){
                         }
                         //console.log(JSON.stringify(classes.available_classes, null, 2));
                         //console.log(JSON.stringify(groups, null, 2));
-
+                        logger.info("Admin added group to class " + class_id);
                         socket.emit('add-group-response', {});
                         io.sockets.to(class_id + "x").emit('groups_get_response', response);
                     });
@@ -224,6 +231,7 @@ function server_sockets(server, client){
                             group_id : group_id,
                             groups : groups
                         }
+                        logger.info("Admin deleted group from class " + class_id);
                         socket.emit('delete-group-response', {});
                         io.sockets.to(class_id + "x" + group_id).emit('group_leave_response', response);
                         io.sockets.to(class_id + "x").emit('groups_get_response', response);
@@ -238,6 +246,7 @@ function server_sockets(server, client){
                 console.log(class_id);
                 hash.remove_hash(class_id);
                 delete classes.available_classes[class_id];
+                logger.info("Admin left class " + class_id);
                 socket.emit('leave-class-response', {});
                 io.to(class_id + "x").emit('logout_response', {});
             }
