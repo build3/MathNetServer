@@ -313,7 +313,8 @@ function server_sockets(server, client){
                         groups : groups
                     }
                     socket.emit('group_join_response', response);
-                    io.sockets.to(class_id + "x").emit('groups_get_response', response);
+                    io.sockets.to(class_id + "x" + group_id).emit('groups_get_response', response);
+                    io.sockets.to('admin-' + class_id).emit('group_info_response', response);
                 }).fail(function(error) {
                     server_error(error, error);
                 });
@@ -334,6 +335,7 @@ function server_sockets(server, client){
                     }
                     socket.emit('group_leave_response', response);
                     io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
+                    io.sockets.to('admin-' + class_id).emit('group_info_response', response);
                 }).fail(function(error) {
                     server_error(error, error);
                 });
@@ -353,6 +355,7 @@ function server_sockets(server, client){
                     other_members : other_members,
                 }
                 io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
+                io.sockets.to('admin-' + class_id).emit('group_info_response', response);
             }).fail(function(error) {
                 server_error(error, error);
             });
@@ -360,15 +363,20 @@ function server_sockets(server, client){
             //emits different response if user is leaving or joining. updates number of members in the group in class.html
 
         socket.on('coordinate_change', function(username, class_id, group_id, x, y) {
+            var response;
             update_users_coordinates(username, class_id, x, y).then(function(data) {
-                var response = {
+                response = {
                     username : username,
                     class_id : class_id,
                     group_id : group_id,
                     x : data.x,
                     y : data.y
                 }
+                return get_info_of_group(class_id, group_id);
+            }).then(function(other_members) {
+                response.other_members = other_members;
                 io.sockets.to(class_id + "x" + group_id).emit('coordinate_change_response', response);
+                io.sockets.to('admin-' + class_id).emit('group_info_response', response);
             }).fail(function(error) {
                 server_error(error, error);
             });
@@ -387,6 +395,7 @@ function server_sockets(server, client){
             if (secret == "ucd_247") {
                 create_class(class_name, group_count)
                 .then(function(class_id) {
+                    socket.join('admin-' + class_id);
                     var response = {
                         class_id : class_id,
                         class_name : class_name,
@@ -445,6 +454,7 @@ function server_sockets(server, client){
             if (secret == "ucd_247") {
                 leave_class(class_id)
                 .then(function() {
+                    socket.leave('admin-' + class_id);
                     socket.emit('leave-class-response', {});
                     io.to(class_id + "x").emit('logout_response', {});
                 }).fail(function(error) {

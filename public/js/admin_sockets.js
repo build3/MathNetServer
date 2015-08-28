@@ -40,6 +40,10 @@
             socket.emit('leave-class', class_id, secret);
         }
 
+        var disconnect = function() {
+            socket.disconnect();
+        };
+
         socket.on('server_error', function(data) {
             server_error(data.message);
         });
@@ -61,11 +65,16 @@
             leave_class_response();
         });
 
+        socket.on('group_info_response', function(data) {
+            group_info_response(data.group_id, data.other_members);
+        });
+
         return {
             add_class: add_class,
             add_group: add_group,
             delete_group: delete_group,
             leave_class: leave_class,
+            disconnect: disconnect
         };
     };
 

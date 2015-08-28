@@ -35,6 +35,10 @@
             socket.emit('coordinate_change', username, class_id, group_id, x, y);
         }
 
+        var disconnect = function() {
+            socket.disconnect();
+        }
+
         socket.on('server_error', function(data) {
             server_error(data.message);      
         });
@@ -77,6 +81,7 @@
             group_leave: group_leave,
             group_info: group_info,
             coordinate_change: coordinate_change,
+            disconnect: disconnect
         };
     }
     

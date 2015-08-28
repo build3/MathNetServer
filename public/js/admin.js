@@ -16,13 +16,13 @@ $(function() {
 
     // Connect to the server using the Admin.Socket object constructor
     var socket = Admin.Socket(io(location.host));
+    
     var class_id;
-
+    
     var $secret = $('.secret'); // holds secret needed to allow socket calls
     // Start with create view visible and manage view hidden
     $manage_view.hide();
 
-   
     //
     // ADD CLASS
     //
