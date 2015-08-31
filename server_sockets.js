@@ -264,7 +264,8 @@ function server_sockets(server, client){
     io.on('connection', function(socket) {
 
         socket.on('login', function(username, class_id) {
-            add_user_to_class(username, class_id).then(function() {
+            add_user_to_class(username, class_id)
+            .then(function() {
                 var response = {
                     username : username,
                     class_id : class_id 
@@ -277,7 +278,8 @@ function server_sockets(server, client){
             //adds in user info to datastructure if unique. else displays an error message
 
         socket.on('logout', function(username, class_id) {
-            remove_user_from_class(username, class_id).then(function() { 
+            remove_user_from_class(username, class_id)
+            .then(function() { 
                 socket.leave(class_id + "x");
                 var response = {
                     username : username,
@@ -290,7 +292,8 @@ function server_sockets(server, client){
         }); 
 
         socket.on('groups_get', function(username, class_id) {
-            get_all_groups_from_class(class_id).then(function(groups) {
+            get_all_groups_from_class(class_id)
+            .then(function(groups) {
                 socket.join(class_id + "x");
                 var response = {
                     username : username,
@@ -304,48 +307,47 @@ function server_sockets(server, client){
         }); //populates groups array with groups with the given class id and returns it to client.
 
         socket.on('group_join', function(username, class_id, group_id) {
-            add_user_to_group(username, class_id, group_id).then(function() {
-                get_all_groups_from_class(class_id).then(function(groups) {
-                    var response = {
-                        username : username,
-                        class_id : class_id,
-                        group_id : group_id,
-                        groups : groups
-                    }
-                    socket.emit('group_join_response', response);
-                    io.sockets.to(class_id + "x" + group_id).emit('groups_get_response', response);
-                    io.sockets.to('admin-' + class_id).emit('group_info_response', response);
-                }).fail(function(error) {
-                    server_error(error, error);
-                });
+            add_user_to_group(username, class_id, group_id)
+            .then(function() {
+               return get_all_groups_from_class(class_id);
+            }).then(function(groups) {
+                var response = {
+                    username : username,
+                    class_id : class_id,
+                    group_id : group_id,
+                    groups : groups
+                }
+                socket.emit('group_join_response', response);
+                io.sockets.to(class_id + "x" + group_id).emit('groups_get_response', response);
+                io.sockets.to('admin-' + class_id).emit('group_info_response', response);
             }).fail(function(error) {
                 server_error(error, error);
             });
         }); //adds user to the students array of given group
 
         socket.on('group_leave', function(username, class_id, group_id) {
-            remove_user_from_group(username, class_id, group_id).then(function() {
+            remove_user_from_group(username, class_id, group_id)
+            .then(function() {
                 socket.leave(class_id + "x" + group_id);
-                get_info_of_group(class_id, group_id).then(function(other_members) {
-                    var response = {
-                        username : username,
-                        class_id : class_id,
-                        group_id : group_id,
-                        other_members : other_members
-                    }
-                    socket.emit('group_leave_response', response);
-                    io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
-                    io.sockets.to('admin-' + class_id).emit('group_info_response', response);
-                }).fail(function(error) {
-                    server_error(error, error);
-                });
+                return get_info_of_group(class_id, group_id)
+            }).then(function(other_members) {
+                var response = {
+                    username : username,
+                    class_id : class_id,
+                    group_id : group_id,
+                    other_members : other_members
+                }
+                socket.emit('group_leave_response', response);
+                io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
+                io.sockets.to('admin-' + class_id).emit('group_info_response', response);
             }).fail(function(error) {
                 server_error(error, error);
             });
         }); //resets user coordinates and removes them from the students array in current group, leaves your socket group
 
         socket.on('group_info', function(username, class_id, group_id) {
-            get_info_of_group(class_id, group_id).then(function(other_members) {
+            get_info_of_group(class_id, group_id)
+            .then(function(other_members) {
                 socket.join(class_id + "x");
                 socket.join(class_id + "x" + group_id);
                 var response = {
@@ -364,7 +366,8 @@ function server_sockets(server, client){
 
         socket.on('coordinate_change', function(username, class_id, group_id, x, y) {
             var response;
-            update_users_coordinates(username, class_id, x, y).then(function(data) {
+            update_users_coordinates(username, class_id, x, y)
+            .then(function(data) {
                 response = {
                     username : username,
                     class_id : class_id,

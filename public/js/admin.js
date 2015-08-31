@@ -45,8 +45,8 @@ $(function() {
     //
     $delete_button.click(function() {
         // Only remove if there are groups
-        if ($('.groups li').length > 0) {
-            socket.delete_group(localStorage.getItem('class_id'), $('.groups li:last').index() + 1, $secret.val().trim());
+        if ($('.groups > li').length > 0) {
+            socket.delete_group(localStorage.getItem('class_id'), $('.groups > li:last').index() + 1, $secret.val().trim());
         }
     });
 

@@ -28,7 +28,7 @@ function add_group_response() {
     
     $('.error_message').html('');
     var new_group = "";
-    var group_number = $('.groups li:last').index() + 2;
+    var group_number = $('.groups > li:last').index() + 2;
     new_group += "<li>Group " + group_number;
     new_group += "<ul class='g" + group_number + "'></ul></li>";
     $groups.append(new_group);
@@ -36,7 +36,7 @@ function add_group_response() {
 
 function delete_group_response() {
     $('.error_message').html('');
-    $('.groups li:last').remove(); 
+    $('.groups > li:last').remove(); 
 }
 
 function leave_class_response() {
