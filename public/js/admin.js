@@ -19,7 +19,9 @@ $(function() {
     
     var class_id;
     
-    var $secret = $('.secret'); // holds secret needed to allow socket calls
+    // Holds secret needed to allow socket calls
+    var $secret = $('.secret');     
+    
     // Start with create view visible and manage view hidden
     $manage_view.hide();
 

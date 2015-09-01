@@ -40,9 +40,14 @@
             socket.emit('leave-class', class_id, secret);
         }
 
+        // This function disconnects the socket
         var disconnect = function() {
             socket.disconnect();
         };
+
+        //
+        // Socket event handlers
+        //
 
         socket.on('server_error', function(data) {
             server_error(data.message);

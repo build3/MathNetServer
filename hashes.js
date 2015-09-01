@@ -1,7 +1,9 @@
 var Q = require('q');
 
+// Holds the hashed strings which act as class ids
 var hashes = {};
 
+// Creates a hash that is added to JSON object
 exports.add_hash = function(class_id) {
     var deferred = Q.defer();
     var hash = Math.random().toString(36).substr(2, 8).toLowerCase();   
@@ -11,6 +13,7 @@ exports.add_hash = function(class_id) {
     return deferred.promise;
 }
 
+// Removes hash from the JSON object
 exports.remove_hash = function(hash) {
     var deferred = Q.defer();
 
@@ -19,6 +22,7 @@ exports.remove_hash = function(hash) {
     return deferred.promise;
 }
 
+// Finds class id based off hash
 exports.find_id = function(hash) {
     var deferred = Q.defer();
 

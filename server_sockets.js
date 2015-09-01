@@ -2,11 +2,22 @@ var classes = require('./public/available_classes');
 var socketio = require('socket.io');
 var database = require('./database_actions');
 var hash = require('./hashes');
+
+// Q allows use of promises. 
+// First, a promise is deferred.
+// Then it is either rejected with an error message or  resolved with any that 
+// needs to be returned.
 var Q = require("q");
+
 module.exports = server_sockets;
 
+// Takes a class id and username.
+// If invalid, returns an error.
+// If valid, a new user entry is created for the class in the global 
+// datastructure.
 function add_user_to_class(username, class_id) {
     var deferred = Q.defer();
+   
     if (username === "" || class_id === "") {
         deferred.reject('Invalid class ID or username.');
         return deferred.promise;
@@ -30,6 +41,10 @@ function add_user_to_class(username, class_id) {
     return deferred.promise;
 }
 
+// Takes a class id and username.
+// If invalid, returns an error.
+// If valid, the given user is deleted from the class in the global 
+// datastructure.
 function remove_user_from_class(username, class_id) {
     var deferred = Q.defer();
     
@@ -49,6 +64,10 @@ function remove_user_from_class(username, class_id) {
     return deferred.promise;
 }
 
+// Takes a class id.
+// If invalid, returns an error.
+// If valid, a JSON string of all groups and their contents in the class is 
+// returned. The data is retrieved from the global datastructure.
 function get_all_groups_from_class(class_id) {
     var deferred = Q.defer();
     if (class_id in classes.available_classes) {
@@ -71,14 +90,21 @@ function get_all_groups_from_class(class_id) {
     return deferred.promise;
 }
 
+// Takes a username, class id, and group id.
+// If invalid, returns an error.
+// If valid, a new user entry is created for the class group in the global 
+// datastructure.
 function add_user_to_group(username, class_id, group_id) {
     var deferred = Q.defer();
 
     if (class_id in classes.available_classes) {
         if (group_id in classes.available_classes[class_id]) {
             if (username in classes.available_classes[class_id]["user"]) {
-            classes.available_classes[class_id][group_id]["students"].push(username);
-            deferred.resolve();
+                classes.available_classes[class_id][group_id]["students"].push(username);
+                classes.available_classes[class_id]["user"][username]["x"] = 0.0;
+                classes.available_classes[class_id]["user"][username]["y"] = 0.0;
+
+                deferred.resolve();
             }
             else {
                 deferred.reject('Username ' + username + ' is invalid.');
@@ -95,6 +121,10 @@ function add_user_to_group(username, class_id, group_id) {
     return deferred.promise;
 }
 
+// Takes a username, class id, and group id.
+// If invalid, returns an error.
+// If valid, the given user is deleted from the class group in the global
+// datastructure.
 function remove_user_from_group(username, class_id, group_id) {
     var deferred = Q.defer();
     
@@ -129,6 +159,10 @@ function remove_user_from_group(username, class_id, group_id) {
     return deferred.promise;
 }
 
+// Takes a class id and group id
+// If invalid, returns an error.
+// If valid, a JSON string of all users and their contents in the class group
+// is returned. The data is retrieved from the global datastructure.
 function get_info_of_group(class_id, group_id) {
     var deferred = Q.defer();
     var other_members = [];
@@ -156,6 +190,10 @@ function get_info_of_group(class_id, group_id) {
     return deferred.promise;
 }
 
+// Takes a username, class id, and x,y coordinates movements.
+// If invalid, returns an error.
+// If valid, a JSON string of the given user's new updated coordinates is 
+// returned. The data is updated in the global datastructure.
 function update_users_coordinates(username, class_id, x, y) {
     var deferred = Q.defer();
 
@@ -186,6 +224,11 @@ function update_users_coordinates(username, class_id, x, y) {
     return deferred.promise;
 }
 
+// Takes a class name and group count.
+// If invalid, returns an error.
+// If valid, create a class of the given class name in the database and return
+// a hashed string of the created class id. A new class entry is also made in 
+// the global datastructure.
 function create_class(class_name, group_count){
     var deferred = Q.defer();
 
@@ -209,6 +252,11 @@ function create_class(class_name, group_count){
     return deferred.promise;
 }
 
+// Takes a class id.
+// If invalid, returns an error.
+// If valid, create a group for the given class in the database and return all
+// the groups in the class. A new group entry for the class is also made in the
+// global datastructure.
 function create_group(class_id) {
     var deferred = Q.defer();
 
@@ -227,6 +275,10 @@ function create_group(class_id) {
     return deferred.promise;
 }
 
+// Takes a class id and group id.
+// If invalid, returns an error.
+// If valid, deletes the given group in the class from the database and global
+// datastructure.
 function delete_group(class_id, group_id) {
     var deferred = Q.defer();
 
@@ -244,6 +296,9 @@ function delete_group(class_id, group_id) {
           return deferred.promise;
 }
 
+// Takes a class id.
+// If invalid, returns an error.
+// If valid, deletes the given class from the global datastructure.
 function leave_class(class_id) {
     var deferred = Q.defer();
 
@@ -258,14 +313,28 @@ function leave_class(class_id) {
     return deferred.promise;
 }
 
+// This function holds all event handlers for sockets.
 function server_sockets(server, client){
 
     var io = socketio.listen(server);
+   
     io.on('connection', function(socket) {
+          
+        // SERVER_ERROR
+        // This function will notify the client when an error has occurred 
+        // Emits server_error to the socket that triggered the error
+        function server_error(error, message) {
+            console.log(error);
+            socket.emit('server_error', {message: message});
+        };
 
+        // LOGIN
+        // Socket joins room using class id
+        // Emits login_response to socket that triggered login
         socket.on('login', function(username, class_id) {
             add_user_to_class(username, class_id)
             .then(function() {
+                socket.join(class_id + "x");
                 var response = {
                     username : username,
                     class_id : class_id 
@@ -274,9 +343,13 @@ function server_sockets(server, client){
             }).fail(function(error) {
                 server_error(error, error); 
             });
-        }); //authenticates class ID and makes sure there is not another user with the same name. 
-            //adds in user info to datastructure if unique. else displays an error message
+        }); // authenticates class ID and makes sure there is not another user 
+        //     with the same name. adds in user info to datastructure if unique.
+        //     else displays an error message
 
+        // LOGOUT
+        // Socket leaves room using class id
+        // Emits logout_response to socket that triggered logout
         socket.on('logout', function(username, class_id) {
             remove_user_from_class(username, class_id)
             .then(function() { 
@@ -291,6 +364,8 @@ function server_sockets(server, client){
             });
         }); 
 
+        // GROUPS_GET
+        // Emits groups_get_response to all sockets in class room
         socket.on('groups_get', function(username, class_id) {
             get_all_groups_from_class(class_id)
             .then(function(groups) {
@@ -304,13 +379,20 @@ function server_sockets(server, client){
             }).fail(function(error) {
                 server_error(error, error);
             });
-        }); //populates groups array with groups with the given class id and returns it to client.
+        }); // populates groups array with groups with the given class id and 
+        //     returns it to client.
 
+        // GROUP_JOIN
+        // Socket joins room using class and group ids
+        // Emits group_join_response to socket that triggered group_join
+        // Emits groups_get_response to all sockets in the class group room
+        // Emits group_info_response to the admin socket of class
         socket.on('group_join', function(username, class_id, group_id) {
             add_user_to_group(username, class_id, group_id)
             .then(function() {
                return get_all_groups_from_class(class_id);
-            }).then(function(groups) {
+            }).then(function(groups) { 
+                socket.join(class_id + "x" + group_id);
                 var response = {
                     username : username,
                     class_id : class_id,
@@ -323,8 +405,13 @@ function server_sockets(server, client){
             }).fail(function(error) {
                 server_error(error, error);
             });
-        }); //adds user to the students array of given group
+        }); // adds user to the students array of given group
 
+        // GROUP_LEAVE
+        // Socket leaves room using class and group ids
+        // Emits group_leave_response to socket that triggered group_leave
+        // Emits group_info_response to all sockets in the class group room and
+        // to the admin socket of the class
         socket.on('group_leave', function(username, class_id, group_id) {
             remove_user_from_group(username, class_id, group_id)
             .then(function() {
@@ -343,8 +430,13 @@ function server_sockets(server, client){
             }).fail(function(error) {
                 server_error(error, error);
             });
-        }); //resets user coordinates and removes them from the students array in current group, leaves your socket group
+        }); // resets user coordinates and removes them from the students array
+        //     in current group, leaves your socket group
 
+        // GROUP_INFO
+        // Socket joins two rooms using class id and group id
+        // Emits group_info_response to all sockets in the class group room and
+        // to the admin socket of the class
         socket.on('group_info', function(username, class_id, group_id) {
             get_info_of_group(class_id, group_id)
             .then(function(other_members) {
@@ -361,9 +453,13 @@ function server_sockets(server, client){
             }).fail(function(error) {
                 server_error(error, error);
             });
-        }); //populates array other_members with the other students and their coordinates in the given group, 
-            //emits different response if user is leaving or joining. updates number of members in the group in class.html
+        }); // populates array other_members with the other students and their 
+        //     coordinates in the given group 
 
+        // COORDINATE_CHANGE
+        // Emits coordinate_change_response to all sockets in the class group 
+        // room
+        // Emits group_info_response to admin socket of the class
         socket.on('coordinate_change', function(username, class_id, group_id, x, y) {
             var response;
             update_users_coordinates(username, class_id, x, y)
@@ -385,15 +481,11 @@ function server_sockets(server, client){
             });
         }); //registers the change of coordinates in the datastructure and passes them back to group
        
-        // This function will notify the client when an error has occurred 
-        // due to a client socket emission
-        function server_error(error, message) {
-            console.log(error);
-            socket.emit('server_error', {message: message});
-        };
-
+        // ADD-CLASS
         // This is the handler for the add-class client socket emission
         // It calls a database function to create a class and groups
+        // Socket joins an admin room using class id
+        // Emits add-class-response to the socket that triggered add-class 
         socket.on('add-class', function(class_name, group_count, secret) {
             if (secret == "ucd_247") {
                 create_class(class_name, group_count)
@@ -411,8 +503,11 @@ function server_sockets(server, client){
             }
         });
 
+        // ADD-GROUP
         // This is the handler for the add-group client socket emission
         // It calls a database function to create a group for a class
+        // Emits add-group-response to socket that triggered add-group
+        // Emits groups_get_response to all sockets in the class room
         socket.on('add-group', function(class_id, secret) {
             if (secret == "ucd_247") {
                 create_group(class_id)
@@ -422,7 +517,6 @@ function server_sockets(server, client){
                         class_id : class_id,
                         groups : groups
                     }
-
                     socket.emit('add-group-response', {});
                     io.sockets.to(class_id + "x").emit('groups_get_response', response);
                 }).fail(function(error) {
@@ -431,8 +525,12 @@ function server_sockets(server, client){
             }
         }); 
 
+        // DELETE-GROUP
         // This is the handler for the delete-group client socket emission
         // It calls a database function to delete a group for a class
+        // Emits delete-group-response to socket that triggered delete-group
+        // Emits group_leave_response to all sockets in class group room
+        // Emits groups_get_response to all sockets in class room
         socket.on('delete-group', function(class_id, group_id, secret) {
             if (secret == "ucd_247") {
                 delete_group(class_id, group_id)
@@ -452,7 +550,11 @@ function server_sockets(server, client){
             }
         });
 
+        // LEAVE-CLASS
         // This is the handler for the leave-class client socket emission
+        // Socket leaves an admin room using class id
+        // Emits leave-class-response to socket that triggered leave-classs
+        // Emits logout_response to all sockets in class room
         socket.on('leave-class', function(class_id, secret) {
             if (secret == "ucd_247") {
                 leave_class(class_id)

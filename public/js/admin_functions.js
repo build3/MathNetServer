@@ -1,6 +1,10 @@
+// Handles errors on the client side
 function server_error(error) {
-    $('.error_message').html(JSON.stringify(error)); }
+    $('.error_message').html(JSON.stringify(error)); 
+}
 
+// Changes admin page view from creation to management
+// Creates starting groups 
 function add_class_response(class_id, class_name, group_count) {
     var $create_view = $('.create_view');
     var $manage_view = $('.manage_view');
@@ -23,6 +27,7 @@ function add_class_response(class_id, class_name, group_count) {
     $groups.html(groups_html);
 }
 
+// Adds a group to the end of the list
 function add_group_response() {
     var $groups = $('.groups');
     
@@ -34,11 +39,13 @@ function add_group_response() {
     $groups.append(new_group);
 }
 
+// Deletes the last group from the list
 function delete_group_response() {
     $('.error_message').html('');
     $('.groups > li:last').remove(); 
 }
 
+// Changes view from management to creation of classes
 function leave_class_response() {
     var $create_view = $('.create_view');
     var $manage_view = $('.manage_view');
@@ -49,6 +56,8 @@ function leave_class_response() {
     $manage_view.hide();
 }
 
+// Adds user information to the proper group
+// Updates the data every time there is a change takes place
 function group_info_response(group_id, group) {
     var $people = $('.g' + group_id);
     $people.html('');
