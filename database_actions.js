@@ -115,3 +115,27 @@ exports.delete_group = function(class_id, group_id) {
 
     return deferred.promise;
 }
+
+// Updates the Class table to add hashed id to class row
+exports.add_hashed_id = function(class_id, hashed_id) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+
+        var query = "USE nsf_physics_7;";
+        connection.query(query);
+
+        query = "UPDATE Classes SET hashed_id=? WHERE class_id=?;";
+        connection.query(query, [hashed_id, class_id], function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+                deferred.resolve();
+            }
+        });
+        connection.release();
+    });
+
+    return deferred.promise;
+}

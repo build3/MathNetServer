@@ -6,6 +6,9 @@ var http = require('http').Server(app);
 var io = require('socket.io')(http);
 var mysql = require('mysql');
 var dbconfig = require('../config_database');
+var hash = require('../hashes');
+
+var ids = {}
 
 var connection = mysql.createConnection(dbconfig.connection);
 connection.connect();
@@ -20,9 +23,11 @@ connection.query(classQuery, function(err, rows, fields){
     if (err)
         throw err;
     for (var i in rows){
-        available_classes[rows[i].class_id] = {}
-        available_classes[rows[i].class_id]["class_name"] = rows[i].class_name;
-        available_classes[rows[i].class_id]["user"] = {};
+        hash.insert_id_and_hash(rows[i].class_id, rows[i].hashed_id)
+        ids[rows[i].class_id] = rows[i].hashed_id;
+        available_classes[rows[i].hashed_id] = {}
+        available_classes[rows[i].hashed_id]["class_name"] = rows[i].class_name;
+        available_classes[rows[i].hashed_id]["user"] = {};
     }//creates an array for 
     
 });
@@ -30,17 +35,15 @@ var groupQuery = "SELECT * FROM Groups";
 connection.query(groupQuery, function(err, rows, fields){
     if (err)
         throw err;
-    for (var j in rows){
-        if (rows[j].class_id in available_classes) {
-            available_classes[rows[j].class_id][rows[j].group_id] = {};
-            available_classes[rows[j].class_id][rows[j].group_id]["deleted"] = false;
-            available_classes[rows[j].class_id][rows[j].group_id]["students"] = [];
+    for (var j in rows) {
+        var hash = ids[rows[j].class_id];
+        if (hash in available_classes) {
+            available_classes[hash][rows[j].group_id] = {};
+            available_classes[hash][rows[j].group_id]["deleted"] = false;
+            available_classes[hash][rows[j].group_id]["students"] = [];
         }
     }
 });
-
-    //query the database for classes and groups 
-
-
+//query the database for classes and groups 
 
 connection.end();

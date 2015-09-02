@@ -15,6 +15,7 @@ connection.query('SET foreign_key_checks = 0;');
 connection.query('\
                  CREATE TABLE IF NOT EXISTS `' + dbconfig.database + '`.`' + dbconfig.class_table + '` ( \
                  `class_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, \
+                 `hashed_id` VARCHAR(8), \
                  `class_name` VARCHAR(40) NOT NULL, \
                  `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
                  PRIMARY KEY (`class_id`), \
