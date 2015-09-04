@@ -20,6 +20,12 @@
             socket.emit('add-class', class_name, group_count, secret);
         };
 
+        // This function takes a class id provided by the user. The socket then
+        // emits this data to the server to join a class.
+        var join_class = function (class_id, secret) {
+            socket.emit('join-class', class_id, secret);
+        };
+
         // This function tabkes a class name provided by the user.
         // The socket then emits this data to the server to create a 
         // group for the class.
@@ -76,6 +82,7 @@
 
         return {
             add_class: add_class,
+            join_class: join_class,
             add_group: add_group,
             delete_group: delete_group,
             leave_class: leave_class,

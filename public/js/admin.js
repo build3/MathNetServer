@@ -7,7 +7,9 @@ $(function() {
     var $create_button = $('.create_button'); // Button for creation of class
     var $class_input = $('.class_input'); // Input for class name
     var $group_input = $('.group_input'); // Input for # of groups
+    var $class_id = $('.class_id'); // Input for class id
 
+    var $join_button = $('.join_button'); // Button for joining a class
     var $leave_button = $('.leave_button'); // Button for leaving a class
     var $class_name = $('.class_name'); // Header line for class name
     var $groups = $('.groups'); // List that will hold groups
@@ -31,6 +33,13 @@ $(function() {
     $create_button.click(function() {
         // Tell the server to create a class in the database
         socket.add_class($class_input.val().trim(), parseInt($group_input.val().trim()), $secret.val().trim());
+    });
+
+    //
+    // JOIN CLASS
+    //
+    $join_button.click(function() {
+        socket.join_class($class_id.val().trim(), $secret.val().trim());
     });
 
     //

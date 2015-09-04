@@ -254,6 +254,29 @@ function create_class(class_name, group_count){
 
 // Takes a class id.
 // If invalid, returns an error.
+// If valid, retrieve class name and group count from global datastructure.
+function join_class(class_id) {
+    var deferred = Q.defer();
+
+    if (class_id in classes.available_classes) {
+        var group_count = Object.keys(classes.available_classes[class_id]).length - 2;
+        var class_name = classes.available_classes[class_id]['class_name'];
+
+        var data = {
+            group_count: group_count,
+            class_name: class_name
+        }
+        deferred.resolve(data);
+    }
+    else {
+        deferred.reject('Class ID ' + class_id + ' does not exist.');
+    }
+
+    return deferred.promise;
+}
+
+// Takes a class id.
+// If invalid, returns an error.
 // If valid, create a group for the given class in the database and return all
 // the groups in the class. A new group entry for the class is also made in the
 // global datastructure.
@@ -302,14 +325,13 @@ function delete_group(class_id, group_id) {
 function leave_class(class_id) {
     var deferred = Q.defer();
 
-    hash.remove_hash(class_id)
-    .then(function() {
-        delete classes.available_classes[class_id];
-        deferred.resolve();
-    }).fail(function(error) {
-        deferred.reject(error);
-    });
-
+//    hash.remove_hash(class_id)
+//    .then(function() {
+//        deferred.resolve();
+//    }).fail(function(error) {
+//        deferred.reject(error);
+//    });
+    deferred.resolve();
     return deferred.promise;
 }
 
@@ -503,6 +525,28 @@ function server_sockets(server, client){
             }
         });
 
+        // JOIN-CLASS
+        // This is the handler for the join-class client socket emission
+        // It calls a function to get the number of groups in the class from 
+        // the global datastructure.
+        // Emits add-class-response to the socket that triggered join-class
+        socket.on('join-class', function(class_id, secret) {
+            if (secret == "ucd_247") {
+                join_class(class_id)
+                .then(function(data) {
+                    socket.join('admin-' + class_id);
+                    var response = {
+                        class_id : class_id,
+                        class_name : data.class_name,
+                        group_count : data.group_count
+                    }
+                    socket.emit('add-class-response', response);
+                }).fail(function(error) {
+                    server_error(error, error);
+                });
+            }
+        });
+
         // ADD-GROUP
         // This is the handler for the add-group client socket emission
         // It calls a database function to create a group for a class
@@ -561,7 +605,7 @@ function server_sockets(server, client){
                 .then(function() {
                     socket.leave('admin-' + class_id);
                     socket.emit('leave-class-response', {});
-                    io.to(class_id + "x").emit('logout_response', {});
+                   // io.to(class_id + "x").emit('logout_response', {});
                 }).fail(function(error) {
                     server_error(error);
                 });
