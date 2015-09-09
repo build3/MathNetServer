@@ -3,6 +3,7 @@ $(function() {
     // Initialize variables
     var $create_view = $('.create_view'); // Div holding class creation view
     var $manage_view = $('.manage_view'); // Div holding class management view
+    var $settings_view = $('.settings_view'); // Div holding class settings view
 
     var $create_button = $('.create_button'); // Button for creation of class
     var $class_input = $('.class_input'); // Input for class name
@@ -15,6 +16,9 @@ $(function() {
     var $groups = $('.groups'); // List that will hold groups
     var $add_button = $('.add_button'); // Button for adding a group
     var $delete_button = $('.delete_button'); // Button for deleting a group
+    
+    var $save_button = $('.save_button'); // Button for saving class settings
+    var $settings = $('.setting');
 
     // Connect to the server using the Admin.Socket object constructor
     var socket = Admin.Socket(io(location.host));
@@ -26,6 +30,7 @@ $(function() {
     
     // Start with create view visible and manage view hidden
     $manage_view.hide();
+    $settings_view.hide();
 
     //
     // ADD CLASS
@@ -68,4 +73,14 @@ $(function() {
         socket.leave_class(localStorage.getItem('class_id'), $secret.val().trim());
     });
 
+    //
+    // SAVE SETTTINGS
+    //
+    $save_button.click(function() {
+        var data = {};
+        for(var i=0; i<$settings.length; i++) {
+            data[$settings[i].name] = $settings[i].checked;
+        }
+        console.log(JSON.stringify(data));
+    });
 });

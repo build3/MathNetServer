@@ -234,7 +234,6 @@ function create_class(class_name, group_count){
 
     database.create_class(class_name, group_count)
     .then(function(class_id) {
-        console.log(class_id);
         return hash.add_hash(class_id);
     }).then(function(id_hash) {
         classes.available_classes[id_hash] = {}

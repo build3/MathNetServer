@@ -8,6 +8,7 @@ function server_error(error) {
 function add_class_response(class_id, class_name, group_count) {
     var $create_view = $('.create_view');
     var $manage_view = $('.manage_view');
+    var $settings_view = $('.settings_view');
     var $class_name = $('.class_name');
     var $groups = $('.groups');
 
@@ -16,6 +17,7 @@ function add_class_response(class_id, class_name, group_count) {
 
     $create_view.hide();
     $manage_view.show();
+    $settings_view.show();
 
     $class_name.html(class_name + " ID: " + class_id);
     var groups_html = "";
@@ -49,11 +51,13 @@ function delete_group_response() {
 function leave_class_response() {
     var $create_view = $('.create_view');
     var $manage_view = $('.manage_view');
+    var $settings_view = $('.settings_view');
     
     $('.error_message').html('');
     
     $create_view.show();
     $manage_view.hide();
+    $settings_view.hide();
 }
 
 // Adds user information to the proper group
