@@ -4,11 +4,15 @@ var winston = require('winston');
 var logger = new (winston.Logger)({
     transports: [
       new (winston.transports.File)({
-        'timestamp':true,
+        'timestamp': false,
         name: 'logs',
         filename: 'logs.txt',
-        level: 'info'
-        })
+        level: 'info',
+        formatter: function(options) {
+            return (undefined !== options.message ? options.message : '');
+        },
+        json: false
+      })
     ]
 });
 
