@@ -73,7 +73,7 @@ function get_all_groups_from_class(class_id) {
     if (class_id in classes.available_classes) {
         var groups = [];
         for (var i in classes.available_classes[class_id]){
-            if (i != "user" && i != "class_name"){
+            if (i != "user" && i != "class_name" && i != "settings"){
                 groups.push({
                     grp_name : i,
                     num : classes.available_classes[class_id][i]["students"].length
@@ -224,6 +224,29 @@ function update_users_coordinates(username, class_id, x, y) {
     return deferred.promise;
 }
 
+// Takes a class id
+// If invalid, returns an error.
+// If valid, a JSON string of the class settings is returned. The data is 
+// retrieved from the global datastructure.
+function get_settings(class_id, group_id) {
+    var deferred = Q.defer();
+    
+    if (class_id in classes.available_classes) {
+        if (group_id in classes.available_classes[class_id]) {
+            var settings = classes.available_classes['settings'];
+            deferred.resolve(settings);
+        }
+        else {
+            deferred.reject('Group ID ' + group_id + ' is invalid.');
+        }
+    }
+    else {
+        deferred.reject('Class ID ' + class_id + ' is invalid.');
+    }
+
+    return deferred.promise;
+}
+
 // Takes a class name and group count.
 // If invalid, returns an error.
 // If valid, create a class of the given class name in the database and return
@@ -236,11 +259,12 @@ function create_class(class_name, group_count){
     .then(function(class_id) {
         return hash.add_hash(class_id);
     }).then(function(id_hash) {
-        classes.available_classes[id_hash] = {}
+        classes.available_classes[id_hash] = {};
         for(var i=0; i<group_count; i++) {
             classes.available_classes[id_hash][i+1] = {students:[], deleted:false};
         }
-        classes.available_classes[id_hash]['user'] = {}
+        classes.available_classes[id_hash]['user'] = {};
+        classes.available_classes[id_hash]['settings'] = {};
         classes.available_classes[id_hash]['class_name'] = class_name;
         deferred.resolve(id_hash);
     })
@@ -258,7 +282,7 @@ function join_class(class_id) {
     var deferred = Q.defer();
 
     if (class_id in classes.available_classes) {
-        var group_count = Object.keys(classes.available_classes[class_id]).length - 2;
+        var group_count = Object.keys(classes.available_classes[class_id]).length - 3;
         var class_name = classes.available_classes[class_id]['class_name'];
 
         var data = {
@@ -330,7 +354,30 @@ function leave_class(class_id) {
 //    }).fail(function(error) {
 //        deferred.reject(error);
 //    });
-    deferred.resolve();
+    if (class_id in classes.available_classes) {
+        deferred.resolve();
+    }
+    else {
+        deferred.reject('Class ID ' + class_id + ' does not exist.');
+    }
+  
+    return deferred.promise;
+}
+
+// Takes a class id and settings data.
+// If invalid, returns an error.
+// If valid, adds the settings to the given class in the global datastructure.
+function save_settings(class_id, settings) {
+    var deferred = Q.defer();
+
+   if (class_id in classes.available_classes) {
+        classes.available_classes[class_id]['settings'] = settings;
+        deferred.resolve();
+    }
+    else {
+        deferred.reject('Class ID ' + class_id + ' does not exist.');
+    }
+
     return deferred.promise;
 }
 
@@ -501,6 +548,22 @@ function server_sockets(server, client){
                 server_error(error, error);
             });
         }); //registers the change of coordinates in the datastructure and passes them back to group
+
+        // GET-SETTINGS
+        // This is the handler for the get-settings client socket emission
+        // Emits get-settings-response to all sockets in the class group room
+        socket.on('get-settings', function(class_id, group_id) {
+            get_settings(class_id, group_id)
+            .then(function(settings) {
+                var response = {
+                    class_id : class_id,
+                    settings : settings
+                }
+                io.sockets.to(class_id + "x" + group_id).emit('get-settings-response', response);
+            }).fail(function(error) {
+                server_error(error, error);
+            });
+        });
        
         // ADD-CLASS
         // This is the handler for the add-class client socket emission
@@ -611,6 +674,23 @@ function server_sockets(server, client){
             }
         });
 
+        // SAVE-SETTINGS
+        // This is the handler for the save-settings client socket emission
+        // Emits get-settings-response to all sockets in class room
+        socket.on('save-settings', function(class_id, settings, secret) {
+            if (secret == "ucd_247") {
+                save_settings(class_id, settings)
+                .then(function() {
+                    var response = {
+                        class_id : class_id,
+                        settings : settings
+                    }
+                    socket.to(class_id + "x").emit('get-settings-response', response);
+                }).fail(function(error) {
+                    server_error(error);
+                });
+            }
+        });
     });
 }
 

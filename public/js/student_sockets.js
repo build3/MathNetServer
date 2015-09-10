@@ -35,6 +35,10 @@
             socket.emit('coordinate_change', username, class_id, group_id, x, y);
         }
 
+        var get_settings = function(class_id, group_id) {
+            socket.emit('get-settings', class_id, group_id);
+        }
+
         var disconnect = function() {
             socket.disconnect();
         }
@@ -71,7 +75,11 @@
         socket.on('coordinate_change_response', function(data) {
             coordinate_change_response(data.username, data.class_id, 
                                        data.group_id, data.x, data.y);
-        });  
+        });
+
+        socket.on('get-settings-response', function(data) {
+            get_settings_response(data.class_id, data.settings);
+        });
 
         return {
             login: login,
@@ -81,6 +89,7 @@
             group_leave: group_leave,
             group_info: group_info,
             coordinate_change: coordinate_change,
+            get_settings: get_settings,
             disconnect: disconnect
         };
     }

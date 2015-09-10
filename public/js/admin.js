@@ -81,6 +81,6 @@ $(function() {
         for(var i=0; i<$settings.length; i++) {
             data[$settings[i].name] = $settings[i].checked;
         }
-        console.log(JSON.stringify(data));
+        socket.save_settings(localStorage.getItem('class_id'), data, $secret.val().trim());
     });
 });

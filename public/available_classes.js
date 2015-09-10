@@ -28,6 +28,7 @@ connection.query(classQuery, function(err, rows, fields){
         available_classes[rows[i].hashed_id] = {}
         available_classes[rows[i].hashed_id]["class_name"] = rows[i].class_name;
         available_classes[rows[i].hashed_id]["user"] = {};
+        available_classes[rows[i].hashed_id]["settings"] = {};
     }//creates an array for 
     
 });

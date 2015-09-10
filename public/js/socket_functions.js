@@ -8,7 +8,6 @@ function login_response(username, class_id) {
     localStorage.setItem('class_id', class_id);
     localStorage.setItem('username', username);
     location.href = '../class';
-    console.log(username, class_id);
 }
 
 function groups_get_response(username, class_id, groups) {
@@ -42,7 +41,6 @@ function logout_response() {
 function group_info_response(username, class_id, group_id, members) {
     var current_user = localStorage.getItem('username');
     var current_group = localStorage.getItem('group_id');
-    console.log(members);
     $group_name = $('#number');
     $people = $('#people');
     $group_name.html('Group: ' + current_group);    
@@ -76,5 +74,17 @@ function coordinate_change_response(username, class_id, group_id, x, y) {
 function group_leave_response(username, class_id, group_id) {
     localStorage.removeItem('group_id');
     location.href = '/class';
+}
+
+function get_settings_response(class_id, settings) {
+    $class_settings = $('#settings');
+    $class_settings.html('');
+
+    console.log(settings);
+
+    for (var setting in settings) {
+        var setting_item = "<li>" + setting + ": " + settings[setting] + "</li>";
+        $class_settings.append(setting_item);
+    }
 }
 

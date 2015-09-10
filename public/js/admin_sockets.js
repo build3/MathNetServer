@@ -40,13 +40,19 @@
             socket.emit('delete-group', class_id, group_id, secret);
         }
 
-        // This function has the socket to emit the server that the user has
-        // left the class.
+        // This function takes a class id provided by the user.
+        // The socket then emits this data to the server to leave a class.
         var leave_class = function (class_id, secret) {
             socket.emit('leave-class', class_id, secret);
         }
 
-        // This function calls the socket
+        // This function takes a class id and settings data provided by the
+        // user.
+        // The socket then emits this data to the server to save the global
+        // settings for the class.
+        var save_settings = function (class_id, settings, secret) {
+            socket.emit('save-settings', class_id, settings, secret);
+        }
 
         // This function disconnects the socket
         var disconnect = function() {
@@ -88,6 +94,7 @@
             add_group: add_group,
             delete_group: delete_group,
             leave_class: leave_class,
+            save_settings: save_settings,
             disconnect: disconnect
         };
     };
