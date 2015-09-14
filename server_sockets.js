@@ -230,10 +230,9 @@ function update_users_coordinates(username, class_id, x, y) {
 // retrieved from the global datastructure.
 function get_settings(class_id, group_id) {
     var deferred = Q.defer();
-    
     if (class_id in classes.available_classes) {
         if (group_id in classes.available_classes[class_id]) {
-            var settings = classes.available_classes['settings'];
+            var settings = classes.available_classes[class_id]['settings'];
             deferred.resolve(settings);
         }
         else {
