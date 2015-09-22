@@ -9,6 +9,7 @@ var hash = require('./hashes');
 // needs to be returned.
 var Q = require("q");
 
+var logger = require('./public/js/logger_create');
 module.exports = server_sockets;
 
 // Takes a class id and username.
@@ -392,6 +393,8 @@ function server_sockets(server, client){
         // Emits server_error to the socket that triggered the error
         function server_error(error, message) {
             console.log(error);
+            date = new Date().toJSON();
+            logger.info(date + "~server~server_error~~~{message: \""+ message +"\"}~0~");
             socket.emit('server_error', {message: message});
         };
 
@@ -406,6 +409,8 @@ function server_sockets(server, client){
                     username : username,
                     class_id : class_id 
                 }
+                date = new Date().toJSON();
+                logger.info(date + "~" + username + "~login~" + class_id +"~~" + JSON.stringify(response) + "~1~");
                 socket.emit('login_response', response);
             }).fail(function(error) {
                 server_error(error, error); 
@@ -425,6 +430,8 @@ function server_sockets(server, client){
                     username : username,
                     class_id : class_id
                 }
+                date = new Date().toJSON();
+                logger.info(date + "~" + username + "~logout~" + class_id + "~~~1~");
                 socket.emit('logout_response', {});
             }).fail(function(error) {
                 server_error(error, error);
@@ -466,6 +473,9 @@ function server_sockets(server, client){
                     group_id : group_id,
                     groups : groups
                 }
+                date = new Date().toJSON();
+                logger.info(date + "~" + username + "~group_join~" + class_id + "~" + group_id + "~" + JSON.stringify(response)
+                            + "~1~" +class_id + "x");
                 socket.emit('group_join_response', response);
                 io.sockets.to(class_id + "x" + group_id).emit('groups_get_response', response);
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
@@ -491,6 +501,9 @@ function server_sockets(server, client){
                     group_id : group_id,
                     other_members : other_members
                 }
+                date = new Date().toJSON();
+                logger.info(date + "~" + username + "~group_leave~" + class_id + "~" + group_id + "~" 
+                            + JSON.stringify(response) + "~1~" +class_id + "x" + group_id );
                 socket.emit('group_leave_response', response);
                 io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
@@ -541,6 +554,9 @@ function server_sockets(server, client){
                 return get_info_of_group(class_id, group_id);
             }).then(function(other_members) {
                 response.other_members = other_members;
+                date = new Date().toJSON();
+                logger.info(date + "~" + username + "~coordinate_change~" + class_id + "~" + group_id + "~" 
+                            + JSON.stringify(response)  + "~1~" + class_id + "x" + group_id );
                 io.sockets.to(class_id + "x" + group_id).emit('coordinate_change_response', response);
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
             }).fail(function(error) {
@@ -579,6 +595,8 @@ function server_sockets(server, client){
                         class_name : class_name,
                         group_count : group_count
                     }
+                    date = new Date().toJSON();
+                    logger.info(date + "~ADMIN~add-class~" + id_hash + "~~{class_id:"+ id_hash + "}~1~");
                     socket.emit('add-class-response', response);
                 }).fail(function(error) {
                     server_error(error, error);
@@ -622,6 +640,9 @@ function server_sockets(server, client){
                         class_id : class_id,
                         groups : groups
                     }
+                    date = new Date().toJSON();
+                    logger.info(date + "~ADMIN~add-group~" + class_id + "~" + group_id + "~" + JSON.stringify(response) 
+                                + "~1~"+ class_id + "x");
                     socket.emit('add-group-response', {});
                     io.sockets.to(class_id + "x").emit('groups_get_response', response);
                 }).fail(function(error) {
@@ -646,6 +667,9 @@ function server_sockets(server, client){
                         group_id : group_id,
                         groups : groups
                     }
+                    date = new Date().toJSON();
+                    logger.info(date + "~ADMIN~delete-group~" + class_id + "~" + group_id + "~" 
+                                + JSON.stringify(response) + "~1~[" + class_id + "x," + class_id + "x" + group_id + "]");
                     socket.emit('delete-group-response', {});
                     io.sockets.to(class_id + "x" + group_id).emit('group_leave_response', response);
                     io.sockets.to(class_id + "x").emit('groups_get_response', response);
@@ -665,6 +689,8 @@ function server_sockets(server, client){
                 leave_class(class_id)
                 .then(function() {
                     socket.leave('admin-' + class_id);
+                    date = new Date().toJSON();
+                    logger.info(date + "~ADMIN~leave-class~" + class_id + "~~~0~");
                     socket.emit('leave-class-response', {});
                    // io.to(class_id + "x").emit('logout_response', {});
                 }).fail(function(error) {
