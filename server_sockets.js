@@ -596,7 +596,7 @@ function server_sockets(server, client){
                         group_count : group_count
                     }
                     date = new Date().toJSON();
-                    logger.info(date + "~ADMIN~add-class~" + id_hash + "~~{class_id:"+ id_hash + "}~1~");
+                    logger.info(date + "~ADMIN~add-class~" + class_name + "~~{class_id:"+ class_name + "}~1~");
                     socket.emit('add-class-response', response);
                 }).fail(function(error) {
                     server_error(error, error);
@@ -641,7 +641,7 @@ function server_sockets(server, client){
                         groups : groups
                     }
                     date = new Date().toJSON();
-                    logger.info(date + "~ADMIN~add-group~" + class_id + "~" + group_id + "~" + JSON.stringify(response) 
+                    logger.info(date + "~ADMIN~add-group~" + class_id + "~" + groups.length + "~" + JSON.stringify(response) 
                                 + "~1~"+ class_id + "x");
                     socket.emit('add-group-response', {});
                     io.sockets.to(class_id + "x").emit('groups_get_response', response);
