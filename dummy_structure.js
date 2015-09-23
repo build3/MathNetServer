@@ -1,6 +1,4 @@
-exports.available_classes = available_classes;
-
-available_classes = {};
+var available_classes = {};
 for (i = 1; i < 4; i++){
     available_classes[i] = {};
     available_classes[i]["class_name"] = "name of " + i + "is cool";
@@ -12,3 +10,5 @@ for (i = 1; i < 4; i++){
         available_classes[i][j]["students"] = [];
     }
 }
+
+exports.available_classes = available_classes;

@@ -1,7 +1,7 @@
 var classes = require('./dummy_structure');
 var socketio = require('socket.io');
 var database = require('./database_actions');
-var hash = require('./hashes');
+var hash = require('./dummy_hashes');
 
 // Q allows use of promises. 
 // First, a promise is deferred.
