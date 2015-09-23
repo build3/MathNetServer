@@ -1,9 +1,5 @@
-//this is the header file, going to be adding the global datastructure to each page to mess with and add to 
-//(maybe only need it in index.js for the routes)
+//this initializes the global datastucture that holds current students in each class and the current groups.
 
-var app = require('express')();
-var http = require('http').Server(app);
-var io = require('socket.io')(http);
 var mysql = require('mysql');
 var dbconfig = require('../config_database');
 var hash = require('../hashes');
