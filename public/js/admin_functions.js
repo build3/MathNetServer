@@ -12,7 +12,7 @@ function add_class_response(class_id, class_name, group_count) {
     var $class_name = $('.class_name');
     var $groups = $('.groups');
 
-    localStorage.setItem('class_id', class_id);
+    localStorage.setItem('admin_class_id', class_id);
     $('.error_message').html('');
 
     $create_view.hide();
