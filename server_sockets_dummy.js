@@ -175,7 +175,8 @@ function get_info_of_group(class_id, group_id) {
                 other_members.push({
                     member_name : student_name,
                     member_x : classes.available_classes[class_id]["user"][student_name]["x"], 
-                    member_y : classes.available_classes[class_id]["user"][student_name]["y"]
+                    member_y : classes.available_classes[class_id]["user"][student_name]["y"],
+                    group_id : group_id
                 });
             }
             deferred.resolve(other_members);
@@ -574,6 +575,8 @@ function server_sockets(server, client){
                     class_id : class_id,
                     settings : settings
                 }
+                date = new Date().toJSON();
+                logger.info(date + "~ADMIN~get-settings~~~" + JSON.stringify(response) + "~0~");
                 io.sockets.to(class_id + "x" + group_id).emit('get-settings-response', response);
             }).fail(function(error) {
                 server_error(error, error);
@@ -619,7 +622,21 @@ function server_sockets(server, client){
                         class_name : data.class_name,
                         group_count : data.group_count
                     }
+                    date = new Date().toJSON();
+                    logger.info(date + "~ADMIN~join-class~" + class_id + "~~" + JSON.stringify(response) + "~0~");
                     socket.emit('add-class-response', response);
+                    for(i = 1; i < data.group_count+1; i++){
+                        get_info_of_group(class_id, i)
+                        .then(function(other_members){
+                            if(other_members != undefined && other_members.length != 0){
+                               var response = {
+                                    other_members: other_members,
+                                    group_id: other_members[0].group_id
+                                }
+                                io.sockets.to('admin-' + class_id).emit('group_info_response', response);
+                            }
+                        });
+                    }
                 }).fail(function(error) {
                     server_error(error, error);
                 });
@@ -710,6 +727,8 @@ function server_sockets(server, client){
                         class_id : class_id,
                         settings : settings
                     }
+                    date = new Date().toJSON();
+                    logger.info(date + "~ADMIN~save-settings~~~" + JSON.stringify(response) + "~1~");
                     socket.to(class_id + "x").emit('get-settings-response', response);
                 }).fail(function(error) {
                     server_error(error);
