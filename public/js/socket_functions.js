@@ -11,7 +11,6 @@ function login_response(username, class_id) {
 }
 
 function groups_get_response(username, class_id, groups) {
-    var socket = Student.Socket(io(location.host));
     var $groups = $('#buttons');
     var current_user = localStorage.getItem('username');
     var current_class = localStorage.getItem('class_id');
@@ -22,9 +21,6 @@ function groups_get_response(username, class_id, groups) {
         button += '" /><br/>';
         $groups.append(button);
     }
-    $('#buttons :input').click(function() {
-        socket.group_join(current_user, current_class, $(this).index('#buttons :input') + 1);
-    });
 }
 
 function group_join_response(username, class_id, group_id) {
