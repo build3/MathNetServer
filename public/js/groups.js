@@ -8,8 +8,9 @@ $(function() {
     var class_id = localStorage.getItem('class_id');
     var group_id = localStorage.getItem('group_id');
 
-    socket.group_info(username, class_id, group_id);
+    socket.group_info(username, class_id, group_id, true);
     socket.get_settings(class_id, group_id);
+    $
 
     $coord_change_buttons.click(function(event) {
         var x = parseInt($(event.target).attr('data-x'));

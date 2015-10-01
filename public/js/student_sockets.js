@@ -27,8 +27,8 @@
             socket.emit('group_leave', username, class_id, group_id);
         }
 
-        var group_info = function(username, class_id, group_id) {
-            socket.emit('group_info', username, class_id, group_id);
+        var group_info = function(username, class_id, group_id, status) {
+            socket.emit('group_info', username, class_id, group_id, status);
         }
 
         var coordinate_change = function(username, class_id, group_id, x, y) {
@@ -69,7 +69,7 @@
 
         socket.on('group_info_response', function(data) {
             group_info_response(data.username, data.class_id, data.group_id, 
-                                data.other_members);
+                                data.other_members, data.status);
         });
 
         socket.on('coordinate_change_response', function(data) {

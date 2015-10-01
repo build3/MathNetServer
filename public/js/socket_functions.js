@@ -34,7 +34,7 @@ function logout_response() {
     location.href = '/';
 }
 
-function group_info_response(username, class_id, group_id, members) {
+function group_info_response(username, class_id, group_id, members, status) {
     var current_user = localStorage.getItem('username');
     var current_group = localStorage.getItem('group_id');
     $group_name = $('#number');
@@ -55,6 +55,12 @@ function group_info_response(username, class_id, group_id, members) {
             member += '<span class="y">' + members[i].member_y + '</span>)</li>';
         }
         $people.append(member);
+        
+    }
+    if(status){
+        $('#messages').append(username + ' has joined the group<br/>');
+    } else {
+        $('#messages').append(username + ' has left the group<br/>');
     }
 }
 

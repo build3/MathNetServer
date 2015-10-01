@@ -1,8 +1,10 @@
-body {
-  padding: 50px;
-  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+.container {
+    border: 2px solid rgba(0, 0, 0, 0.23);
+    padding: 20px;
+    border-radius: 10px;
+    background-color: #FFFFFF;
 }
-
-a {
-  color: #00B7FF;
+body {
+    padding: 20px;
+    background-color: rgba(114, 190, 210, 0.46);
 }

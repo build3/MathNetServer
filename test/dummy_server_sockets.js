@@ -521,7 +521,8 @@ function server_sockets(server, client){
                     username : username,
                     class_id : class_id,
                     group_id : group_id,
-                    other_members : other_members
+                    other_members : other_members,
+                    status: false
                 }
                 date = new Date().toJSON();
                 logger.info(date + "~" + username + "~group_leave~" + class_id + "~" + group_id + "~" 
@@ -540,7 +541,7 @@ function server_sockets(server, client){
         // Socket joins two rooms using class id and group id
         // Emits group_info_response to all sockets in the class group room and
         // to the admin socket of the class
-        socket.on('group_info', function(username, class_id, group_id) {
+        socket.on('group_info', function(username, class_id, group_id, status) {
             get_info_of_group(class_id, group_id)
             .then(function(other_members) {
                 socket.lock = false;
@@ -554,6 +555,7 @@ function server_sockets(server, client){
                     class_id : class_id,
                     group_id : group_id,
                     other_members : other_members,
+                    status: status
                 }
                 io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
