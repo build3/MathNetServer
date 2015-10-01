@@ -3,7 +3,7 @@ var express = require('express');
 var app  = express();
 var port     = 8888;
 var path = require('path');
-var server_sockets = require('./server_sockets_dummy');
+var server_sockets = require('./server_sockets');
 
 // Sets the public directory as location of html files for routing
 app.set('views', __dirname + '/public');
