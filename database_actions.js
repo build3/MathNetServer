@@ -17,10 +17,10 @@ exports.create_class = function(class_name, group_count) {
 
     var class_id = 0;
     pool.getConnection(function(error, connection) {
-        var query = "USE nsf_physics_7;";
+        var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "INSERT INTO Classes (class_name) VALUES (?);";
+        query = "INSERT INTO " + dbconfig.class_table + " (class_name) VALUES (?);";
         connection.query(query, [class_name], function(error, rows) {
             if (error) {
                 deferred.reject(error);
@@ -29,7 +29,7 @@ exports.create_class = function(class_name, group_count) {
                 // If the creation of the class was successful,
                 //   the callback then gets the class_id
                 //   and makes group_count many groups
-                query = "SELECT class_id FROM Classes WHERE class_name=?;";
+                query = "SELECT class_id FROM " + dbconfig.class_table + " WHERE class_name=?;";
                 connection.query(query, [class_name], function(error, rows) {
                     if(error) {
                         deferred.reject(error);
@@ -38,7 +38,7 @@ exports.create_class = function(class_name, group_count) {
                         class_id = rows[0].class_id;
                         for (var group=1; group < group_count + 1; group++) {
                             query = 
-                                "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);"
+                                "INSERT INTO " + dbconfig.group_table + " (group_id, class_id) VALUES (?, ?);"
                             connection.query(query, [group, class_id]);
                         }
                         deferred.resolve(class_id);
@@ -59,11 +59,11 @@ exports.create_group = function(class_id) {
 
     pool.getConnection(function(error, connection) {
 
-        var query = "USE nsf_physics_7;";
+        var query = "USE " + dbconfig.database + ";";
         connection.query(query);
         // Get the class_id and create the groups for that class
         query = 
-            "SELECT group_id FROM Groups WHERE class_id=? ORDER BY group_id DESC;";
+            "SELECT group_id FROM " + dbconfig.group_table + " WHERE class_id=? ORDER BY group_id DESC;";
 
         // Group IDs are incremented so we need to find out what is
         // the highest id in the Groups table for the specific class
@@ -80,7 +80,7 @@ exports.create_group = function(class_id) {
                 else {
                     group = 1;
                 }
-                query = "INSERT INTO Groups (group_id, class_id) VALUES (?, ?);";
+                query = "INSERT INTO " + dbconfig.group_table + " (group_id, class_id) VALUES (?, ?);";
                 connection.query(query, [group, class_id]);
                 
                 deferred.resolve(group);
@@ -98,10 +98,10 @@ exports.delete_group = function(class_id, group_id) {
 
     pool.getConnection(function(error, connection) {
         
-        var query = "USE nsf_physics_7;";
+        var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "DELETE FROM Groups WHERE class_id=? AND group_id=?;";
+        query = "DELETE FROM " + dbconfig.group_table + " WHERE class_id=? AND group_id=?;";
         connection.query(query, [class_id, group_id], function(error, rows) {
             if(error) {
                 deferred.reject(error);
@@ -122,10 +122,10 @@ exports.add_hashed_id = function(class_id, hashed_id) {
 
     pool.getConnection(function(error, connection) {
 
-        var query = "USE nsf_physics_7;";
+        var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "UPDATE Classes SET hashed_id=? WHERE class_id=?;";
+        query = "UPDATE " + dbconfig.class_table + " SET hashed_id=? WHERE class_id=?;";
         connection.query(query, [hashed_id, class_id], function(error, rows) {
             if(error) {
                 deferred.reject(error);
