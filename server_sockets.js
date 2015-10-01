@@ -456,6 +456,7 @@ function server_sockets(server, client){
         socket.on('groups_get', function(username, class_id) {
             get_all_groups_from_class(class_id)
             .then(function(groups) {
+                socket.lock = false;
                 socket.join(class_id + "x");
                 socket.class_id = class_id;
                 socket.username = username;
@@ -542,6 +543,7 @@ function server_sockets(server, client){
         socket.on('group_info', function(username, class_id, group_id) {
             get_info_of_group(class_id, group_id)
             .then(function(other_members) {
+                socket.lock = false;
                 socket.join(class_id + "x");
                 socket.join(class_id + "x" + group_id);
                 socket.class_id = class_id;
@@ -763,13 +765,12 @@ function server_sockets(server, client){
         socket.on('disconnect', function() {
             // Only handle disconnect if a socket is not disconnected to page redirects
             if (socket.lock == false) {
-                console.log("Not a lock issue");
+                
                 // Remove user from class
                 if (socket.class_id !== undefined) {
-                    console.log("CID :" + socket.class_id);
+                    
                     // Remove user from group
                     if (socket.group_id !== undefined) {
-                        console.log("GID :" + socket.group_id);
                         remove_user_from_group(socket.username, socket.class_id, socket.group_id)
                         .then(function() {
                             socket.leave(socket.class_id + "x" + socket.group_id);

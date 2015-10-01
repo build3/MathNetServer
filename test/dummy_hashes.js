@@ -1,5 +1,5 @@
 var Q = require('q');
-var database = require('./database_actions');
+var database = require('../database_actions');
 // Holds the hashed strings which act as class ids
 var hashes = {1:1,2:2,3:3,4:4};
 
