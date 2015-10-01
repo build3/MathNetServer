@@ -6,8 +6,8 @@ module.exports = {
         'user': secrets.user,
         'password': secrets.password
     },
-	'database': 'nsf_physics_7',
-    'class_table': 'Classes',
-    'group_table': 'Groups'
+	'database': secrets.database,
+    'class_table': secrets.class_table,
+    'group_table': secrets.group_table
 
 };
