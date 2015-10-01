@@ -14,7 +14,7 @@ connection.query("USE " + dbconfig.database);
 var available_classes = {};
 exports.available_classes = available_classes;
 
-var classQuery = "SELECT * FROM " + dbconfig.class_table;
+var classQuery = "SELECT * FROM Classes";
 connection.query(classQuery, function(err, rows, fields){
     if (err)
         throw err;
@@ -28,7 +28,7 @@ connection.query(classQuery, function(err, rows, fields){
     }//creates an array for 
     
 });
-var groupQuery = "SELECT * FROM " + dbconfig.group_table ;
+var groupQuery = "SELECT * FROM Groups";
 connection.query(groupQuery, function(err, rows, fields){
     if (err)
         throw err;
