@@ -78,13 +78,13 @@ function group_info_response(username, class_id, group_id, members, status) {
             var member = '<li id="' + members[i].member_name + '">';
             member += members[i].member_name;
             member += ' - (<span class="x">' + members[i].member_x + '</span>, ';
-            member += '<span class="y">' + members[i].member_y + '</span>)</li>';
+            member += '<span class="y">' + members[i].member_y + '</span>) </li>';
         }
         else {
             var member = '<li id="' + members[i].member_name + '">';
             member += members[i].member_name + ' (You)';
             member += ' - (<span class="x">' + members[i].member_x + '</span>, ';
-            member += '<span class="y">' + members[i].member_y + '</span>)</li>';
+            member += '<span class="y">' + members[i].member_y + '</span>) </li>';
         }
         $people.append(member);
         
@@ -96,7 +96,7 @@ function group_info_response(username, class_id, group_id, members, status) {
     }
 }
 
-function coordinate_change_response(username, class_id, group_id, x, y) {
+function coordinate_change_response(username, class_id, group_id, x, y, info) {
     $messages = $('#messages');
     
     $('#' + username + ' .x').html(x);

@@ -29,6 +29,7 @@ function add_user_to_class(username, class_id) {
             classes.available_classes[class_id]["user"][username] = {};
             classes.available_classes[class_id]["user"][username]["x"] = 0.0;
             classes.available_classes[class_id]["user"][username]["y"] = 0.0;
+            classes.available_classes[class_id]["user"][username]["info"] = "";
             deferred.resolve();
         }
         else {
@@ -104,6 +105,7 @@ function add_user_to_group(username, class_id, group_id) {
                 classes.available_classes[class_id][group_id]["students"].push(username);
                 classes.available_classes[class_id]["user"][username]["x"] = 0.0;
                 classes.available_classes[class_id]["user"][username]["y"] = 0.0;
+                classes.available_classes[class_id]["user"][username]["info"] = "";
 
                 deferred.resolve();
             }
@@ -138,6 +140,7 @@ function remove_user_from_group(username, class_id, group_id) {
                     classes.available_classes[class_id][group_id]["students"].splice(index, 1);
                     classes.available_classes[class_id]["user"][username]["x"] = 0.0;
                     classes.available_classes[class_id]["user"][username]["y"] = 0.0;
+                    classes.available_classes[class_id]["user"][username]["info"] = "";
                     deferred.resolve();
                 }
                 else {
@@ -176,6 +179,7 @@ function get_info_of_group(class_id, group_id) {
                     member_name : student_name,
                     member_x : classes.available_classes[class_id]["user"][student_name]["x"], 
                     member_y : classes.available_classes[class_id]["user"][student_name]["y"],
+                    member_info : classes.available_classes[class_id]["user"][student_name]["info"],
                     group_id : group_id
                 });
             }
@@ -196,7 +200,7 @@ function get_info_of_group(class_id, group_id) {
 // If invalid, returns an error.
 // If valid, a JSON string of the given user's new updated coordinates is 
 // returned. The data is updated in the global datastructure.
-function update_users_coordinates(username, class_id, x, y) {
+function update_users_coordinates(username, class_id, x, y, info) {
     var deferred = Q.defer();
 
     if (class_id in classes.available_classes) {
@@ -204,10 +208,12 @@ function update_users_coordinates(username, class_id, x, y) {
             if (!isNaN(x) && !isNaN(y)) {
                 classes.available_classes[class_id]["user"][username]["x"] += x;
                 classes.available_classes[class_id]["user"][username]["y"] += y;
+                classes.available_classes[class_id]["user"][username]["info"] = JSON.stringify(info);
 
                 var data = {
                     x : classes.available_classes[class_id]["user"][username]["x"], 
-                    y : classes.available_classes[class_id]["user"][username]["y"] 
+                    y : classes.available_classes[class_id]["user"][username]["y"],
+                    info : classes.available_classes[class_id]["user"][username]["info"] 
                 }
 
                 deferred.resolve(data);
@@ -548,16 +554,17 @@ function server_sockets(server, client){
         // Emits coordinate_change_response to all sockets in the class group 
         // room
         // Emits group_info_response to admin socket of the class
-        socket.on('coordinate_change', function(username, class_id, group_id, x, y) {
+        socket.on('coordinate_change', function(username, class_id, group_id, x, y, info) {
             var response;
-            update_users_coordinates(username, class_id, x, y)
+            update_users_coordinates(username, class_id, x, y, info)
             .then(function(data) {
                 response = {
                     username : username,
                     class_id : class_id,
                     group_id : group_id,
                     x : data.x,
-                    y : data.y
+                    y : data.y,
+                    info: data.info
                 }
                 return get_info_of_group(class_id, group_id);
             }).then(function(other_members) {

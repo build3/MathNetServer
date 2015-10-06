@@ -31,8 +31,8 @@
             socket.emit('group_info', username, class_id, group_id, status);
         }
 
-        var coordinate_change = function(username, class_id, group_id, x, y) {
-            socket.emit('coordinate_change', username, class_id, group_id, x, y);
+        var coordinate_change = function(username, class_id, group_id, x, y, info) {
+            socket.emit('coordinate_change', username, class_id, group_id, x, y, info);
         }
 
         var get_settings = function(class_id, group_id) {
@@ -74,7 +74,7 @@
 
         socket.on('coordinate_change_response', function(data) {
             coordinate_change_response(data.username, data.class_id, 
-                                       data.group_id, data.x, data.y);
+                                       data.group_id, data.x, data.y, data.info);
         });
 
         socket.on('get-settings-response', function(data) {
