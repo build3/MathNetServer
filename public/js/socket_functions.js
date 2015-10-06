@@ -66,6 +66,7 @@ function logout_response() {
     localStorage.removeItem('username');
 }
 
+// EDIT THIS FUNCTION
 function group_info_response(username, class_id, group_id, members, status) {
     var current_user = localStorage.getItem('username');
     var current_group = localStorage.getItem('group_id');
@@ -96,6 +97,7 @@ function group_info_response(username, class_id, group_id, members, status) {
     }
 }
 
+// EDIT THIS FUNCTION
 function coordinate_change_response(username, class_id, group_id, x, y, info) {
     $messages = $('#messages');
     
@@ -105,7 +107,9 @@ function coordinate_change_response(username, class_id, group_id, x, y, info) {
                           + x + ', ' + y +')<br/>');
 }
 
+// EDIT THIS FUNCTION
 function group_leave_response(username, class_id, group_id) {
+    // This function must call socket.groups_get(username, class_id)
     var $login_view = $('.login_view');
     var $class_view = $('.class_view');
     var $group_view = $('.group_view');
@@ -120,6 +124,7 @@ function group_leave_response(username, class_id, group_id) {
                      );
 }
 
+// EDIT THIS FUNCTION
 function get_settings_response(class_id, settings) {
     $class_settings = $('#settings');
     $class_settings.html('');

@@ -29,6 +29,7 @@ function add_user_to_class(username, class_id) {
             classes.available_classes[class_id]["user"][username] = {};
             classes.available_classes[class_id]["user"][username]["x"] = 0.0;
             classes.available_classes[class_id]["user"][username]["y"] = 0.0;
+            classes.available_classes[class_id]["user"][username]["info"] = "";
             deferred.resolve();
         }
         else {
@@ -104,6 +105,7 @@ function add_user_to_group(username, class_id, group_id) {
                 classes.available_classes[class_id][group_id]["students"].push(username);
                 classes.available_classes[class_id]["user"][username]["x"] = 0.0;
                 classes.available_classes[class_id]["user"][username]["y"] = 0.0;
+                classes.available_classes[class_id]["user"][username]["info"] = "";
 
                 deferred.resolve();
             }
@@ -112,7 +114,7 @@ function add_user_to_group(username, class_id, group_id) {
             }
         }
         else {
-            deferred.reject('Group ID ' + group__id + ' is invalid.');
+            deferred.reject('Group ID ' + group_id + ' is invalid.');
         }
     }
     else {
@@ -138,6 +140,7 @@ function remove_user_from_group(username, class_id, group_id) {
                     classes.available_classes[class_id][group_id]["students"].splice(index, 1);
                     classes.available_classes[class_id]["user"][username]["x"] = 0.0;
                     classes.available_classes[class_id]["user"][username]["y"] = 0.0;
+                    classes.available_classes[class_id]["user"][username]["info"] = "";
                     deferred.resolve();
                 }
                 else {
@@ -176,6 +179,7 @@ function get_info_of_group(class_id, group_id) {
                     member_name : student_name,
                     member_x : classes.available_classes[class_id]["user"][student_name]["x"], 
                     member_y : classes.available_classes[class_id]["user"][student_name]["y"],
+                    member_info : classes.available_classes[class_id]["user"][student_name]["info"],
                     group_id : group_id
                 });
             }
@@ -196,7 +200,7 @@ function get_info_of_group(class_id, group_id) {
 // If invalid, returns an error.
 // If valid, a JSON string of the given user's new updated coordinates is 
 // returned. The data is updated in the global datastructure.
-function update_users_coordinates(username, class_id, x, y) {
+function update_users_coordinates(username, class_id, x, y, info) {
     var deferred = Q.defer();
 
     if (class_id in classes.available_classes) {
@@ -204,10 +208,12 @@ function update_users_coordinates(username, class_id, x, y) {
             if (!isNaN(x) && !isNaN(y)) {
                 classes.available_classes[class_id]["user"][username]["x"] += x;
                 classes.available_classes[class_id]["user"][username]["y"] += y;
+                classes.available_classes[class_id]["user"][username]["info"] = JSON.stringify(info);
 
                 var data = {
                     x : classes.available_classes[class_id]["user"][username]["x"], 
-                    y : classes.available_classes[class_id]["user"][username]["y"] 
+                    y : classes.available_classes[class_id]["user"][username]["y"],
+                    info : classes.available_classes[class_id]["user"][username]["info"] 
                 }
 
                 deferred.resolve(data);
@@ -388,16 +394,10 @@ function server_sockets(server, client){
     var io = socketio.listen(server);
    
     io.on('connection', function(socket) {
-
-        // A lock to determine if a disconnect was due to page redirection or an actual disconnect
-        // When true, socket disconnect events are ignored
-        socket.lock = false;
-          
         // SERVER_ERROR
         // This function will notify the client when an error has occurred 
         // Emits server_error to the socket that triggered the error
         function server_error(error, message) {
-            socket.lock = true;
             console.log(error);
             date = new Date().toJSON();
             logger.info(date + "~server~server_error~~~{message: \""+ message +"\"}~0~");
@@ -410,8 +410,6 @@ function server_sockets(server, client){
         socket.on('login', function(username, class_id) {
             add_user_to_class(username, class_id)
             .then(function() {
-                socket.lock = true;
-                socket.join(class_id + "x");
                 socket.class_id = class_id;
                 socket.username = username;
 
@@ -435,7 +433,6 @@ function server_sockets(server, client){
         socket.on('logout', function(username, class_id) {
             remove_user_from_class(username, class_id)
             .then(function() { 
-                socket.lock = true;
                 socket.leave(class_id + "x");
                 var response = {
                     username : username,
@@ -456,10 +453,7 @@ function server_sockets(server, client){
         socket.on('groups_get', function(username, class_id) {
             get_all_groups_from_class(class_id)
             .then(function(groups) {
-                socket.lock = false;
-                socket.join(class_id + "x");
-                socket.class_id = class_id;
-                socket.username = username;
+                socket.join(class_id + 'x');
                 var response = {
                     username : username,
                     class_id : class_id,
@@ -482,10 +476,8 @@ function server_sockets(server, client){
             .then(function() {
                return get_all_groups_from_class(class_id);
             }).then(function(groups) { 
-                socket.lock = true;
                 socket.join(class_id + "x" + group_id);
-                socket.class_id = class_id;
-                socket.username = username;
+                socket.leave(class_id + "x");
                 socket.group_id = group_id;
 
                 var response = {
@@ -513,10 +505,9 @@ function server_sockets(server, client){
         socket.on('group_leave', function(username, class_id, group_id) {
             remove_user_from_group(username, class_id, group_id)
             .then(function() {
-                socket.leave(class_id + "x" + group_id);
                 return get_info_of_group(class_id, group_id)
             }).then(function(other_members) {
-                socket.lock = true;
+                socket.leave(class_id + 'x' + group_id);
                 var response = {
                     username : username,
                     class_id : class_id,
@@ -544,12 +535,6 @@ function server_sockets(server, client){
         socket.on('group_info', function(username, class_id, group_id, status) {
             get_info_of_group(class_id, group_id)
             .then(function(other_members) {
-                socket.lock = false;
-                socket.join(class_id + "x");
-                socket.join(class_id + "x" + group_id);
-                socket.class_id = class_id;
-                socket.username = username;
-                socket.group_id = group_id;
                 var response = {
                     username : username,
                     class_id : class_id,
@@ -557,7 +542,7 @@ function server_sockets(server, client){
                     other_members : other_members,
                     status: status
                 }
-                io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
+                io.sockets.to(class_id + "x"+ group_id).emit('group_info_response', response);
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
             }).fail(function(error) {
                 server_error(error, error);
@@ -569,16 +554,17 @@ function server_sockets(server, client){
         // Emits coordinate_change_response to all sockets in the class group 
         // room
         // Emits group_info_response to admin socket of the class
-        socket.on('coordinate_change', function(username, class_id, group_id, x, y) {
+        socket.on('coordinate_change', function(username, class_id, group_id, x, y, info) {
             var response;
-            update_users_coordinates(username, class_id, x, y)
+            update_users_coordinates(username, class_id, x, y, info)
             .then(function(data) {
                 response = {
                     username : username,
                     class_id : class_id,
                     group_id : group_id,
                     x : data.x,
-                    y : data.y
+                    y : data.y,
+                    info: data.info
                 }
                 return get_info_of_group(class_id, group_id);
             }).then(function(other_members) {
@@ -757,7 +743,10 @@ function server_sockets(server, client){
                     }
                     date = new Date().toJSON();
                     logger.info(date + "~ADMIN~save-settings~~~" + JSON.stringify(response) + "~1~");
-                    socket.to(class_id + "x").emit('get-settings-response', response);
+
+                    for (var i = 1; i <= Object.keys(classes.available_classes[class_id]).length - 3; i++) {
+                        socket.to(class_id + "x" + i).emit('get-settings-response', response);
+                    }
                 }).fail(function(error) {
                     server_error(error);
                 });
@@ -765,53 +754,57 @@ function server_sockets(server, client){
         });
 
         socket.on('disconnect', function() {
-            // Only handle disconnect if a socket is not disconnected to page redirects
-            if (socket.lock == false) {
-                
-                // Remove user from class
-                if (socket.class_id !== undefined) {
-                    
-                    // Remove user from group
-                    if (socket.group_id !== undefined) {
-                        remove_user_from_group(socket.username, socket.class_id, socket.group_id)
-                        .then(function() {
-                            socket.leave(socket.class_id + "x" + socket.group_id);
-                            return get_info_of_group(socket.class_id, socket.group_id)
-                        }).then(function(other_members) {
-                            var response = {
-                                username : socket.username,
-                                class_id : socket.class_id,
-                                group_id : socket.group_id,
-                                other_members : other_members
-                            }
+            // Remove user from class
+            if (socket.class_id !== undefined) {
 
-                            date = new Date().toJSON();
-                            logger.info(date + "~" + socket.username + "~group_leave~" + socket.class_id + "~" + socket.group_id + "~" 
-                                        + JSON.stringify(response) + "~1~" +socket.class_id + "x" + socket.group_id );
-
-                            io.sockets.to(socket.class_id + "x" + socket.group_id).emit('group_info_response', response);
-                            io.sockets.to('admin-' + socket.class_id).emit('group_info_response', response);
-                        }).fail(function(error) {
-                            server_error(error, error);
-                        });
-
-                    }
-
-                    remove_user_from_class(socket.username, socket.class_id)
-                    .then(function() { 
-                        socket.leave(socket.class_id + "x");
+                // Remove user from group
+                if (socket.group_id !== undefined) {
+                    remove_user_from_group(socket.username, socket.class_id, socket.group_id)
+                    .then(function() {
+                        return get_info_of_group(socket.class_id, socket.group_id)
+                    }).then(function(other_members) {
+                        socket.leave(socket.class_id + "x" + socket.group_id);
                         var response = {
                             username : socket.username,
-                            class_id : socket.class_id
+                            class_id : socket.class_id,
+                            group_id : socket.group_id,
+                            other_members : other_members
                         }
 
                         date = new Date().toJSON();
-                        logger.info(date + "~" + socket.username + "~logout~" + socket.class_id + "~~~1~");
-                        socket.emit('logout_response', {});
+                        logger.info(date + "~" + socket.username + 
+                                    "~group_leave~" + socket.class_id + "~" + 
+                                    socket.group_id + "~" + 
+                                    JSON.stringify(response) + "~1~" + 
+                                    socket.class_id + "x" + socket.group_id);
+
+                                    io.sockets.to(socket.class_id + "x" +
+                                                  socket.group_id)
+                                    .emit('group_info_response', response);
+                                    
+                                    io.sockets.to('admin-' + 
+                                                  socket.class_id)
+                                    .emit('group_info_response', response);
                     }).fail(function(error) {
                         server_error(error, error);
                     });
+
                 }
+
+                remove_user_from_class(socket.username, socket.class_id)
+                .then(function() { 
+                    var response = {
+                        username : socket.username,
+                        class_id : socket.class_id
+                    }
+
+                    date = new Date().toJSON();
+                    logger.info(date + "~" + socket.username + "~logout~" +
+                                socket.class_id + "~~~1~");
+                    socket.emit('logout_response', {});
+                }).fail(function(error) {
+                    server_error(error, error);
+                });
             }
         });
     });
