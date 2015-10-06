@@ -4,7 +4,12 @@ $(function() {
     var $username = $('#nickname');
     var $error_header = $('#error_frame');
 
-    var socket = Student.Socket(io(location.host));
+    var $login_view = $('.login_view');
+    var $class_view = $('.class_view');
+    var $group_view = $('.group_view');
+
+    $class_view.hide();
+    $group_view.hide();
 
     $login_button.click(function() {
         socket.login($username.val().trim(), $class_id.val().trim());

@@ -1,13 +1,25 @@
 function server_error(error) {
+    var $login_view = $('.login_view');
+    var $class_view = $('.class_view');
+    var $group_view = $('.group_view');
+
     console.log(error);
-    location.href = '/';
     localStorage.setItem('error', error);
+    location.reload();
 }
 
 function login_response(username, class_id) {
+    var $login_view = $('.login_view');
+    var $class_view = $('.class_view');
+    var $group_view = $('.group_view');
+
+    $login_view.hide();
+    $class_view.show();
+    $group_view.hide();
+
     localStorage.setItem('class_id', class_id);
     localStorage.setItem('username', username);
-    location.href = '../class';
+    socket.groups_get(username, class_id);
 }
 
 function groups_get_response(username, class_id, groups) {
@@ -24,14 +36,34 @@ function groups_get_response(username, class_id, groups) {
 }
 
 function group_join_response(username, class_id, group_id) {
+    var $login_view = $('.login_view');
+    var $class_view = $('.class_view');
+    var $group_view = $('.group_view');
+    var $messages = $('#messages');
+
+    $messages.html('');
+
+    $login_view.hide();
+    $class_view.hide();
+    $group_view.show();
+
     localStorage.setItem('group_id', group_id);
-    location.href = '/groups';
+
+    socket.group_info(username, class_id, group_id, true);
+    socket.get_settings(class_id, group_id);
 }
 
 function logout_response() {
+    var $login_view = $('.login_view');
+    var $class_view = $('.class_view');
+    var $group_view = $('.group_view');
+
+    $login_view.show();
+    $class_view.hide();
+    $group_view.hide();
+
     localStorage.removeItem('class_id');
     localStorage.removeItem('username');
-    location.href = '/';
 }
 
 function group_info_response(username, class_id, group_id, members, status) {
@@ -74,15 +106,23 @@ function coordinate_change_response(username, class_id, group_id, x, y) {
 }
 
 function group_leave_response(username, class_id, group_id) {
+    var $login_view = $('.login_view');
+    var $class_view = $('.class_view');
+    var $group_view = $('.group_view');
+
+    $login_view.hide();
+    $class_view.show();
+    $group_view.hide();
     localStorage.removeItem('group_id');
-    location.href = '/class';
+    
+    socket.groups_get(localStorage.getItem('username', username),
+                      localStorage.getItem('class_id', class_id)
+                     );
 }
 
 function get_settings_response(class_id, settings) {
     $class_settings = $('#settings');
     $class_settings.html('');
-
-    console.log(settings);
 
     for (var setting in settings) {
         var setting_item = "<li>" + setting + ": " + settings[setting] + "</li>";
