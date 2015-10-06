@@ -1,6 +1,6 @@
 // Handles errors on the client side
 function server_error(error) {
-    $('.error_message').html(JSON.stringify(error)); 
+    $('#error_frame').html(JSON.stringify(error)); 
 }
 
 // Changes admin page view from creation to management
@@ -13,7 +13,7 @@ function add_class_response(class_id, class_name, group_count) {
     var $groups = $('.groups');
 
     localStorage.setItem('admin_class_id', class_id);
-    $('.error_message').html('');
+    $('#error_frame').html('');
 
     $create_view.hide();
     $manage_view.show();
@@ -33,7 +33,7 @@ function add_class_response(class_id, class_name, group_count) {
 function add_group_response() {
     var $groups = $('.groups');
     
-    $('.error_message').html('');
+    $('#error_frame').html('');
     var new_group = "";
     var group_number = $('.groups > li:last').index() + 2;
     new_group += "<li>Group " + group_number;
@@ -43,7 +43,7 @@ function add_group_response() {
 
 // Deletes the last group from the list
 function delete_group_response() {
-    $('.error_message').html('');
+    $('#error_frame').html('');
     $('.groups > li:last').remove(); 
 }
 
@@ -53,7 +53,7 @@ function leave_class_response() {
     var $manage_view = $('.manage_view');
     var $settings_view = $('.settings_view');
     
-    $('.error_message').html('');
+    $('#error_frame').html('');
     
     $create_view.show();
     $manage_view.hide();

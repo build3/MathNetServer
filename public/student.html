@@ -15,41 +15,44 @@
     
     <div class="login_view">
       <h1 > Student Login :  </h1>
-      <h4 id="error_frame" style="color:red;"></h4>
-      Class ID : <input type="text" id="class_id" name="class_id"/><br/>
-      Nickname : <input type="text" id="nickname" name="nickname"/><br/>
-      <input type="submit" value="Login" id="login"/><br/>
+      <div class="col-md-4"><h4 id="error_frame"></h4></div><br/>
+      <div class="col-md-12">
+        Class ID : <input type="text" id="class_id" name="class_id"/><br/>
+        Nickname : <input type="text" id="nickname" name="nickname"/><br/>
+        <input type="submit" value="Login" id="login"/><br/>
+      </div>
     </div>
-
-    <div class="class_view">
-      <h2 > Student Groups :  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
-      <p id="buttons"> </p>
-      <!-- foreach group, create a html button with onclick to emit action to a group -->
-      <input type="button" value="Log Out" id="logout" />
-    </div>
-
-    <div class="group_view">
-      <div class="col-md-3">
-        <h2 id="number">Group  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
+    <div class="col-md-12">
+      <div class="class_view">
+        <h2 > Student Groups :  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
+        <p id="buttons"> </p>
         <!-- foreach group, create a html button with onclick to emit action to a group -->
-        <div id="included_content">
-          <h3>People - Coordinates</h3>
-          <ul id="people"></ul>
-          <input type="button" value="←" class="change_coord" data-x=-1 data-y=0 />
-          <input type="button" value="↑" class="change_coord" data-x=0 data-y=1 />
-          <input type="button" value="↓" class="change_coord" data-x=0 data-y=-1 />
-          <input type="button" value="→" class="change_coord" data-x=1 data-y=0 />
-          <br/>
+        <input type="button" value="Log Out" id="logout" />
+      </div>
+
+      <div class="group_view">
+        <div class="col-md-3">
+          <h2 id="number">Group  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
+          <!-- foreach group, create a html button with onclick to emit action to a group -->
+          <div id="included_content">
+            <h3>People - Coordinates</h3>
+            <ul id="people"></ul>
+            <input type="button" value="←" class="change_coord" data-x=-1 data-y=0 />
+            <input type="button" value="↑" class="change_coord" data-x=0 data-y=1 />
+            <input type="button" value="↓" class="change_coord" data-x=0 data-y=-1 />
+            <input type="button" value="→" class="change_coord" data-x=1 data-y=0 />
+            <br/>
+          </div>
+
+          <input type="button" value="Leave Group" id="leave_group"/><br><br>
+
+          <ul id="settings"></ul>
         </div>
-
-        <input type="button" value="Leave Group" id="leave_group"/><br><br>
-
-        <ul id="settings"></ul>
+        <div class="col-md-3" id="messages">
+        </div>
+        <div class="col-md-3"/>
+        <div class="col-md-3"/>
       </div>
-      <div class="col-md-3 " id="messages" style="width:300px; height:300px; overflow:auto;">
-      </div>
-      <div class="col-md-3"/>
-      <div class="col-md-3"/>
     </div>
 
   </div>

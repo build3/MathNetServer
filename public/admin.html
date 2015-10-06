@@ -11,46 +11,50 @@
 <script src="/js/admin_sockets.js"></script>
 </head>
 <div class="container">
-<h3 class="error_message"></h3>
-
+  <div class="col-md-4">
+    <h3 id="error_frame"></h3>
+  </div>
+  <br/>
+  <div class="col-md-12">
 <!-- This div appears when an admin leaves a class or has not made on yet -->
-  <div class="create_view">
-    <h3>Class Name</h3>
-    <input class="class_input" type="text" placeholder="Class Name">
-    <input class="secret" type="text" placeholder="Secret">
-    <br>
+    <div class="create_view">
+      <h3>Class Name</h3>
+      <input class="class_input" type="text" placeholder="Class Name">
+      <input class="secret" type="text" placeholder="Secret">
+      <br>
 
-    <h3>Number of Groups</h3>
-    <input class="group_input" type="number" value="0">
-    <br>
-    
-    <input class="create_button" type="button" value="Create Class">
+      <h3>Number of Groups</h3>
+      <input class="group_input" type="number" value="0">
+      <br>
+      
+      <input class="create_button" type="button" value="Create Class">
 
-    <hr>
-    <h3>or Join Past Class</h3>
-    <input class="class_id" type="text" placeholder="Class ID">
-    <br>
+      <hr>
+      <h3>or Join Past Class</h3>
+      <input class="class_id" type="text" placeholder="Class ID">
+      <br>
 
-    <input class="join_button" type="button" value="Join Class">
-  </div>
+      <input class="join_button" type="button" value="Join Class">
+    </div>
 
-  <!-- This div appears once an admin has created a class -->
-  <div class="manage_view">
-    <h3 class="class_name"></h3>
-    
-    <input class="add_button" type="button" value="Add Group"> 
-    <input class="delete_button" type="button" value="Delete Group">
-    <input class="leave_button" type="button" value="Leave Class">
+    <!-- This div appears once an admin has created a class -->
+    <div class="manage_view">
+      <h3 class="class_name"></h3>
+      
+      <input class="add_button" type="button" value="Add Group"> 
+      <input class="delete_button" type="button" value="Delete Group">
+      <input class="leave_button" type="button" value="Leave Class">
 
-    <ul class="groups"></ul>
-  </div>
+      <ul class="groups"></ul>
+    </div>
 
-  <div class="settings_view">
-    <br>
-    <input class="setting" type="checkbox" name="Test1">Test1<br>
-    <input class="setting" type="checkbox" name="Test2">Test2<br>
-    <input class="setting" type="checkbox" name="Test3">Test3<br>
-    
-    <input class="save_button" type="button" value="Save Settings">
+    <div class="settings_view">
+      <br>
+      <input class="setting" type="checkbox" name="Test1">Test1<br>
+      <input class="setting" type="checkbox" name="Test2">Test2<br>
+      <input class="setting" type="checkbox" name="Test3">Test3<br>
+      
+      <input class="save_button" type="button" value="Save Settings">
+    </div>
   </div>
 </div>
