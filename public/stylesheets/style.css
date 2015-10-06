@@ -8,3 +8,15 @@ body {
     padding: 20px;
     background-color: rgba(114, 190, 210, 0.46);
 }
+#error_frame:not(:empty){
+    color:red;
+    border: 2px solid rgba(0, 0, 0, 0.12);
+    border-radius: 3px;
+    background-color: rgba(200, 192, 192, 0.38);
+    padding: 5px;
+}
+#messages{
+    width:300px; 
+    height:300px; 
+    overflow:auto;
+}
