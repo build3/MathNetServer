@@ -16,7 +16,6 @@ body {
     padding: 5px;
 }
 #messages{
-    width:300px; 
     height:300px; 
     overflow:auto;
 }
