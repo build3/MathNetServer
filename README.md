@@ -37,14 +37,17 @@ Next, you'll want to clone this repository `git clone -b v1.x https://bitbucket.
 
 Move into this new directory.
 
-From there, you'll need to create a `secrets.js` file. The format should be the following but filled in with your database credentials:
+From there, you'll need to create a `secrets.js` file. The format should be the following but filled in with your database credentials (and what you wish your database and tables to be named):
 
 ```
 #!javascript
 module.exports = {
     host:"localhost",
     user:"root",
-    password:"password"
+    password:"password",
+    database:"database_name",
+    class_table:"class_table_name",
+    group_table:"group_table_name"
 }
 ```
 
