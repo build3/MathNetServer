@@ -53,7 +53,7 @@ $(function() {
     //
     $add_button.click(function() {
         // Tell the server to create a new group for the class in the database
-        socket.add_group(localStorage.getItem('admin_class_id'), $secret.val().trim());
+        socket.add_group(sessionStorage.getItem('admin_class_id'), $secret.val().trim());
     });
 
     //
@@ -62,7 +62,7 @@ $(function() {
     $delete_button.click(function() {
         // Only remove if there are groups
         if ($('.groups > li').length > 0) {
-            socket.delete_group(localStorage.getItem('admin_class_id'), $('.groups > li:last').index() + 1, $secret.val().trim());
+            socket.delete_group(sessionStorage.getItem('admin_class_id'), $('.groups > li:last').index() + 1, $secret.val().trim());
         }
     });
 
@@ -70,7 +70,7 @@ $(function() {
     // LEAVE CLASS
     //
     $leave_button.click(function() {
-        socket.leave_class(localStorage.getItem('admin_class_id'), $secret.val().trim());
+        socket.leave_class(sessionStorage.getItem('admin_class_id'), $secret.val().trim());
     });
 
     //
@@ -81,6 +81,6 @@ $(function() {
         for(var i=0; i<$settings.length; i++) {
             data[$settings[i].name] = $settings[i].checked;
         }
-        socket.save_settings(localStorage.getItem('admin_class_id'), data, $secret.val().trim());
+        socket.save_settings(sessionStorage.getItem('admin_class_id'), data, $secret.val().trim());
     });
 });

@@ -15,13 +15,13 @@ $(function() {
         socket.login($username.val().trim(), $class_id.val().trim());
     });
 
-    $error_header.html(localStorage.getItem('error'))
+    $error_header.html(sessionStorage.getItem('error'))
                  .promise()
                  .done(function() {
-                     localStorage.removeItem('error');
-                     localStorage.removeItem('class_id');
-                     localStorage.removeItem('group_id');
-                     localStorage.removeItem('username');
+                     sessionStorage.removeItem('error');
+                     sessionStorage.removeItem('class_id');
+                     sessionStorage.removeItem('group_id');
+                     sessionStorage.removeItem('username');
                  });
 
 });

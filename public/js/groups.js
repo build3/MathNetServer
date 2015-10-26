@@ -6,18 +6,18 @@ $(function() {
     $coord_change_buttons.click(function(event) {
         var x = parseInt($(event.target).attr('data-x'));
         var y = parseInt($(event.target).attr('data-y'));
-        socket.coordinate_change(localStorage.getItem('username'),
-                                 localStorage.getItem('class_id'),
-                                 localStorage.getItem('group_id'),
+        socket.coordinate_change(sessionStorage.getItem('username'),
+                                 sessionStorage.getItem('class_id'),
+                                 sessionStorage.getItem('group_id'),
                                  x,
                                  y
                                 );
     });
 
     $leave_group_button.click(function() {
-        socket.group_leave(localStorage.getItem('username'),
-                           localStorage.getItem('class_id'),
-                           localStorage.getItem('group_id')
+        socket.group_leave(sessionStorage.getItem('username'),
+                           sessionStorage.getItem('class_id'),
+                           sessionStorage.getItem('group_id')
                           );
     });
 });

@@ -4,7 +4,7 @@ function server_error(error) {
     var $group_view = $('.group_view');
 
     console.log(error);
-    localStorage.setItem('error', error);
+    sessionStorage.setItem('error', error);
     location.reload();
 }
 
@@ -17,15 +17,15 @@ function login_response(username, class_id) {
     $class_view.show();
     $group_view.hide();
 
-    localStorage.setItem('class_id', class_id);
-    localStorage.setItem('username', username);
+    sessionStorage.setItem('class_id', class_id);
+    sessionStorage.setItem('username', username);
     socket.groups_get(username, class_id);
 }
 
 function groups_get_response(username, class_id, groups) {
     var $groups = $('#buttons');
-    var current_user = localStorage.getItem('username');
-    var current_class = localStorage.getItem('class_id');
+    var current_user = sessionStorage.getItem('username');
+    var current_class = sessionStorage.getItem('class_id');
     $groups.empty();
     for (var i in groups){
         var button = '<input type="button" value="Group ';
@@ -47,7 +47,7 @@ function group_join_response(username, class_id, group_id) {
     $class_view.hide();
     $group_view.show();
 
-    localStorage.setItem('group_id', group_id);
+    sessionStorage.setItem('group_id', group_id);
 
     socket.group_info(username, class_id, group_id, true);
     socket.get_settings(class_id, group_id);
@@ -62,14 +62,14 @@ function logout_response() {
     $class_view.hide();
     $group_view.hide();
 
-    localStorage.removeItem('class_id');
-    localStorage.removeItem('username');
+    sessionStorage.removeItem('class_id');
+    sessionStorage.removeItem('username');
 }
 
 // EDIT THIS FUNCTION
 function group_info_response(username, class_id, group_id, members, status) {
-    var current_user = localStorage.getItem('username');
-    var current_group = localStorage.getItem('group_id');
+    var current_user = sessionStorage.getItem('username');
+    var current_group = sessionStorage.getItem('group_id');
     $group_name = $('#number');
     $people = $('#people');
     $group_name.html('Group: ' + current_group);    
@@ -117,10 +117,10 @@ function group_leave_response(username, class_id, group_id) {
     $login_view.hide();
     $class_view.show();
     $group_view.hide();
-    localStorage.removeItem('group_id');
+    sessionStorage.removeItem('group_id');
     
-    socket.groups_get(localStorage.getItem('username', username),
-                      localStorage.getItem('class_id', class_id)
+    socket.groups_get(sessionStorage.getItem('username', username),
+                      sessionStorage.getItem('class_id', class_id)
                      );
 }
 
