@@ -68,7 +68,7 @@
         });
 
         socket.on('add-class-response', function(data) {
-            console.log('weeeeee');
+            //console.log('weeeeee');
             add_class_response(data.class_id, data.class_name, data.group_count);
         });
 

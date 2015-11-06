@@ -56,7 +56,7 @@ function remove_user_from_class(username, class_id) {
             deferred.resolve();
         }
         else {
-            deferred.reject('Username ' + username + ' is invalid.');
+            deferred.reject('Username ' + username + ' is invalid. remove_user');
         }
     }
     else {
@@ -110,7 +110,7 @@ function add_user_to_group(username, class_id, group_id) {
                 deferred.resolve();
             }
             else {
-                deferred.reject('Username ' + username + ' is invalid.');
+                deferred.reject('Username ' + username + ' is invalid. add_user_to_group');
             }
         }
         else {
@@ -144,7 +144,7 @@ function remove_user_from_group(username, class_id, group_id) {
                     deferred.resolve();
                 }
                 else {
-                    deferred.reject('Username ' + username + ' is invalid.');
+                    deferred.reject('Username ' + username + ' is invalid. remove_user_from_group');
                 }
 
             }
@@ -223,7 +223,7 @@ function update_users_coordinates(username, class_id, x, y, info) {
             }
         }
         else {
-            deferred.reject('Username ' + username + ' is invalid.');
+            deferred.reject('Username ' + username + ' is invalid. update_users_coordinates');
         }
     }
     else {
@@ -418,6 +418,7 @@ function server_sockets(server, client){
                     class_id : class_id 
                 }
                 date = new Date().toJSON();
+                //console.log('it logs you in');
                 logger.info(date + "~" + username + "~login~" + class_id +"~~" + JSON.stringify(response) + "~1~");
                 socket.emit('login_response', response);
             }).fail(function(error) {
@@ -472,6 +473,7 @@ function server_sockets(server, client){
         // Emits groups_get_response to all sockets in the class room
         // Emits group_info_response to the admin socket of class
         socket.on('group_join', function(username, class_id, group_id) {
+            //console.log("Group join?");
             add_user_to_group(username, class_id, group_id)
             .then(function() {
                return get_all_groups_from_class(class_id);
@@ -487,6 +489,7 @@ function server_sockets(server, client){
                     groups : groups
                 }
                 date = new Date().toJSON();
+                //console.log("Group join?");
                 logger.info(date + "~" + username + "~group_join~" + class_id + "~" + group_id + "~" + JSON.stringify(response)
                             + "~1~" +class_id + "x");
                 socket.emit('group_join_response', response);
@@ -674,6 +677,8 @@ function server_sockets(server, client){
                     date = new Date().toJSON();
                     logger.info(date + "~ADMIN~add-group~" + class_id + "~" + groups.length + "~" + JSON.stringify(response) 
                                 + "~1~"+ class_id + "x");
+                    console.log('add group response!');
+                    //console.log(socket);
                     socket.emit('add-group-response', {});
                     io.sockets.to(class_id + "x").emit('groups_get_response', response);
                 }).fail(function(error) {
@@ -702,6 +707,8 @@ function server_sockets(server, client){
                     logger.info(date + "~ADMIN~delete-group~" + class_id + "~" + group_id + "~" 
                                 + JSON.stringify(response) + "~1~[" + class_id + "x," + class_id + "x" + group_id + "]");
                     socket.emit('delete-group-response', {});
+                    //console.log(socket);
+                    console.log("delete-group-response sent");
                     io.sockets.to(class_id + "x" + group_id).emit('group_leave_response', response);
                     io.sockets.to(class_id + "x").emit('groups_get_response', response);
                 }).fail(function(error) {
