@@ -677,7 +677,7 @@ function server_sockets(server, client){
                     date = new Date().toJSON();
                     logger.info(date + "~ADMIN~add-group~" + class_id + "~" + groups.length + "~" + JSON.stringify(response) 
                                 + "~1~"+ class_id + "x");
-                    console.log('add group response!');
+                    //console.log('add group response!');
                     //console.log(socket);
                     socket.emit('add-group-response', {});
                     io.sockets.to(class_id + "x").emit('groups_get_response', response);
@@ -708,7 +708,7 @@ function server_sockets(server, client){
                                 + JSON.stringify(response) + "~1~[" + class_id + "x," + class_id + "x" + group_id + "]");
                     socket.emit('delete-group-response', {});
                     //console.log(socket);
-                    console.log("delete-group-response sent");
+                    //console.log("delete-group-response sent");
                     io.sockets.to(class_id + "x" + group_id).emit('group_leave_response', response);
                     io.sockets.to(class_id + "x").emit('groups_get_response', response);
                 }).fail(function(error) {
