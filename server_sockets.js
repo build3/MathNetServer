@@ -459,7 +459,7 @@ function server_sockets(server, client){
                     class_id : class_id,
                     groups : groups
                 }
-                io.sockets.to(class_id + "x").emit('groups_get_response', response);
+                socket.emit('groups_get_response', response);
             }).fail(function(error) {
                 server_error(error, error);
             });
@@ -473,9 +473,7 @@ function server_sockets(server, client){
         // Emits group_info_response to the admin socket of class
         socket.on('group_join', function(username, class_id, group_id) {
             add_user_to_group(username, class_id, group_id)
-            .then(function() {
-               return get_all_groups_from_class(class_id);
-            }).then(function(groups) { 
+            .then(function() { 
                 socket.join(class_id + "x" + group_id);
                 socket.leave(class_id + "x");
                 socket.group_id = group_id;
@@ -484,13 +482,14 @@ function server_sockets(server, client){
                     username : username,
                     class_id : class_id,
                     group_id : group_id,
-                    groups : groups
+                    status : true,
+                    group_size : classes.available_classes[class_id][group_id]["students"].length
                 }
                 date = new Date().toJSON();
                 logger.info(date + "~" + username + "~group_join~" + class_id + "~" + group_id + "~" + JSON.stringify(response)
                             + "~1~" +class_id + "x");
                 socket.emit('group_join_response', response);
-                io.sockets.to(class_id + "x").emit('groups_get_response', response);
+                io.sockets.to(class_id + "x").emit('group_numbers_response', response);
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
             }).fail(function(error) {
                 server_error(error, error);
@@ -505,21 +504,20 @@ function server_sockets(server, client){
         socket.on('group_leave', function(username, class_id, group_id) {
             remove_user_from_group(username, class_id, group_id)
             .then(function() {
-                return get_info_of_group(class_id, group_id)
-            }).then(function(other_members) {
+                socket.join(class_id + "x");
                 socket.leave(class_id + 'x' + group_id);
                 var response = {
                     username : username,
                     class_id : class_id,
                     group_id : group_id,
-                    other_members : other_members,
-                    status: false
+                    status: false,
+                    group_size : classes.available_classes[class_id][group_id]["students"].length
                 }
                 date = new Date().toJSON();
                 logger.info(date + "~" + username + "~group_leave~" + class_id + "~" + group_id + "~" 
                             + JSON.stringify(response) + "~1~" +class_id + "x" + group_id );
                 socket.emit('group_leave_response', response);
-                io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
+                io.sockets.to(class_id + "x").emit('group_numbers_response', response)
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
                 socket.group_id = undefined;
             }).fail(function(error) {
@@ -542,7 +540,17 @@ function server_sockets(server, client){
                     other_members : other_members,
                     status: status
                 }
-                io.sockets.to(class_id + "x"+ group_id).emit('group_info_response', response);
+                if(status){
+                    socket.emit('group_info_response', response); 
+                } //don't need to emit if the person is leaving 
+                response['other_members'] = [{
+                    member_name : username,
+                    member_x : classes.available_classes[class_id]["user"][username]["x"], 
+                    member_y : classes.available_classes[class_id]["user"][username]["y"],
+                    member_info : classes.available_classes[class_id]["user"][username]["info"],
+                    group_id : group_id
+                }]; //set other_members to just the new member for the other group members
+                socket.broadcast.to(class_id + "x"+ group_id).emit('group_info_response', response);
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
             }).fail(function(error) {
                 server_error(error, error);

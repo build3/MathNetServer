@@ -86,7 +86,7 @@
 
         socket.on('group_info_response', function(data) {
             group_info_response(data.group_id, data.other_members);
-        });
+        }); //change this so it only needs the data of one member (in object format)
 
         return {
             add_class: add_class,

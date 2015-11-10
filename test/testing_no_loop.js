@@ -29,7 +29,7 @@ describe('testing steps', function(){
                     finish()
                 });
 
-                client.emit('login', i, 1);
+                client.emit('login', i, 'ohs79ld1');
             }, function(err){
                 if (err){
 
@@ -50,23 +50,23 @@ describe('testing steps', function(){
                     if(count2 == 1){
                         finish();
                     } else {
-                        client.emit('group_join', i, 1, 1);
+                        client.emit('group_join', i, 'ohs79ld1', 1);
                     }
                 });
                 client.on('group_join_response', function(data){
                     for(j = 0; j < num_times; j++){
                         //console.log("made it to join resp");
-                        client.emit('coordinate_change', i, 1, 1, 1, 0);      
+                        client.emit('coordinate_change', i, 'ohs79ld1', 1, 1, 0);      
                     }
                 });
                 client.on('coordinate_change_response', function(data){
                     count++;
                     if(count == num_times){
-                        client.emit('group_leave', i, 1, 1);
+                        client.emit('group_leave', i, 'ohs79ld1', 1);
                     }
                 });
                 
-                client.emit('group_join', i, 1, 1); 
+                client.emit('group_join', i, 'ohs79ld1', 1); 
             }, function(err){
                 if (err){
                     console.log(err);
@@ -107,7 +107,7 @@ describe('testing steps', function(){
                     finish();
                 });
                 for (j = 0; j < 1; j++){
-                    client.emit('add-group', 3,  "ucd_247");
+                    client.emit('add-group', 'ohs79ld1',  "ucd_247");
                 }
             }, function(err){
                 if (err){
@@ -129,7 +129,7 @@ describe('testing steps', function(){
                     finish();
                 });
                 for (j = 1; j > 0; j--){
-                    client.emit('delete-group', 3, j+3, "ucd_247");  
+                    client.emit('delete-group', 'ohs79ld1', i+4, "ucd_247");  
                 }
             }, function(err){
                 if (err){

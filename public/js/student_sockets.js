@@ -76,6 +76,10 @@
             coordinate_change_response(data.username, data.class_id, 
                                        data.group_id, data.x, data.y, data.info);
         });
+        socket.on('group_numbers_response', function(data) {
+            group_numbers_response(data.username, data.class_id, data.group_id, 
+                                data.status, data.group_size);
+        });
 
         socket.on('get-settings-response', function(data) {
             get_settings_response(data.class_id, data.settings);

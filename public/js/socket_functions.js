@@ -28,11 +28,18 @@ function groups_get_response(username, class_id, groups) {
     var current_class = sessionStorage.getItem('class_id');
     $groups.empty();
     for (var i in groups){
-        var button = '<input type="button" value="Group ';
+        var button = '<input type="button" id="grp' + groups[i].grp_name + '" value="Group ';
         button += groups[i].grp_name + ' - '+ groups[i].num;
         button += '" /><br/>';
         $groups.append(button);
     }
+}
+
+function group_numbers_response(username, class_id, group_id, status, group_size){
+    group_size = (status ? group_size++ : group_size--);
+    $("#grp" + group_id).val('Group ' + group_id + ' - ' + group_size);
+    //console.log(group_id + " " + group_size);
+
 }
 
 function group_join_response(username, class_id, group_id) {
@@ -42,6 +49,7 @@ function group_join_response(username, class_id, group_id) {
     var $messages = $('#messages');
 
     $messages.html('');
+    $("#people").html('');
 
     $login_view.hide();
     $class_view.hide();
@@ -72,27 +80,29 @@ function group_info_response(username, class_id, group_id, members, status) {
     var current_group = sessionStorage.getItem('group_id');
     $group_name = $('#number');
     $people = $('#people');
-    $group_name.html('Group: ' + current_group);    
-    $people.html('');
-    for (var i in members) {
-        if(members[i].member_name != current_user) {
-            var member = '<li id="' + members[i].member_name + '">';
-            member += members[i].member_name;
-            member += ' - (<span class="x">' + members[i].member_x + '</span>, ';
-            member += '<span class="y">' + members[i].member_y + '</span>) </li>';
-        }
-        else {
-            var member = '<li id="' + members[i].member_name + '">';
-            member += members[i].member_name + ' (You)';
-            member += ' - (<span class="x">' + members[i].member_x + '</span>, ';
-            member += '<span class="y">' + members[i].member_y + '</span>) </li>';
-        }
-        $people.append(member);
-        
-    }
+    //$people.html('');
     if(status){
+        for (var i in members) {
+            if(members[i].member_name != current_user) {
+                var member = '<li id="' + members[i].member_name + '">';
+                member += members[i].member_name;
+                member += ' - (<span class="x">' + members[i].member_x + '</span>, ';
+                member += '<span class="y">' + members[i].member_y + '</span>) </li>';
+            }
+            else {
+                $group_name.html('Group: ' + current_group); //only update this for the new member
+                var member = '<li id="' + members[i].member_name + '">';
+                member += members[i].member_name + ' (You)';
+                member += ' - (<span class="x">' + members[i].member_x + '</span>, ';
+                member += '<span class="y">' + members[i].member_y + '</span>) </li>';
+            }
+            $people.append(member);
+            
+        }
+    
         $('#messages').append(username + ' has joined the group<br/>');
     } else {
+        $("#" + username).remove();
         $('#messages').append(username + ' has left the group<br/>');
     }
 }
@@ -119,9 +129,8 @@ function group_leave_response(username, class_id, group_id) {
     $group_view.hide();
     sessionStorage.removeItem('group_id');
     
-    socket.groups_get(sessionStorage.getItem('username', username),
-                      sessionStorage.getItem('class_id', class_id)
-                     );
+    
+    socket.group_info(username, class_id, group_id, false);
 }
 
 // EDIT THIS FUNCTION
