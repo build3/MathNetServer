@@ -8,7 +8,7 @@
 <script src="/js/class.js"></script>
 <script src="/js/groups.js"></script>
 <script src="/js/student_sockets.js"></script>
-<script src="/js/socket_functions.js"></script>
+<script src="/js/student_functions.js"></script>
 
 <div class="container" id="main">
   <div id="page" class="row">
@@ -34,16 +34,15 @@
         <div class="col-md-3">
           <h2 id="number">Group  </h2><!-- add in class name, display buttons based on the class's groups to enter the individual groups  -->
           <!-- foreach group, create a html button with onclick to emit action to a group -->
-          <div id="included_content">
-            <h3>People - Coordinates</h3>
-            <ul id="people"></ul>
-            <input type="button" value="←" class="change_coord" data-x=-1 data-y=0 />
-            <input type="button" value="↑" class="change_coord" data-x=0 data-y=1 />
-            <input type="button" value="↓" class="change_coord" data-x=0 data-y=-1 />
-            <input type="button" value="→" class="change_coord" data-x=1 data-y=0 />
-            <br/>
-          </div>
-
+          
+          <h3>People - Coordinates</h3>
+          <ul id="people"></ul>
+          <input type="button" value="←" class="change_coord" data-x=-1 data-y=0 />
+          <input type="button" value="↑" class="change_coord" data-x=0 data-y=1 />
+          <input type="button" value="↓" class="change_coord" data-x=0 data-y=-1 />
+          <input type="button" value="→" class="change_coord" data-x=1 data-y=0 />
+          <br/>
+          
           <input type="button" value="Leave Group" id="leave_group"/><br><br>
 
           <ul id="settings"></ul>
