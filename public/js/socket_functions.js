@@ -28,9 +28,9 @@ function groups_get_response(username, class_id, groups) {
     var current_class = sessionStorage.getItem('class_id');
     $groups.empty();
     for (var i in groups){
-        var button = '<input type="button" id="grp' + groups[i].grp_name + '" value="Group ';
+        var button = '<li><input type="button" id="grp' + groups[i].grp_name + '" value="Group ';
         button += groups[i].grp_name + ' - '+ groups[i].num;
-        button += '" /><br/>';
+        button += '" /></li>';
         $groups.append(button);
     }
 }
@@ -129,8 +129,7 @@ function group_leave_response(username, class_id, group_id) {
     $group_view.hide();
     sessionStorage.removeItem('group_id');
     
-    
-    socket.group_info(username, class_id, group_id, false);
+    //socket.group_info(username, class_id, group_id, false);
 }
 
 // EDIT THIS FUNCTION
@@ -144,3 +143,15 @@ function get_settings_response(class_id, settings) {
     }
 }
 
+function add_group_response() {
+    var $groups = $('#buttons');
+    var group_number = $('#buttons > li:last').index() + 2;
+    var button = '<li><input type="button" id="grp' + group_number + '" value="Group ';
+    button += group_number + ' - '+ 0;
+    button += '" /></li>';
+    $groups.append(button);
+}
+
+function delete_group_response() {
+    $('#buttons > li:last').remove();
+}

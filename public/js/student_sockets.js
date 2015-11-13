@@ -85,6 +85,15 @@
             get_settings_response(data.class_id, data.settings);
         });
 
+        socket.on('add-group-response', function(data) {
+            add_group_response();
+        });
+
+        socket.on('delete-group-response', function(data) {
+            delete_group_response();
+        });
+
+
         return {
             login: login,
             logout: logout,

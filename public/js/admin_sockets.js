@@ -85,8 +85,14 @@
         });
 
         socket.on('group_info_response', function(data) {
-            group_info_response(data.group_id, data.other_members);
-        }); //change this so it only needs the data of one member (in object format)
+            group_info_response(data.username, data.class_id, data.group_id, 
+                                data.other_members, data.status);
+        });
+
+        socket.on('coordinate_change_response', function(data) {
+            coordinate_change_response(data.username, data.class_id, 
+                                       data.group_id, data.x, data.y, data.info);
+        });
 
         return {
             add_class: add_class,

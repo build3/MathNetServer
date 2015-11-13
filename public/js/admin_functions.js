@@ -62,13 +62,26 @@ function leave_class_response() {
 
 // Adds user information to the proper group
 // Updates the data every time there is a change takes place
-function group_info_response(group_id, group) {
+function group_info_response(username, class_id, group_id, group, status) {
     var $people = $('.g' + group_id);
-    $people.html('');
-    for (var i in group) {
-        var member = '<li>' + group[i].member_name;
-        member += ' - (' + group[i].member_x + ', ' + group[i].member_y + ')';
-        member += '</li>';
-        $people.append(member);
+    //$people.html('');
+    
+    if (status) {
+        for (var i in group) {
+            var member = '<li id="' + group[i].member_name +'">';
+            member += group[i].member_name;
+            member += ' - (<span class="x">' + group[i].member_x + '</span>, ' 
+            member += '<span class="y">' + group[i].member_y + '</span>)';
+            member += '</li>';
+            $people.append(member);
+        }
     }
+    else {
+        $("#" + username).remove();
+    }
+}
+
+function coordinate_change_response(username, class_id, group_id, x, y, info) {
+    $('#' + username + ' .x').html(x);
+    $('#' + username + ' .y').html(y);
 }

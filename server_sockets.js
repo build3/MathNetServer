@@ -475,13 +475,14 @@ function server_sockets(server, client){
             add_user_to_group(username, class_id, group_id)
             .then(function() { 
                 socket.join(class_id + "x" + group_id);
-                socket.leave(class_id + "x");
+               // socket.leave(class_id + "x");
                 socket.group_id = group_id;
 
                 var response = {
                     username : username,
                     class_id : class_id,
                     group_id : group_id,
+                    other_members : [{member_name: username, member_x: 0, member_y: 0, member_info: null, group_id: group_id}],
                     status : true,
                     group_size : classes.available_classes[class_id][group_id]["students"].length
                 }
@@ -504,7 +505,7 @@ function server_sockets(server, client){
         socket.on('group_leave', function(username, class_id, group_id) {
             remove_user_from_group(username, class_id, group_id)
             .then(function() {
-                socket.join(class_id + "x");
+              //  socket.join(class_id + "x");
                 socket.leave(class_id + 'x' + group_id);
                 var response = {
                     username : username,
@@ -518,6 +519,7 @@ function server_sockets(server, client){
                             + JSON.stringify(response) + "~1~" +class_id + "x" + group_id );
                 socket.emit('group_leave_response', response);
                 io.sockets.to(class_id + "x").emit('group_numbers_response', response)
+                io.sockets.to(class_id + "x" + group_id).emit('group_info_response');
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
                 socket.group_id = undefined;
             }).fail(function(error) {
@@ -551,7 +553,7 @@ function server_sockets(server, client){
                     group_id : group_id
                 }]; //set other_members to just the new member for the other group members
                 socket.broadcast.to(class_id + "x"+ group_id).emit('group_info_response', response);
-                io.sockets.to('admin-' + class_id).emit('group_info_response', response);
+                //io.sockets.to('admin-' + class_id).emit('group_info_response', response);
             }).fail(function(error) {
                 server_error(error, error);
             });
@@ -581,7 +583,7 @@ function server_sockets(server, client){
                 logger.info(date + "~" + username + "~coordinate_change~" + class_id + "~" + group_id + "~" 
                             + JSON.stringify(response)  + "~1~" + class_id + "x" + group_id );
                 io.sockets.to(class_id + "x" + group_id).emit('coordinate_change_response', response);
-                io.sockets.to('admin-' + class_id).emit('group_info_response', response);
+                io.sockets.to('admin-' + class_id).emit('coordinate_change_response', response);
             }).fail(function(error) {
                 server_error(error, error);
             });
@@ -653,7 +655,8 @@ function server_sockets(server, client){
                             if(other_members != undefined && other_members.length != 0){
                                var response = {
                                     other_members: other_members,
-                                    group_id: other_members[0].group_id
+                                    group_id: other_members[0].group_id,
+                                    status: true
                                 }
                                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
                             }
@@ -683,7 +686,8 @@ function server_sockets(server, client){
                     logger.info(date + "~ADMIN~add-group~" + class_id + "~" + groups.length + "~" + JSON.stringify(response) 
                                 + "~1~"+ class_id + "x");
                     socket.emit('add-group-response', {});
-                    io.sockets.to(class_id + "x").emit('groups_get_response', response);
+                    io.sockets.to(class_id + "x").emit('add-group-response', {});
+
                 }).fail(function(error) {
                     server_error(error, error);
                 });
@@ -711,7 +715,7 @@ function server_sockets(server, client){
                                 + JSON.stringify(response) + "~1~[" + class_id + "x," + class_id + "x" + group_id + "]");
                     socket.emit('delete-group-response', {});
                     io.sockets.to(class_id + "x" + group_id).emit('group_leave_response', response);
-                    io.sockets.to(class_id + "x").emit('groups_get_response', response);
+                    io.sockets.to(class_id + "x").emit('delete-group-response', {});
                 }).fail(function(error) {
                     server_error(error, error);
                 });
