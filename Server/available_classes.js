@@ -1,8 +1,8 @@
 //this initializes the global datastucture that holds current students in each class and the current groups.
 
 var mysql = require('mysql');
-var dbconfig = require('../config_database');
-var hash = require('../hashes');
+var dbconfig = require('./config_database');
+var hash = require('./hashes');
 
 var ids = {}
 

@@ -1,9 +1,6 @@
 .DS_Store
 .idea
-
 *.swp
-
 node_modules/
-/secrets.js
-
+secrets.js
 logs.txt

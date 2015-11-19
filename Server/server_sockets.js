@@ -1,4 +1,4 @@
-var classes = require('./public/available_classes');
+var classes = require('./available_classes');
 var socketio = require('socket.io');
 var database = require('./database_actions');
 var hash = require('./hashes');
@@ -9,7 +9,7 @@ var hash = require('./hashes');
 // needs to be returned.
 var Q = require("q");
 
-var logger = require('./public/js/logger_create');
+var logger = require('./logger_create');
 module.exports = server_sockets;
 
 // Takes a class id and username.
