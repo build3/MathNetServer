@@ -430,17 +430,16 @@ function server_sockets(server, client){
         // LOGOUT
         // Socket leaves room using class id
         // Emits logout_response to socket that triggered logout
-        socket.on('logout', function(username, class_id) {
+        socket.on('logout', function(username, class_id, disconnect) {
             remove_user_from_class(username, class_id)
             .then(function() { 
                 socket.leave(class_id + "x");
                 var response = {
-                    username : username,
-                    class_id : class_id
+                    disconnect: disconnect
                 }
                 date = new Date().toJSON();
                 logger.info(date + "~" + username + "~logout~" + class_id + "~~~1~");
-                socket.emit('logout_response', {});
+                socket.emit('logout_response', response);
                 socket.class_id = undefined;
                 socket.username = undefined;
             }).fail(function(error) {
@@ -502,7 +501,7 @@ function server_sockets(server, client){
         // Emits group_leave_response to socket that triggered group_leave
         // Emits group_info_response to all sockets in the class group room and
         // to the admin socket of the class
-        socket.on('group_leave', function(username, class_id, group_id) {
+        socket.on('group_leave', function(username, class_id, group_id, disconnect) {
             remove_user_from_group(username, class_id, group_id)
             .then(function() {
               //  socket.join(class_id + "x");
@@ -512,6 +511,7 @@ function server_sockets(server, client){
                     class_id : class_id,
                     group_id : group_id,
                     status: false,
+                    disconnect: disconnect,
                     group_size : classes.available_classes[class_id][group_id]["students"].length
                 }
                 date = new Date().toJSON();
@@ -766,59 +766,27 @@ function server_sockets(server, client){
         });
 
         socket.on('disconnect', function() {
-            // Remove user from class
             if (socket.class_id !== undefined) {
-
-                // Remove user from group
+                console.log('class id is here');
                 if (socket.group_id !== undefined) {
-                    remove_user_from_group(socket.username, socket.class_id, socket.group_id)
-                    .then(function() {
-                        return get_info_of_group(socket.class_id, socket.group_id)
-                    }).then(function(other_members) {
-                        socket.leave(socket.class_id + "x" + socket.group_id);
-                        var response = {
-                            username : socket.username,
-                            class_id : socket.class_id,
-                            group_id : socket.group_id,
-                            other_members : other_members
-                        }
-
-                        date = new Date().toJSON();
-                        logger.info(date + "~" + socket.username + 
-                                    "~group_leave~" + socket.class_id + "~" + 
-                                    socket.group_id + "~" + 
-                                    JSON.stringify(response) + "~1~" + 
-                                    socket.class_id + "x" + socket.group_id);
-
-                                    io.sockets.to(socket.class_id + "x" +
-                                                  socket.group_id)
-                                    .emit('group_info_response', response);
-                                    
-                                    io.sockets.to('admin-' + 
-                                                  socket.class_id)
-                                    .emit('group_info_response', response);
-                    }).fail(function(error) {
-                        server_error(error, error);
-                    });
-
-                }
-
-                remove_user_from_class(socket.username, socket.class_id)
-                .then(function() { 
+                    console.log('group_id');
                     var response = {
-                        username : socket.username,
-                        class_id : socket.class_id
+                        username: socket.username,
+                        class_id: socket.class_id,
+                        group_id: socket.group_id,
+                        disconnect: true
                     }
+                    socket.emit('group_leave', response);
+                }// Remove user from group
 
-                    date = new Date().toJSON();
-                    logger.info(date + "~" + socket.username + "~logout~" +
-                                socket.class_id + "~~~1~");
-                    socket.emit('logout_response', {});
-                }).fail(function(error) {
-                    server_error(error, error);
-                });
-            }
-        });
+                var response = {
+                    username: socket.username,
+                    class_id: socket.class_id,
+                    disconnect: true
+                }
+                socket.emit('logout', response);                
+            }// Remove user from class
+        }); 
     });
 }
 
