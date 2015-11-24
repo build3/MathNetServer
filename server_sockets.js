@@ -436,12 +436,12 @@ function server_sockets(server, client){
                 socket.leave(class_id + "x");
                 var response = {
                     username : username,
-                    class_id : class_idi,
+                    class_id : class_id,
                     disconnect: disconnect
                 }
                 date = new Date().toJSON();
                 logger.info(date + "~" + username + "~logout~" + class_id + "~~~1~");
-                socket.emit('logout_response', repsonse);
+                socket.emit('logout_response', response);
                 socket.class_id = undefined;
                 socket.username = undefined;
             }).fail(function(error) {
