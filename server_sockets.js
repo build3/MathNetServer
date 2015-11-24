@@ -430,17 +430,18 @@ function server_sockets(server, client){
         // LOGOUT
         // Socket leaves room using class id
         // Emits logout_response to socket that triggered logout
-        socket.on('logout', function(username, class_id) {
+        socket.on('logout', function(username, class_id, disconnect) {
             remove_user_from_class(username, class_id)
             .then(function() { 
                 socket.leave(class_id + "x");
                 var response = {
                     username : username,
-                    class_id : class_id
+                    class_id : class_idi,
+                    disconnect: disconnect
                 }
                 date = new Date().toJSON();
                 logger.info(date + "~" + username + "~logout~" + class_id + "~~~1~");
-                socket.emit('logout_response', {});
+                socket.emit('logout_response', repsonse);
                 socket.class_id = undefined;
                 socket.username = undefined;
             }).fail(function(error) {
@@ -502,7 +503,7 @@ function server_sockets(server, client){
         // Emits group_leave_response to socket that triggered group_leave
         // Emits group_info_response to all sockets in the class group room and
         // to the admin socket of the class
-        socket.on('group_leave', function(username, class_id, group_id) {
+        socket.on('group_leave', function(username, class_id, group_id, disconnect) {
             remove_user_from_group(username, class_id, group_id)
             .then(function() {
               //  socket.join(class_id + "x");
@@ -512,6 +513,7 @@ function server_sockets(server, client){
                     class_id : class_id,
                     group_id : group_id,
                     status: false,
+                    disconnect: disconnect,
                     group_size : classes.available_classes[class_id][group_id]["students"].length
                 }
                 date = new Date().toJSON();
@@ -780,6 +782,7 @@ function server_sockets(server, client){
                             username : socket.username,
                             class_id : socket.class_id,
                             group_id : socket.group_id,
+                            disconnect : true,
                             other_members : other_members
                         }
 
@@ -807,13 +810,14 @@ function server_sockets(server, client){
                 .then(function() { 
                     var response = {
                         username : socket.username,
-                        class_id : socket.class_id
+                        class_id : socket.class_id,
+                        disconnect : true
                     }
 
                     date = new Date().toJSON();
                     logger.info(date + "~" + socket.username + "~logout~" +
                                 socket.class_id + "~~~1~");
-                    socket.emit('logout_response', {});
+                    socket.emit('logout_response', response);
                 }).fail(function(error) {
                     server_error(error, error);
                 });
