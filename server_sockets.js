@@ -521,7 +521,7 @@ function server_sockets(server, client){
                             + JSON.stringify(response) + "~1~" +class_id + "x" + group_id );
                 socket.emit('group_leave_response', response);
                 io.sockets.to(class_id + "x").emit('group_numbers_response', response)
-                io.sockets.to(class_id + "x" + group_id).emit('group_info_response');
+                io.sockets.to(class_id + "x" + group_id).emit('group_info_response', response);
                 io.sockets.to('admin-' + class_id).emit('group_info_response', response);
                 socket.group_id = undefined;
             }).fail(function(error) {
