@@ -1,8 +1,7 @@
-# NSF Physics 7 Communication Project #
+# SERVER | NSF Physics 7 Communication Project #
 
 ### What is this repository for? ###
-
-A client-server project using Node.js. Students in groups will plot linear functions using an iPad application. This repository holds the communication layer of the application (client) and the server frontend and backend. More documentation can be found [here](https://drive.google.com/a/ucdavis.edu/folderview?id=0B1W6Ca2MINIsfmVmNEVxRWUyQkE5MXNseXRBZC1VV3A3ZzJBOUMwZGJuWE1HbFphZmhtaHM).
+The server side of a project using Node.js. Students in groups will plot linear functions using an iPad application. This repository holds the server frontend and backend. More documentation can be found [here](https://drive.google.com/a/ucdavis.edu/folderview?id=0B1W6Ca2MINIsfmVmNEVxRWUyQkE5MXNseXRBZC1VV3A3ZzJBOUMwZGJuWE1HbFphZmhtaHM).
 
 ### Dependencies ###
 * npm
@@ -10,12 +9,6 @@ A client-server project using Node.js. Students in groups will plot linear funct
 * Socket.io
 * Express.js
 * MySQL
-
-
-### Important Note ###
-
-When creating a class, the page requires a secret. The current secret is **ucd_247**.
-
 
 
 ### Installation & Setup ###
@@ -33,7 +26,7 @@ If you had to install MySQL, you'll need to set it up.
 
 Once MySQL is setup, be sure to start the MySQL server. **Your MySQL server needs to be at least version 5.6.**
 
-Next, you'll want to clone this repository `git clone https://bitbucket.org/psalessi/nsf-physics-7-communication-project.git` 
+Next, you'll want to clone this repository `git clone https://bitbucket.org/psalessi/server-nsf-physics-7-communication-project.git` 
 
 Move into this new directory.
 
@@ -58,7 +51,7 @@ After installation, you then run `node create_database.js` to create the necessa
 Now, you are ready to run the server. To do so, run `node server.js`. You can then navigate to wherever the server is running and add the correct port number to the url.
 For example, if running on `localhost` and `port 8888`, you would go to [http://localhost:8888/](http://localhost:8888/).
 
-By default, the port number is set to `8888`, but if you wish to change it, simply open `server.js` and edit the port number on **line 4**. The line should look like this `var port = 8888;`.
+By default, the port number is set to `8888`, but if you wish to change it, simply open `server.js` and edit the port number on **line 2**. The line should look like this `var port = 8888;`.
 
 #### Linux (Ubuntu) ####
 
