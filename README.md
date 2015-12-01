@@ -7,7 +7,6 @@ The server side of a project using Node.js. Students in groups will plot linear 
 * npm
 * Node.js
 * Socket.io
-* Express.js
 * MySQL
 
 
