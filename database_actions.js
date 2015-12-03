@@ -1,3 +1,4 @@
+"use strict";
 var mysql = require('mysql');
 var Q = require("q");
 var dbconfig = require('./config_database');

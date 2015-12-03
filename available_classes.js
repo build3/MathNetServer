@@ -1,3 +1,4 @@
+"use strict";
 //this initializes the global datastucture that holds current students in each class and the current groups.
 
 var mysql = require('mysql');

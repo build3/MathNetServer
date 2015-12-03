@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Creates the main database using names declared in config_database.js
  */

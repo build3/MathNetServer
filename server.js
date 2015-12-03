@@ -1,3 +1,4 @@
+"use strict";
 //server.js
 var port     = 8888;
 var server_sockets = require('./server_sockets');

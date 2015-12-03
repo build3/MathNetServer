@@ -1,3 +1,4 @@
+"use strict";
 var classes = require('./available_classes');
 var socketio = require('socket.io');
 var database = require('./database_actions');

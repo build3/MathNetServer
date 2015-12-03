@@ -1,3 +1,4 @@
+"use strict";
 //this is to create the logger object and export it to other js files for use
 
 var winston = require('winston');
