@@ -20,8 +20,8 @@ module.exports = server_sockets;
 function add_user_to_class(username, class_id) {
     var deferred = Q.defer();
    
-    if (username === "" || class_id === "") {
-        deferred.reject('Invalid class ID or username.');
+    if (username === "") {
+        deferred.reject('Invalid username.');
         return deferred.promise;
     }
 
@@ -38,7 +38,7 @@ function add_user_to_class(username, class_id) {
         }
     }
     else {
-        deferred.reject('Class ID ' + class_id + ' does not exist.');
+        deferred.reject('Class ID ' + class_id + ' is invalid.');
     }
 
     return deferred.promise;
@@ -300,7 +300,7 @@ function join_class(class_id) {
         deferred.resolve(data);
     }
     else {
-        deferred.reject('Class ID ' + class_id + ' does not exist.');
+        deferred.reject('Class ID ' + class_id + ' is invalid.');
     }
 
     return deferred.promise;
@@ -366,7 +366,7 @@ function leave_class(class_id) {
         deferred.resolve();
     }
     else {
-        deferred.reject('Class ID ' + class_id + ' does not exist.');
+        deferred.reject('Class ID ' + class_id + ' is invalid.');
     }
   
     return deferred.promise;
@@ -383,7 +383,7 @@ function save_settings(class_id, settings) {
         deferred.resolve();
     }
     else {
-        deferred.reject('Class ID ' + class_id + ' does not exist.');
+        deferred.reject('Class ID ' + class_id + ' is invalid.');
     }
 
     return deferred.promise;
