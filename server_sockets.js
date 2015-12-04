@@ -471,8 +471,8 @@ function server_sockets(server, client){
         // GROUP_JOIN
         // Socket joins room using class and group ids
         // Emits group_join_response to socket that triggered group_join
-        // Emits groups_get_response to all sockets in the class room
         // Emits group_info_response to the admin socket of class
+        // Emits group_numbers_response to all sockets in class room
         socket.on('group_join', function(username, class_id, group_id) {
             add_user_to_group(username, class_id, group_id)
             .then(function() { 
@@ -504,6 +504,7 @@ function server_sockets(server, client){
         // Emits group_leave_response to socket that triggered group_leave
         // Emits group_info_response to all sockets in the class group room and
         // to the admin socket of the class
+        // Emits group_numbers_response to all sockets in class room
         socket.on('group_leave', function(username, class_id, group_id, disconnect) {
             remove_user_from_group(username, class_id, group_id)
             .then(function() {
