@@ -1,6 +1,6 @@
 "use strict";
 //server.js
-var port     = 8888;
+var port     = 8889;
 var server_sockets = require('./server_sockets');
 var http = require('http');
 var server = http.createServer().listen(port);
