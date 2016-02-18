@@ -3,12 +3,15 @@
 ### What is this repository for? ###
 The server side of a project using Node.js. Students in groups will plot linear functions using an iPad application. This repository holds the server frontend and backend. More documentation can be found [here](https://drive.google.com/a/ucdavis.edu/folderview?id=0B1W6Ca2MINIsfmVmNEVxRWUyQkE5MXNseXRBZC1VV3A3ZzJBOUMwZGJuWE1HbFphZmhtaHM).
 
+***
+
 ### Dependencies ###
 * npm
 * Node.js
 * Socket.io
 * MySQL
 
+***
 
 ### Installation & Setup ###
 
@@ -63,7 +66,18 @@ sudo apt-get install git nodejs mysql-server-5.6
 
 The server setup is the same as OSX except instead of using the command `node` to start the server and create the database, you want to use the command `nodejs`.
 
+***
 
+### How To Run Server as Daemon using Screen ###
+1. SSH into Linux server
+2. Open a new screen instance using `screen`
+3. Start the communication server using `nodejs server.js`
+4. Detach the screen using `ctrl-a, d`
+
+To resume the screen instance, use `screen -r`
+To kill the screen instance, use `ctrl-a, k` in the screen
+
+***
 
 ### Versions ###
 #### Version 1 Functionality by August 10th: ####
