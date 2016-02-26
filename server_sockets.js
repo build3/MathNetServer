@@ -19,7 +19,7 @@ module.exports = server_sockets;
 // datastructure.
 function add_user_to_class(username, class_id) {
     var deferred = Q.defer();
-   
+    
     if (username === "") {
         deferred.reject('Invalid username.');
         return deferred.promise;
@@ -389,6 +389,17 @@ function save_settings(class_id, settings) {
     return deferred.promise;
 }
 
+// Sanitizes data received by socket to prevent 
+function sanitize_data(data) {
+    // Replace only works on string variables
+    if (typeof data === 'string' || data instanceof String) {
+        return data.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+    else {
+        return data;
+    }
+}
+
 // This function holds all event handlers for sockets.
 function server_sockets(server, client){
 
@@ -409,6 +420,9 @@ function server_sockets(server, client){
         // Socket joins room using class id
         // Emits login_response to socket that triggered login
         socket.on('login', function(username, class_id) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            
             add_user_to_class(username, class_id)
             .then(function() {
                 socket.class_id = class_id;
@@ -432,6 +446,10 @@ function server_sockets(server, client){
         // Socket leaves room using class id
         // Emits logout_response to socket that triggered logout
         socket.on('logout', function(username, class_id, disconnect) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            disconnect = sanitize_data(disconnect);
+            
             remove_user_from_class(username, class_id)
             .then(function() { 
                 socket.leave(class_id + "x");
@@ -453,6 +471,9 @@ function server_sockets(server, client){
         // GROUPS_GET
         // Emits groups_get_response to all sockets in class room
         socket.on('groups_get', function(username, class_id) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            
             get_all_groups_from_class(class_id)
             .then(function(groups) {
                 socket.join(class_id + 'x');
@@ -474,6 +495,10 @@ function server_sockets(server, client){
         // Emits group_info_response to the admin socket of class
         // Emits group_numbers_response to all sockets in class room
         socket.on('group_join', function(username, class_id, group_id) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+
             add_user_to_group(username, class_id, group_id)
             .then(function() { 
                 socket.join(class_id + "x" + group_id);
@@ -506,6 +531,11 @@ function server_sockets(server, client){
         // to the admin socket of the class
         // Emits group_numbers_response to all sockets in class room
         socket.on('group_leave', function(username, class_id, group_id, disconnect) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+            disconnect = sanitize_data(disconnect);
+            
             remove_user_from_group(username, class_id, group_id)
             .then(function() {
               //  socket.join(class_id + "x");
@@ -537,6 +567,11 @@ function server_sockets(server, client){
         // Emits group_info_response to all sockets in the class group room and
         // to the admin socket of the class
         socket.on('group_info', function(username, class_id, group_id, status) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+            status = sanitize_data(status);
+
             get_info_of_group(class_id, group_id)
             .then(function(other_members) {
                 var response = {
@@ -569,7 +604,15 @@ function server_sockets(server, client){
         // room
         // Emits group_info_response to admin socket of the class
         socket.on('coordinate_change', function(username, class_id, group_id, x, y, info) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+            x = sanitize_data(x);
+            y = sanitize_data(y);
+            info = sanitize_data(info);
+            
             var response;
+
             update_users_coordinates(username, class_id, x, y, info)
             .then(function(data) {
                 response = {
@@ -597,6 +640,9 @@ function server_sockets(server, client){
         // This is the handler for the get-settings client socket emission
         // Emits get-settings-response to all sockets in the class group room
         socket.on('get-settings', function(class_id, group_id) {
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+
             get_settings(class_id, group_id)
             .then(function(settings) {
                 var response = {
@@ -617,6 +663,10 @@ function server_sockets(server, client){
         // Socket joins an admin room using class id
         // Emits add-class-response to the socket that triggered add-class 
         socket.on('add-class', function(class_name, group_count, secret) {
+            class_name = sanitize_data(class_name);
+            group_count = sanitize_data(group_count);
+            secret = sanitize_data(secret);
+
             if (secret == "ucd_247") {
                 create_class(class_name, group_count)
                 .then(function(class_id) {
@@ -641,6 +691,9 @@ function server_sockets(server, client){
         // the global datastructure.
         // Emits add-class-response to the socket that triggered join-class
         socket.on('join-class', function(class_id, secret) {
+            class_id = sanitize_data(class_id);
+            secret = sanitize_data(secret);
+
             if (secret == "ucd_247") {
                 join_class(class_id)
                 .then(function(data) {
@@ -678,6 +731,9 @@ function server_sockets(server, client){
         // Emits add-group-response to socket that triggered add-group
         // Emits groups_get_response to all sockets in the class room
         socket.on('add-group', function(class_id, secret) {
+            class_id = sanitize_data(class_id);
+            secret = sanitize_data(secret);
+
             if (secret == "ucd_247") {
                 create_group(class_id)
                 .then(function(groups) {
@@ -705,6 +761,10 @@ function server_sockets(server, client){
         // Emits group_leave_response to all sockets in class group room
         // Emits groups_get_response to all sockets in class room
         socket.on('delete-group', function(class_id, group_id, secret) {
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+            secret = sanitize_data(secret); 
+            
             if (secret == "ucd_247") {
                 delete_group(class_id, group_id)
                 .then(function(groups) {
@@ -732,6 +792,9 @@ function server_sockets(server, client){
         // Emits leave-class-response to socket that triggered leave-classs
         // Emits logout_response to all sockets in class room
         socket.on('leave-class', function(class_id, secret) {
+            class_id = sanitize_data(class_id);
+            secret = sanitize_data(secret);
+            
             if (secret == "ucd_247") {
                 leave_class(class_id)
                 .then(function() {
@@ -750,6 +813,10 @@ function server_sockets(server, client){
         // This is the handler for the save-settings client socket emission
         // Emits get-settings-response to all sockets in class room
         socket.on('save-settings', function(class_id, settings, secret) {
+            class_id = sanitize_data(class_id);
+            settings = sanitize_data(settings);
+            secret = sanitize_data(secret);
+            
             if (secret == "ucd_247") {
                 save_settings(class_id, settings)
                 .then(function() {
