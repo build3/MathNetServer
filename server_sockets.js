@@ -791,7 +791,7 @@ function server_sockets(server, client){
         // Socket leaves an admin room using class id
         // Emits leave-class-response to socket that triggered leave-classs
         // Emits logout_response to all sockets in class room
-        socket.on('leave-class', function(class_id, secret) {
+        socket.on('leave-class', function(class_id, secret, disconnect) {
             class_id = sanitize_data(class_id);
             secret = sanitize_data(secret);
             
@@ -800,8 +800,11 @@ function server_sockets(server, client){
                 .then(function() {
                     socket.leave('admin-' + class_id);
                     var date = new Date().toJSON();
-                    logger.info(date + "~ADMIN~leave-class~" + class_id + "~~~0~");
-                    socket.emit('leave-class-response', {});
+                    var response = {
+                        disconnect: disconnect
+                    }
+                    logger.info(date + "~ADMIN~leave-class~" + class_id + "~~"+ JSON.stringify(response) + "~0~");
+                    socket.emit('leave-class-response', response);
                    // io.to(class_id + "x").emit('logout_response', {});
                 }).fail(function(error) {
                     server_error(error);
