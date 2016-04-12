@@ -68,6 +68,8 @@ sudo apt-get install git nodejs mysql-server-5.6
 
 The server setup is the same as OSX except instead of using the command `node` to start the server and create the database, you want to use the command `nodejs`.
 
+You can also make a symbolic link instead if you want to use `node`. `sudo ln -s /usr/bin/nodejs /usr/bin/node`
+
 ***
 
 ### How To Run Server as Daemon using Screen ###
