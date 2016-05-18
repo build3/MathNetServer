@@ -232,7 +232,64 @@ function update_users_coordinates(username, class_id, x, y, info) {
     }
     return deferred.promise;
 }
+//takes a username, class_id, group_id, and xml string
+//if invalid, errors
+//if valid stores xml string for group in user and group xml object
+function update_user_xml(username, class_id, group_id, xml) {
+    var deferred = Q.defer();
 
+    if (class_id in classes.available_classes) {
+        if (group_id in classes.available_classes[class_id]) {
+            if (username in classes.available_classes[class_id]["user"]) {
+                classes.available_classes[class_id][group_id]["xml"] = JSON.stringify(xml);
+                classes.available_classes[class_id]["user"][username]["info"] = JSON.stringify(xml);
+                var data = {
+                    xml: classes.available_classes[class_id][group_id]["xml"] 
+                }
+                deferred.resolve(data);
+            }
+            else {
+                deferred.reject('Username ' + username + ' is invalid.');
+            }
+        } 
+        else {
+            deferred.reject('Group ID ' + group_id + ' is invalid.');
+        }
+    }
+    else {
+        deferred.reject('Class ID ' + class_id + ' is invalid.');
+    }
+    return deferred.promise;
+}
+//takes a username, class_id, and group_id
+//if invalid, returns an error
+//if valid, returns JSON of class data to user
+//this is returned from the global datastructure
+function get_user_xml(username, class_id, group_id) {
+    var deferred = Q.defer();
+
+    if (class_id in classes.available_classes) {
+        if (group_id in classes.available_classes[class_id]) {
+            if (username in classes.available_classes[class_id]["user"]) {
+                var xml = classes.available_classes[class_id][group_id]["xml"];
+                var data = {
+                    xml: xml
+                }
+                deferred.resolve(data);
+            }
+            else {
+                deferred.reject('Username ' + username + ' is invalid.');
+            }
+        } 
+        else {
+            deferred.reject('Group ID ' + group_id + ' is invalid.');
+        }
+    }
+    else {
+        deferred.reject('Class ID ' + class_id + ' is invalid.');
+    }
+    return deferred.promise;
+}
 // Takes a class id
 // If invalid, returns an error.
 // If valid, a JSON string of the class settings is returned. The data is 
@@ -636,6 +693,51 @@ function server_sockets(server, client){
             });
         }); //registers the change of coordinates in the datastructure and passes them back to group
 
+        socket.on('xml_change', function(username, class_id, group_id, xml) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+            xml = sanitize_data(xml);
+            
+            update_user_xml(username, class_id, group_id, xml)
+            .then(function(data){
+                var response = {
+                    username: username,
+                    class_id: class_id,
+                    group_id: group_id,
+                    xml: data.xml
+                }
+                var date = new Date().toJSON();
+                logger.info(date + "~" + username + "~xml_change~" + class_id + "~" + group_id + "~" 
+                            + JSON.stringify(response)  + "~1~" + class_id + "x" + group_id );
+                socket.broadcast.to(class_id + "x" + group_id).emit('xml_change_response', response);
+            }).fail(function(error){
+                server_error(error, error);
+            });
+        }); //updates user and group xml values in the datastructure 
+
+        socket.on('get_xml', function(username, class_id, group_id) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+            
+            get_user_xml(username, class_id, group_id)
+            .then(function(data){
+                var response = {
+                    username: username,
+                    class_id: class_id,
+                    group_id: group_id,
+                    xml: data.xml
+                }
+                var date = new Date().toJSON();
+                logger.info(date + "~" + username + "~get_xml~" + class_id + "~" + group_id + "~" 
+                            + JSON.stringify(response)  + "~0~" + class_id + "x" + group_id );
+                socket.emit('get_xml_response', response);
+            }).fail(function(error){
+                server_error(error, error);
+            });
+        }); //gets class xml and returns it to the socket that joined the group
+
         // GET-SETTINGS
         // This is the handler for the get-settings client socket emission
         // Emits get-settings-response to all sockets in the class group room
@@ -897,4 +999,3 @@ function server_sockets(server, client){
         });
     });
 }
-
