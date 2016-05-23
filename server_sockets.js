@@ -207,9 +207,14 @@ function update_users_coordinates(username, class_id, x, y, info) {
     if (class_id in classes.available_classes) {
         if (username in classes.available_classes[class_id]["user"]) {
             if (!isNaN(x) && !isNaN(y)) {
+
                 classes.available_classes[class_id]["user"][username]["x"] += x;
                 classes.available_classes[class_id]["user"][username]["y"] += y;
+                if(info == null){
+                    classes.available_classes[class_id]["user"][username]["info"] = null;
+                } else {
                 classes.available_classes[class_id]["user"][username]["info"] = JSON.stringify(info);
+                }
 
                 var data = {
                     x : classes.available_classes[class_id]["user"][username]["x"], 
