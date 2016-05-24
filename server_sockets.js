@@ -106,7 +106,7 @@ function add_user_to_group(username, class_id, group_id) {
                 classes.available_classes[class_id][group_id]["students"].push(username);
                 classes.available_classes[class_id]["user"][username]["x"] = 0.0;
                 classes.available_classes[class_id]["user"][username]["y"] = 0.0;
-                classes.available_classes[class_id]["user"][username]["info"] = "";
+                classes.available_classes[class_id]["user"][username]["info"] = "{}";
 
                 deferred.resolve();
             }
@@ -141,7 +141,7 @@ function remove_user_from_group(username, class_id, group_id) {
                     classes.available_classes[class_id][group_id]["students"].splice(index, 1);
                     classes.available_classes[class_id]["user"][username]["x"] = 0.0;
                     classes.available_classes[class_id]["user"][username]["y"] = 0.0;
-                    classes.available_classes[class_id]["user"][username]["info"] = "";
+                    classes.available_classes[class_id]["user"][username]["info"] = "{}";
                     deferred.resolve();
                 }
                 else {
@@ -210,8 +210,8 @@ function update_users_coordinates(username, class_id, x, y, info) {
 
                 classes.available_classes[class_id]["user"][username]["x"] += x;
                 classes.available_classes[class_id]["user"][username]["y"] += y;
-                if(info == null){
-                    classes.available_classes[class_id]["user"][username]["info"] = null;
+                if(info == null || info == ""){
+                    classes.available_classes[class_id]["user"][username]["info"] = "{}";
                 } else {
                 classes.available_classes[class_id]["user"][username]["info"] = JSON.stringify(info);
                 }
