@@ -932,10 +932,9 @@ function server_sockets(server, client){
         });
 
         // GET-CLASSES
-        // This is the handler for the leave-class client socket emission
-        // Socket leaves an admin room using class id
-        // Emits leave-class-response to socket that triggered leave-classs
-        // Emits logout_response to all sockets in class room
+        // This is the handler for the get-classes socket emission
+        // Returns list of classes and their hashed IDs from the database
+        // to the client via a get-classes-response
         socket.on('get-classes', function(secret, disconnect) {
             secret = sanitize_data(secret);
             

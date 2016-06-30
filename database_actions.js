@@ -140,6 +140,7 @@ exports.add_hashed_id = function(class_id, hashed_id) {
 
     return deferred.promise;
 }
+
 //Returns the Classes and their hashed IDs (from the Class table)
 exports.get_classes = function(){
     var deferred = Q.defer();
