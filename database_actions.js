@@ -140,3 +140,26 @@ exports.add_hashed_id = function(class_id, hashed_id) {
 
     return deferred.promise;
 }
+//Returns the Classes and their hashed IDs (from the Class table)
+exports.get_classes = function(){
+    var deferred = Q.defer();
+    
+    pool.getConnection(function(error, connection) {
+
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "SELECT hashed_id, class_name FROM " + dbconfig.class_table + ";" ;
+        connection.query(query, function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+                deferred.resolve(rows);
+            }
+        });
+        connection.release();
+    });
+
+    return deferred.promise;
+}

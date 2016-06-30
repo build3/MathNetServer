@@ -433,6 +433,18 @@ function leave_class(class_id) {
   
     return deferred.promise;
 }
+function get_classes(){
+    var deferred = Q.defer();
+
+    database.get_classes()
+    .then(function(classes){
+        deferred.resolve(classes);
+    }).fail(function(error){
+        deferred.reject(error);
+    });
+        return deferred.promise;
+
+}
 
 // Takes a class id and settings data.
 // If invalid, returns an error.
@@ -912,6 +924,34 @@ function server_sockets(server, client){
                     }
                     logger.info(date + "~ADMIN~leave-class~" + class_id + "~~"+ JSON.stringify(response) + "~0~");
                     socket.emit('leave-class-response', response);
+                   // io.to(class_id + "x").emit('logout_response', {});
+                }).fail(function(error) {
+                    server_error(error);
+                });
+            }
+        });
+
+        // GET-CLASSES
+        // This is the handler for the leave-class client socket emission
+        // Socket leaves an admin room using class id
+        // Emits leave-class-response to socket that triggered leave-classs
+        // Emits logout_response to all sockets in class room
+        socket.on('get-classes', function(secret, disconnect) {
+            secret = sanitize_data(secret);
+            
+            if (secret == "ucd_247") {
+                get_classes()
+                .then(function(classes) {
+                    
+                    //console.log(classes);
+                    var date = new Date().toJSON();
+                    var response = {
+                        disconnect: disconnect,
+                        classes: classes
+                    }
+
+                    logger.info(date + "~ADMIN~get-classes~" + "no_class" + "~~"+ JSON.stringify(response) + "~0~");
+                    socket.emit('get-classes-response', response);
                    // io.to(class_id + "x").emit('logout_response', {});
                 }).fail(function(error) {
                     server_error(error);
