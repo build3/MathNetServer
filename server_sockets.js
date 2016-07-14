@@ -957,6 +957,7 @@ function server_sockets(server, client){
                     //console.log(classes);
                     var date = new Date().toJSON();
                     var response = {
+                        secret: secret,
                         disconnect: disconnect,
                         classes: classes
                     }
