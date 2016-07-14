@@ -237,6 +237,7 @@ function update_users_coordinates(username, class_id, x, y, info) {
     }
     return deferred.promise;
 }
+
 //takes a username, class_id, group_id, and xml string
 //if invalid, errors
 //if valid stores xml string for group in user and group xml object
@@ -266,6 +267,7 @@ function update_user_xml(username, class_id, group_id, xml) {
     }
     return deferred.promise;
 }
+
 //takes a username, class_id, and group_id
 //if invalid, returns an error
 //if valid, returns JSON of class data to user
@@ -295,6 +297,7 @@ function get_user_xml(username, class_id, group_id) {
     }
     return deferred.promise;
 }
+
 // Takes a class id
 // If invalid, returns an error.
 // If valid, a JSON string of the class settings is returned. The data is 
@@ -434,6 +437,22 @@ function leave_class(class_id) {
     return deferred.promise;
 }
 
+// Takes no parameters
+// Retrieves the list of all classes from the database
+// On failure, returns error.
+function get_classes(){
+    var deferred = Q.defer();
+
+    database.get_classes()
+    .then(function(classes){
+        deferred.resolve(classes);
+    }).fail(function(error){
+        deferred.reject(error);
+    });
+        return deferred.promise;
+
+}
+
 // Takes a class id and settings data.
 // If invalid, returns an error.
 // If valid, adds the settings to the given class in the global datastructure.
@@ -468,6 +487,7 @@ function server_sockets(server, client){
     var io = socketio.listen(server);
    
     io.on('connection', function(socket) {
+
         // SERVER_ERROR
         // This function will notify the client when an error has occurred 
         // Emits server_error to the socket that triggered the error
@@ -698,6 +718,8 @@ function server_sockets(server, client){
             });
         }); //registers the change of coordinates in the datastructure and passes them back to group
 
+        // XML_CHANGE
+        // emits xml_change_response to all sockets in the group room
         socket.on('xml_change', function(username, class_id, group_id, xml) {
             username = sanitize_data(username);
             class_id = sanitize_data(class_id);
@@ -721,6 +743,8 @@ function server_sockets(server, client){
             });
         }); //updates user and group xml values in the datastructure 
 
+        // GET_XML
+        // emits get_xml_response to socket that requested it.
         socket.on('get_xml', function(username, class_id, group_id) {
             username = sanitize_data(username);
             class_id = sanitize_data(class_id);
@@ -919,6 +943,34 @@ function server_sockets(server, client){
             }
         });
 
+        // GET-CLASSES
+        // This is the handler for the get-classes socket emission
+        // Returns list of classes and their hashed IDs from the database
+        // to the client via a get-classes-response
+        socket.on('get-classes', function(secret, disconnect) {
+            secret = sanitize_data(secret);
+            
+            if (secret == "ucd_247") {
+                get_classes()
+                .then(function(classes) {
+                    
+                    //console.log(classes);
+                    var date = new Date().toJSON();
+                    var response = {
+                        secret: secret,
+                        disconnect: disconnect,
+                        classes: classes
+                    }
+
+                    logger.info(date + "~ADMIN~get-classes~" + "no_class" + "~~"+ JSON.stringify(response) + "~0~");
+                    socket.emit('get-classes-response', response);
+                   // io.to(class_id + "x").emit('logout_response', {});
+                }).fail(function(error) {
+                    server_error(error);
+                });
+            }
+        });
+
         // SAVE-SETTINGS
         // This is the handler for the save-settings client socket emission
         // Emits get-settings-response to all sockets in class room
@@ -946,6 +998,10 @@ function server_sockets(server, client){
             }
         });
 
+        // DISCONNECT
+        // This is the handler for any disconnects, it checks if the disconnected socket has
+        // any variables within it set, and if still set, removes the user from the groups on the server side
+        // emitting group_info response to the group (if in one) room and admin, and logout_response to the individual socket.
         socket.on('disconnect', function() {
             // Remove user from class
             if (socket.class_id !== undefined) {
