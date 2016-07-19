@@ -277,7 +277,7 @@ function get_user_xml(username, class_id, group_id) {
 
     if (class_id in classes.available_classes) {
         if (group_id in classes.available_classes[class_id]) {
-            if (username in classes.available_classes[class_id]["user"]) {
+            if (username in classes.available_classes[class_id]["user"] || username == "admin") {
                 var xml = classes.available_classes[class_id][group_id]["xml"];
                 var data = {
                     xml: xml
@@ -738,6 +738,7 @@ function server_sockets(server, client){
                 logger.info(date + "~" + username + "~xml_change~" + class_id + "~" + group_id + "~" 
                             + JSON.stringify(response)  + "~1~" + class_id + "x" + group_id );
                 socket.broadcast.to(class_id + "x" + group_id).emit('xml_change_response', response);
+                io.sockets.to('admin-' + class_id).emit('xml_change_response', response);
             }).fail(function(error){
                 server_error(error, error);
             });
