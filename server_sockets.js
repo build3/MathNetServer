@@ -241,16 +241,18 @@ function update_users_coordinates(username, class_id, x, y, info) {
 //takes a username, class_id, group_id, and xml string
 //if invalid, errors
 //if valid stores xml string for group in user and group xml object
-function update_user_xml(username, class_id, group_id, xml) {
+function update_user_xml(username, class_id, group_id, xml, toolbar) {
     var deferred = Q.defer();
 
     if (class_id in classes.available_classes) {
         if (group_id in classes.available_classes[class_id]) {
-            if (username in classes.available_classes[class_id]["user"]) {
+            if (username in classes.available_classes[class_id]["user"] || username == "admin") {
                 classes.available_classes[class_id][group_id]["xml"] = JSON.stringify(xml);
                 classes.available_classes[class_id]["user"][username]["info"] = JSON.stringify(xml);
+                classes.available_classes[class_id][group_id]["toolbar"] = toolbar;
                 var data = {
-                    xml: classes.available_classes[class_id][group_id]["xml"] 
+                    xml: classes.available_classes[class_id][group_id]["xml"],
+                    toolbar: classes.available_classes[class_id][group_id]["toolbar"] 
                 }
                 deferred.resolve(data);
             }
@@ -279,8 +281,10 @@ function get_user_xml(username, class_id, group_id) {
         if (group_id in classes.available_classes[class_id]) {
             if (username in classes.available_classes[class_id]["user"] || username == "admin") {
                 var xml = classes.available_classes[class_id][group_id]["xml"];
+                var toolbar = classes.available_classes[class_id][group_id]["toolbar"];
                 var data = {
-                    xml: xml
+                    xml: xml,
+                    toolbar: toolbar
                 }
                 deferred.resolve(data);
             }
@@ -720,19 +724,21 @@ function server_sockets(server, client){
 
         // XML_CHANGE
         // emits xml_change_response to all sockets in the group room
-        socket.on('xml_change', function(username, class_id, group_id, xml) {
+        socket.on('xml_change', function(username, class_id, group_id, xml, toolbar) {
             username = sanitize_data(username);
             class_id = sanitize_data(class_id);
             group_id = sanitize_data(group_id);
             xml = sanitize_data(xml);
+            toolbar = sanitize_data(toolbar);
             
-            update_user_xml(username, class_id, group_id, xml)
+            update_user_xml(username, class_id, group_id, xml, toolbar)
             .then(function(data){
                 var response = {
                     username: username,
                     class_id: class_id,
                     group_id: group_id,
-                    xml: data.xml
+                    xml: data.xml,
+                    toolbar: data.toolbar
                 }
                 var date = new Date().toJSON();
                 logger.info(date + "~" + username + "~xml_change~" + class_id + "~" + group_id + "~" 
@@ -757,7 +763,8 @@ function server_sockets(server, client){
                     username: username,
                     class_id: class_id,
                     group_id: group_id,
-                    xml: data.xml
+                    xml: data.xml,
+                    toolbar: data.toolbar
                 }
                 var date = new Date().toJSON();
                 logger.info(date + "~" + username + "~get_xml~" + class_id + "~" + group_id + "~" 
