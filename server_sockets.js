@@ -248,7 +248,6 @@ function update_user_xml(username, class_id, group_id, xml, toolbar) {
         if (group_id in classes.available_classes[class_id]) {
             if (username in classes.available_classes[class_id]["user"] || username == "admin") {
                 classes.available_classes[class_id][group_id]["xml"] = JSON.stringify(xml);
-                classes.available_classes[class_id]["user"][username]["info"] = JSON.stringify(xml);
                 classes.available_classes[class_id][group_id]["toolbar"] = toolbar;
                 var data = {
                     xml: classes.available_classes[class_id][group_id]["xml"],
