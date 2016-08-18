@@ -164,3 +164,28 @@ exports.get_classes = function(){
 
     return deferred.promise;
 }
+
+
+//Deletes the hash and all its membors from the database
+exports.delete_class = function(class_id) {       
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+        
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "DELETE FROM " + dbconfig.class_table + " WHERE class_id=?;"; //+ "DELETE * FROM " + dbconfig.group_table + " WHERE class_id=?;";
+        connection.query(query, [class_id, class_id], function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+               deferred.resolve(); ;
+            }
+         });
+         connection.release();
+    });
+
+    return deferred.promise;
+}

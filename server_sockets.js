@@ -409,7 +409,6 @@ function delete_group(class_id, group_id) {
         return database.delete_group(unhashed_id, group_id);
     }).then(function() {
         delete classes.available_classes[class_id][group_id];
-        return get_all_groups_from_class(class_id);
     }).then(function(groups) {
         deferred.resolve(groups);
     }).fail(function(error) {
@@ -439,6 +438,26 @@ function leave_class(class_id) {
   
     return deferred.promise;
 }
+
+// Takes a class id.
+// If invalid, returns an error.
+// If valid, deletes the given class from the global datastructure.
+function delete_class(class_id) {
+    var deferred = Q.defer();
+
+    hash.find_id(class_id)
+    .then(function(unhashed_id) {
+        return database.delete_class(unhashed_id);
+    }).then(function() {
+        delete classes.available_classes[class_id];
+        deferred.resolve();
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+          return deferred.promise;
+}
+
+
 
 // Takes no parameters
 // Retrieves the list of all classes from the database
@@ -912,10 +931,12 @@ function server_sockets(server, client){
                         group_id : group_id,
                         groups : groups
                     }
+
                     var date = new Date().toJSON();
                     logger.info(date + "~ADMIN~delete-group~" + class_id + "~" + group_id + "~" 
                                 + JSON.stringify(response) + "~1~[" + class_id + "x," + class_id + "x" + group_id + "]");
                     socket.emit('delete-group-response', {});
+                    
                     io.sockets.to(class_id + "x" + group_id).emit('group_leave_response', response);
                     io.sockets.to(class_id + "x").emit('delete-group-response', {});
                 }).fail(function(error) {
@@ -949,6 +970,46 @@ function server_sockets(server, client){
                 });
             }
         });
+
+        // DELETE-CLASS
+        // This is the handler for the delete-class client socket emission
+        // Socket deletes an admin room using class id
+        // Emits delete-leave-class-response to socket that triggered leave-classs
+        // Emits logout_response to all sockets in class room
+        socket.on('delete-class', function(class_id, secret, disconnect) {
+            class_id = sanitize_data(class_id);
+            var length = Object.keys(classes.available_classes[class_id]).length;
+            
+            if (secret == "ucd_247") {
+                delete_class(class_id)
+                .then(function() {
+                    
+                    var response = 
+                    {
+                        class_id : class_id,
+                        disconnect: disconnect,
+                    }
+                    
+                    for (var i = 1; i <= length - 3; i++) {
+                        socket.to(class_id + "x" + i).emit('group_leave_response', response);
+                        socket.to(class_id + "x" + i).emit('logout_response', response);
+                    }  // going through all the groups one by one
+
+                    io.sockets.to("admin-" + class_id).emit('leave-class-response', response);
+                    io.sockets.to("admin-" + class_id).emit('delete-class-response', response);
+                    io.sockets.emit('delete-student-class-response', response);
+                    io.sockets.to(class_id + "x").emit('logout_response', response);
+                    hash.remove_hash(class_id);
+
+                }).fail(function(error){
+                    server_error(error);
+                });
+
+            }
+
+            
+        });
+
 
         // GET-CLASSES
         // This is the handler for the get-classes socket emission
