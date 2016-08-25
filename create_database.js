@@ -36,7 +36,18 @@ connection.query('\
                  ON DELETE CASCADE \
                  )');
 
-
+/********************************** ToolBars *************************************************/
+connection.query('\
+                 CREATE TABLE IF NOT EXISTS `' + dbconfig.database + '`.`' + dbconfig.toolbar_table + '` ( \
+                 `toolbar_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, \
+                 `toolbar_name` VARCHAR(40) NOT NULL, \
+                 `tools` VARCHAR(100) NOT NULL, \
+                 `class_id` INT UNSIGNED NOT NULL, \
+                 `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 PRIMARY KEY (`toolbar_id`), \
+                 FOREIGN KEY (`class_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.class_table+'`(class_id) \
+                 ON DELETE CASCADE \
+                 )');
 
 connection.query('SET foreign_key_checks = 1;');
 
