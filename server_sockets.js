@@ -397,6 +397,69 @@ function create_group(class_id) {
     return deferred.promise;
 }
 
+// Takes a class id, toolbar_name and tools.
+// If invalid, returns an error.
+// If valid, create a toolbar for the given class in the database and return all
+// the toolbars in the class.
+function create_toolbar(class_id, toolbar_name, tools) {
+    var deferred = Q.defer();
+
+    hash.find_id(class_id)
+    .then(function(unhashed_id) {
+        database.create_toolbar(unhashed_id, toolbar_name, tools);
+        return hash.find_id(class_id);
+    }).then(function(unhashed_id) {
+        return database.get_toolbars(unhashed_id);
+    }).then(function(toolbars) {
+        deferred.resolve(toolbars);
+    }).fail(function(error) {
+        deferred.reject(error);      
+    });
+
+    return deferred.promise;
+}
+
+// Takes a class id.
+// If invalid, returns an error.
+// If valid return all
+// the toolbars in the class.
+
+function get_toolbars(class_id) {
+    var deferred = Q.defer();
+
+    hash.find_id(class_id)
+    .then(function(unhashed_id) {
+        return database.get_toolbars(unhashed_id);
+    }).then(function(toolbars) {
+        deferred.resolve(toolbars);
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
+
+// If invalid, returns an error.
+// If valid, deletes the toolbar for the given class in the database and return all
+// the toolbars in the class.
+function delete_toolbar(class_id, toolbar_name) {
+    var deferred = Q.defer();
+
+    hash.find_id(class_id)
+    .then(function(unhashed_id) {
+        database.delete_toolbar(unhashed_id, toolbar_name);
+        return hash.find_id(class_id);
+    }).then(function(unhashed_id) {
+        return database.get_toolbars(unhashed_id);
+    }).then(function(toolbars) {
+        deferred.resolve(toolbars);
+    }).fail(function(error) {
+        deferred.reject(error);      
+    });
+
+    return deferred.promise;
+}
+
 // Takes a class id and group id.
 // If invalid, returns an error.
 // If valid, deletes the given group in the class from the database and global
@@ -911,6 +974,87 @@ function server_sockets(server, client){
             }
         }); 
 
+
+        // ADD-TOOLBAR
+        // This is the handler for the add-toolbar client socket emission
+        // It calls a database function to create a toolbar for a class
+        // Emits toolbar_get_response to all sockets in the class room
+        socket.on('save-toolbar', function(class_id, toolbar_name, tools) {
+            class_id = sanitize_data(class_id);
+
+            create_toolbar(class_id, toolbar_name, tools)
+            .then(function(toolbars) {
+
+                var response = {
+                    username : "Admin",
+                    class_id : class_id,
+                    toolbars : toolbars
+                }
+                //console.log(response);
+                var date = new Date().toJSON();
+                logger.info(date + "~ADMIN~add-toolbar~" + class_id + "~" + toolbars.length + "~" + JSON.stringify(response) 
+                            + "~1~"+ class_id + "x");
+                socket.emit('get-toolbar-response', response);
+                io.sockets.to("admin-" + class_id).emit('get-toolbar-response', response);
+
+            }).fail(function(error) {
+                server_error(error, error);
+            });
+
+        }); 
+
+        // GET-TOOLBARS
+        // This is the handler for the get-toolbar client socket emission
+        // It calls a database function to get all the toolbars for a class
+        // Emits get_toolbar_response to all sockets in the class room
+        socket.on('get-toolbars', function(class_id) {
+            class_id = sanitize_data(class_id);
+
+            get_toolbars(class_id)
+            .then(function(toolbars) {
+
+                var response = {
+                    username : "Admin",
+                    class_id : class_id,
+                    toolbars : toolbars
+                }
+                //console.log(response);
+                socket.emit('get-toolbar-response', response);
+                io.sockets.to("admin-" + class_id).emit('get-toolbar-response', response);
+
+            }).fail(function(error) {
+                server_error(error, error);
+            });
+
+        }); 
+
+        // DELETE-TOOLBAR
+        // This is the handler for the delete-toolbar client socket emission
+        // It calls a database function to delete the toolbar for the class
+        // Emits delete_toolbar_response to all sockets in the class room
+        socket.on('delete-toolbar', function(class_id, toolbar_name) {
+            class_id = sanitize_data(class_id);
+
+            console.log("delete-toolbar");
+            delete_toolbar(class_id, toolbar_name)
+            .then(function(toolbars) {
+
+                var response = {
+                    username : "Admin",
+                    class_id : class_id,
+                    toolbars : toolbars
+                }
+                //socket.emit('delete-toolbar-response', response);
+                io.sockets.to("admin-" + class_id).emit('delete-toolbar-response', response);
+                //socket.emit('get-toolbar-response', response);
+                //io.sockets.to("admin-" + class_id).emit('get-toolbar-response', response);
+
+            }).fail(function(error) {
+                server_error(error, error);
+            });
+
+        }); 
+
         // DELETE-GROUP
         // This is the handler for the delete-group client socket emission
         // It calls a database function to delete a group for a class
@@ -1038,6 +1182,8 @@ function server_sockets(server, client){
                 });
             }
         });
+
+
 
         // SAVE-SETTINGS
         // This is the handler for the save-settings client socket emission
