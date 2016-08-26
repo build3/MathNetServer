@@ -994,7 +994,7 @@ function server_sockets(server, client){
                 var date = new Date().toJSON();
                 logger.info(date + "~ADMIN~add-toolbar~" + class_id + "~" + toolbars.length + "~" + JSON.stringify(response) 
                             + "~1~"+ class_id + "x");
-                //socket.emit('get-toolbar-response', response);
+                socket.emit('get-toolbar-response', response);
                 io.sockets.to("admin-" + class_id).emit('get-toolbar-response', response);
 
             }).fail(function(error) {
@@ -1019,7 +1019,7 @@ function server_sockets(server, client){
                     toolbars : toolbars
                 }
                 //console.log(response);
-                //socket.emit('get-toolbar-response', response);
+                socket.emit('get-toolbar-response', response);
                 io.sockets.to("admin-" + class_id).emit('get-toolbar-response', response);
 
             }).fail(function(error) {
