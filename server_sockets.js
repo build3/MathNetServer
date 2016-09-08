@@ -3,6 +3,7 @@ var classes = require('./available_classes');
 var socketio = require('socket.io');
 var database = require('./database_actions');
 var hash = require('./hashes');
+var pw = require('secure-password');
 
 // Q allows use of promises. 
 // First, a promise is deferred.
@@ -10,7 +11,7 @@ var hash = require('./hashes');
 // needs to be returned.
 var Q = require("q");
 
-var logger = require('./logger_create');
+var logger = require('./logger_create');  
 module.exports = server_sockets;
 
 // Takes a class id and username.
@@ -328,10 +329,10 @@ function get_settings(class_id, group_id) {
 // If valid, create a class of the given class name in the database and return
 // a hashed string of the created class id. A new class entry is also made in 
 // the global datastructure.
-function create_class(class_name, group_count){
+function create_class(class_name, group_count, admin_id){
     var deferred = Q.defer();
 
-    database.create_class(class_name, group_count)
+    database.create_class(class_name, group_count, admin_id)
     .then(function(class_id) {
         return hash.add_hash(class_id);
     }).then(function(id_hash) {
@@ -419,6 +420,29 @@ function create_toolbar(class_id, toolbar_name, tools) {
     return deferred.promise;
 }
 
+
+// Takes a username and password.
+// If invalid, returns an error.
+// If valid return all
+// creates admin.
+
+function create_admin(username, password) {
+    var deferred = Q.defer();
+
+console.log("in create-admin");
+    database.create_user(username, password)
+    .then(function(admin) {
+        
+        deferred.resolve(admin);
+    }).fail(function(admin) {
+        deferred.reject(error);
+    });
+
+
+    return deferred.promise;
+}
+
+
 // Takes a class id.
 // If invalid, returns an error.
 // If valid return all
@@ -432,6 +456,71 @@ function get_toolbars(class_id) {
         return database.get_toolbars(unhashed_id);
     }).then(function(toolbars) {
         deferred.resolve(toolbars);
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
+
+// Takes username and get password
+
+function check_username(username) {
+    var deferred = Q.defer();
+
+    database.check_user(username)
+    .then(function(data_password) {
+        deferred.resolve(data_password);
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
+
+
+// Takes admin_id and get session string
+
+function check_session(admin_id) {
+    var deferred = Q.defer();
+
+    database.check_session(admin_id)
+    .then(function(data_password) {
+        deferred.resolve(data_password);
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
+
+// Takes an admin id.
+// If invalid, returns an error.
+// If valid create session.
+
+function create_session(admin_id, password) {
+    var deferred = Q.defer();
+
+    database.create_session(admin_id, password)
+    .then(function() {
+        deferred.resolve();
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
+
+// Takes an admin id.
+// If invalid, returns an error.
+// If valid delete session.
+
+function delete_session(admin_id) {
+    var deferred = Q.defer();
+
+    database.delete_session(admin_id)
+    .then(function() {
+        deferred.resolve();
     }).fail(function(error) {
         deferred.reject(error);
     });
@@ -525,10 +614,10 @@ function delete_class(class_id) {
 // Takes no parameters
 // Retrieves the list of all classes from the database
 // On failure, returns error.
-function get_classes(){
+function get_classes(admin_id){
     var deferred = Q.defer();
 
-    database.get_classes()
+    database.get_classes(admin_id)
     .then(function(classes){
         deferred.resolve(classes);
     }).fail(function(error){
@@ -882,13 +971,14 @@ function server_sockets(server, client){
         // It calls a database function to create a class and groups
         // Socket joins an admin room using class id
         // Emits add-class-response to the socket that triggered add-class 
-        socket.on('add-class', function(class_name, group_count, secret) {
+        socket.on('add-class', function(class_name, group_count, secret, admin_id) {
             class_name = sanitize_data(class_name);
             group_count = sanitize_data(group_count);
             secret = sanitize_data(secret);
+            console.log(admin_id);
 
             if (secret == "ucd_247") {
-                create_class(class_name, group_count)
+                create_class(class_name, group_count, admin_id)
                 .then(function(class_id) {
                     socket.join('admin-' + class_id);
                     var response = {
@@ -904,6 +994,86 @@ function server_sockets(server, client){
                 });
             }
         });
+
+        //CREATE-SESSION
+        //This is the handler for create session socket emission
+        //It calls the database function to put the admin in the database
+        socket.on('create-session', function(admin_id, string) {
+            var password = pw.makePassword(string, 10, 'sha256', 32);
+
+            
+            create_session(admin_id, password)
+            .then(function() {
+
+            }).fail(function(error) {
+                    server_error(error, error);
+                });
+            socket.admin_id = admin_id;
+        });
+
+        //DELETE-SESSION
+        //This is the handler for delete session socket emission
+        //It calls the database function delete the admin from the database
+        socket.on('delete-session', function(admin_id) {
+       
+            delete_session(admin_id)
+            .then(function() {
+
+            }).fail(function(error) {
+                    server_error(error, error);
+                });
+        });
+
+
+        // CREATE-ADMIN
+        // This is the handler for the create-admin client socket emission
+        // It calls a database function to create an admin
+        // Socket joins an admin room using class id
+        // Emits create-admin-response to the socket that triggered add-class 
+        socket.on('create-admin', function(username, password, secret) {
+            username = sanitize_data(username);
+            password = pw.makePassword(password, 10, 'sha256', 32);
+            
+
+            if (secret == "ucd_247") {
+                
+                check_username(username) // checking if username already exists or not
+                .then(function(data_password) {
+                    
+                    if (!data_password[0]) { // not calling database function create admin if username already exists
+
+                        create_admin(username, password)
+                        .then(function(data) {
+
+
+                            var response = {
+                                username: username,
+                                password: password,
+                                check : 1
+                            }
+                            
+                            var date = new Date().toJSON();
+                            logger.info(date + "~ADMIN~create-admin~" + username + "~~{class_id:"+ username + "}~1~");
+                            socket.emit('create-admin-response', response);
+
+                        }).fail(function(error){
+                            server_error(error, error);
+                        });
+
+                    }
+
+                else {
+                    var response = {
+                        check : 0
+                    }
+                    socket.emit('create-admin-response', response);
+                }
+                }).fail(function(error) {
+                    server_error(error, error);
+                });
+            }
+        });
+
 
         // JOIN-CLASS
         // This is the handler for the join-class client socket emission
@@ -953,6 +1123,7 @@ function server_sockets(server, client){
         socket.on('add-group', function(class_id, secret) {
             class_id = sanitize_data(class_id);
             secret = sanitize_data(secret);
+
 
             if (secret == "ucd_247") {
                 create_group(class_id)
@@ -1159,11 +1330,11 @@ function server_sockets(server, client){
         // This is the handler for the get-classes socket emission
         // Returns list of classes and their hashed IDs from the database
         // to the client via a get-classes-response
-        socket.on('get-classes', function(secret, disconnect) {
+        socket.on('get-classes', function(secret, admin_id, disconnect) {
             secret = sanitize_data(secret);
             
             if (secret == "ucd_247") {
-                get_classes()
+                get_classes(admin_id)
                 .then(function(classes) {
                     
                     //console.log(classes);
@@ -1182,6 +1353,75 @@ function server_sockets(server, client){
                 });
             }
         });
+
+        // CHECK-USERNAME
+        // This is the handler for the check_username socket emission
+        socket.on('check-username', function(username, password, secret) {
+            secret = sanitize_data(secret);
+            username = sanitize_data(username);
+            password = sanitize_data(password);
+            console.log("hello");
+
+            if (secret == "ucd_247") {
+                check_username(username)
+                .then(function(data_password) {
+                    var check = 0;
+                    
+                    if(!data_password[0])
+                       {
+                        check = 0;
+                        var data_admin = "nothing"
+                       } 
+                    else if(!pw.verifyPassword(password, data_password[0].password))
+                        {
+                            check = -1;
+                            var data_admin =  data_password[0].admin_id;
+                        }
+                    else
+                        {
+                            check = 1;
+                            var data_admin =  data_password[0].admin_id;
+                            
+                        }
+
+                    socket.emit('check-username-response', data_admin, check);
+                   // io.to(class_id + "x").emit('logout_response', {});
+                }).fail(function(error) {
+                    server_error(error);
+                });
+            }
+        });
+
+        // CHECK-SESSION
+        // This is the handler for the check_session socket emission
+        socket.on('check-session', function(admin_id, password) {
+            admin_id = sanitize_data(admin_id);
+            password = sanitize_data(password);
+
+            check_session(admin_id)
+            .then(function(data_password) {
+                var check = 0;
+                var data_admin = 0;
+                
+                if(password && data_password[0] && pw.verifyPassword(password, data_password[0].password))
+                    {
+                        check = 1;
+                        data_admin = admin_id;
+                        socket.admin_id = admin_id;
+                    }
+                if(data_password[0] && (Math.abs(new Date() - data_password[0].last_updated) >= 720000) && check == 1)
+                    check = -1;
+
+                console.log(new Date() - data_password[0].last_updated);
+
+                socket.emit('check-session-response', data_admin, check);
+               // io.to(class_id + "x").emit('logout_response', {});
+            }).fail(function(error) {
+                server_error(error);
+            });
+
+        });
+
 
 
 
@@ -1217,6 +1457,19 @@ function server_sockets(server, client){
         // any variables within it set, and if still set, removes the user from the groups on the server side
         // emitting group_info response to the group (if in one) room and admin, and logout_response to the individual socket.
         socket.on('disconnect', function() {
+
+            if (socket.admin_id){
+                console.log("refersh page");
+
+                database.update_time(socket.admin_id)
+                .then(function() {
+                    deferred.resolve();
+                }).fail(function(error) {
+                    deferred.reject(error);
+                });
+            }
+            
+            
             // Remove user from class
             if (socket.class_id !== undefined) {
 

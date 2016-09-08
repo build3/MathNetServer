@@ -12,8 +12,96 @@ var pool = mysql.createPool({
     debug : false
 });
 
+exports.create_user = function(user_name, password)
+{
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection){
+
+        var query = "USE " + dbconfig.database + ";"; 
+        connection.query(query);
+
+
+
+        query = "INSERT INTO " + dbconfig.admin_table + " (user_name, password) VALUES (?, ?);";
+        connection.query(query, [user_name, password], function(error, rows) {
+
+            if(error){
+                deferred.reject(error);
+            }
+            else
+            {
+                deferred.resolve();
+            }
+        });
+
+    connection.release();
+    });
+
+    return deferred.promise;
+}
+
+exports.create_session = function(admin_id, password)
+{
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection){
+
+        var query = "USE " + dbconfig.database + ";"; 
+        connection.query(query);
+
+
+        var time = new Date();
+
+        query = "INSERT INTO " + dbconfig.session_table + " (admin_id, password, last_updated) VALUES (?, ?, ?);";
+        connection.query(query, [admin_id, password, time], function(error, rows) {
+
+            if(error){
+                deferred.reject(error);
+            }
+            else
+            {
+                deferred.resolve();
+            }
+        });
+
+    connection.release();
+    });
+
+    return deferred.promise;
+}
+
+exports.update_time = function(admin_id)
+{
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection){
+
+        var query = "USE " + dbconfig.database + ";"; 
+        connection.query(query);
+
+
+        var time = new Date();
+
+        query = "UPDATE " + dbconfig.session_table + " SET last_updated=? WHERE admin_id=?;";
+        connection.query(query, [time, admin_id], function(error, rows) {
+
+            if(error){
+                deferred.reject(error);
+            }
+            else
+            {
+                deferred.resolve();
+            }
+        });
+
+    connection.release();
+    });
+
+    return deferred.promise;
+}
 // Creates row in Classes table using class_name
-exports.create_class = function(class_name, group_count) {
+exports.create_class = function(class_name, group_count, admin_id) {
     var deferred = Q.defer();
 
     var class_id = 0;
@@ -21,10 +109,13 @@ exports.create_class = function(class_name, group_count) {
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "INSERT INTO " + dbconfig.class_table + " (class_name) VALUES (?);";
-        connection.query(query, [class_name], function(error, rows) {
+        query = "INSERT INTO " + dbconfig.class_table + " (class_name, admin_id) VALUES (?, ?);";
+        connection.query(query, [class_name, admin_id], function(error, rows) {
             if (error) {
-                deferred.reject(error);
+                if(error["code"] == "ER_DUP_ENTRY")
+                    deferred.reject('Duplicate Entry');
+                else
+                    deferred.reject(error);
             }
             else {
                 // If the creation of the class was successful,
@@ -151,6 +242,30 @@ exports.delete_group = function(class_id, group_id) {
     return deferred.promise;
 }
 
+// Deletes a group from the Groups table using a provided class id and group id
+exports.delete_session = function(admin_id) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+        
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "DELETE FROM " + dbconfig.session_table + " WHERE admin_id=?;";
+        connection.query(query, admin_id, function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+               deferred.resolve(); ;
+            }
+         });
+         connection.release();
+    });
+
+    return deferred.promise;
+}
+
 // Deletes a toolbar using the provided class id and tools
 exports.delete_toolbar = function(class_id, toolbar_name) {
     var deferred = Q.defer();
@@ -202,7 +317,7 @@ exports.add_hashed_id = function(class_id, hashed_id) {
 }
 
 //Returns the Classes and their hashed IDs (from the Class table)
-exports.get_classes = function(){
+exports.get_classes = function(admin_id){
     var deferred = Q.defer();
     
     pool.getConnection(function(error, connection) {
@@ -210,8 +325,12 @@ exports.get_classes = function(){
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "SELECT hashed_id, class_name FROM " + dbconfig.class_table + ";" ;
-        connection.query(query, function(error, rows) {
+        if(admin_id == null)
+            query = "SELECT hashed_id, class_name FROM " + dbconfig.class_table + ";";
+        else
+            query = "SELECT hashed_id, class_name FROM " + dbconfig.class_table + " WHERE admin_id=?;";
+        
+        connection.query(query, admin_id, function(error, rows) {
             if(error) {
                 deferred.reject(error);
             }
@@ -236,6 +355,54 @@ exports.get_toolbars = function(class_id){
 
         query = "SELECT toolbar_name, tools FROM " + dbconfig.toolbar_table + " WHERE class_id=?;" ;
         connection.query(query, class_id, function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+                deferred.resolve(rows);
+            }
+        });
+        connection.release();
+    });
+
+    return deferred.promise;
+}
+
+exports.check_user = function(username, password){
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection){
+
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "SELECT password, admin_id FROM " + dbconfig.admin_table + " WHERE user_name = ?;" ;
+
+        connection.query(query, username, function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+                deferred.resolve(rows);
+            }
+        });
+        connection.release();
+    });
+
+    return deferred.promise;
+}
+
+exports.check_session = function(admin_id, password){
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection){
+
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "SELECT password, last_updated FROM " + dbconfig.session_table + " WHERE admin_id = ?;" ;
+
+        connection.query(query, admin_id, function(error, rows) {
             if(error) {
                 deferred.reject(error);
             }
