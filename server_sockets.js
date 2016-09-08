@@ -1485,6 +1485,7 @@ function server_sockets(server, client){
                             class_id : socket.class_id,
                             group_id : socket.group_id,
                             disconnect : true,
+                            status: false,
                             other_members : other_members
                         }
 
