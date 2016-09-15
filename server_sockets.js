@@ -29,8 +29,6 @@ function add_user_to_class(username, class_id) {
     if (class_id in classes.available_classes) {
         if (!(username in classes.available_classes[class_id]["user"])) {
             classes.available_classes[class_id]["user"][username] = {};
-            classes.available_classes[class_id]["user"][username]["x"] = 0.0;
-            classes.available_classes[class_id]["user"][username]["y"] = 0.0;
             classes.available_classes[class_id]["user"][username]["info"] = "";
             deferred.resolve();
         }
@@ -105,9 +103,10 @@ function add_user_to_group(username, class_id, group_id) {
         if (group_id in classes.available_classes[class_id]) {
             if (username in classes.available_classes[class_id]["user"]) {
                 classes.available_classes[class_id][group_id]["students"].push(username);
-                classes.available_classes[class_id]["user"][username]["x"] = 0.0;
-                classes.available_classes[class_id]["user"][username]["y"] = 0.0;
-                classes.available_classes[class_id]["user"][username]["info"] = "{}";
+                var info = {};
+                var charges = [{name: username, x: 0, y: 0}];
+                info.charges = charges;
+                classes.available_classes[class_id]["user"][username]["info"] = JSON.stringify(info);
 
                 deferred.resolve();
             }
@@ -140,8 +139,6 @@ function remove_user_from_group(username, class_id, group_id) {
 
                 if (index > -1) {
                     classes.available_classes[class_id][group_id]["students"].splice(index, 1);
-                    classes.available_classes[class_id]["user"][username]["x"] = 0.0;
-                    classes.available_classes[class_id]["user"][username]["y"] = 0.0;
                     classes.available_classes[class_id]["user"][username]["info"] = "{}";
                     deferred.resolve();
                 }
@@ -179,8 +176,6 @@ function get_info_of_group(class_id, group_id) {
                 var student_name = classes.available_classes[class_id][group_id]["students"][i];
                 other_members.push({
                     member_name : student_name,
-                    member_x : classes.available_classes[class_id]["user"][student_name]["x"], 
-                    member_y : classes.available_classes[class_id]["user"][student_name]["y"],
                     member_info : classes.available_classes[class_id]["user"][student_name]["info"],
                     group_id : group_id
                 });
@@ -202,32 +197,23 @@ function get_info_of_group(class_id, group_id) {
 // If invalid, returns an error.
 // If valid, a JSON string of the given user's new updated coordinates is 
 // returned. The data is updated in the global datastructure.
-function update_users_coordinates(username, class_id, x, y, info) {
+function update_users_coordinates(username, class_id, info) {
     var deferred = Q.defer();
 
     if (class_id in classes.available_classes) {
         if (username in classes.available_classes[class_id]["user"]) {
-            if (!isNaN(x) && !isNaN(y)) {
 
-                classes.available_classes[class_id]["user"][username]["x"] += x;
-                classes.available_classes[class_id]["user"][username]["y"] += y;
-                if(info == null || info == ""){
-                    classes.available_classes[class_id]["user"][username]["info"] = "{}";
-                } else {
+            if(info == null || info == ""){
+                classes.available_classes[class_id]["user"][username]["info"] = "{}";
+            } else {
                 classes.available_classes[class_id]["user"][username]["info"] = JSON.stringify(info);
-                }
-
-                var data = {
-                    x : classes.available_classes[class_id]["user"][username]["x"], 
-                    y : classes.available_classes[class_id]["user"][username]["y"],
-                    info : classes.available_classes[class_id]["user"][username]["info"] 
-                }
-
-                deferred.resolve(data);
             }
-            else {
-                deferred.reject('Coordinate shift (' + x + ', ' + y + ') is invalid.');
+
+            var data = {
+                info : classes.available_classes[class_id]["user"][username]["info"] 
             }
+
+            deferred.resolve(data);
         }
         else {
             deferred.reject('Username ' + username + ' is invalid.');
@@ -761,11 +747,13 @@ function server_sockets(server, client){
                // socket.leave(class_id + "x");
                 socket.group_id = group_id;
 
+                var info = {};
+                info.charges = [{name: username, x: 0, y: 0}];
                 var response = {
                     username : username,
                     class_id : class_id,
                     group_id : group_id,
-                    other_members : [{member_name: username, member_x: 0, member_y: 0, member_info: null, group_id: group_id}],
+                    other_members : [{member_name: username, member_info: JSON.stringify(info), group_id: group_id}],
                     status : true,
                     group_size : classes.available_classes[class_id][group_id]["students"].length
                 }
@@ -842,8 +830,6 @@ function server_sockets(server, client){
                 } //don't need to emit if the person is leaving 
                 response['other_members'] = [{
                     member_name : username,
-                    member_x : classes.available_classes[class_id]["user"][username]["x"], 
-                    member_y : classes.available_classes[class_id]["user"][username]["y"],
                     member_info : classes.available_classes[class_id]["user"][username]["info"],
                     group_id : group_id
                 }]; //set other_members to just the new member for the other group members
@@ -859,24 +845,20 @@ function server_sockets(server, client){
         // Emits coordinate_change_response to all sockets in the class group 
         // room
         // Emits group_info_response to admin socket of the class
-        socket.on('coordinate_change', function(username, class_id, group_id, x, y, info) {
+        socket.on('coordinate_change', function(username, class_id, group_id, info) {
             username = sanitize_data(username);
             class_id = sanitize_data(class_id);
             group_id = sanitize_data(group_id);
-            x = sanitize_data(x);
-            y = sanitize_data(y);
             info = sanitize_data(info);
             
             var response;
 
-            update_users_coordinates(username, class_id, x, y, info)
+            update_users_coordinates(username, class_id, info)
             .then(function(data) {
                 response = {
                     username : username,
                     class_id : class_id,
                     group_id : group_id,
-                    x : data.x,
-                    y : data.y,
                     info: data.info
                 }
                 return get_info_of_group(class_id, group_id);
