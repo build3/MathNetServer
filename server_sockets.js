@@ -234,8 +234,12 @@ function update_user_xml(username, class_id, group_id, xml, toolbar) {
     if (class_id in classes.available_classes) {
         if (group_id in classes.available_classes[class_id]) {
             if (username in classes.available_classes[class_id]["user"] || username == "admin") {
-                classes.available_classes[class_id][group_id]["xml"] = JSON.stringify(xml);
-                classes.available_classes[class_id][group_id]["toolbar"] = toolbar;
+                if(xml != ''){
+                    classes.available_classes[class_id][group_id]["xml"] = JSON.stringify(xml);
+                }
+                if(toolbar != ''){
+                    classes.available_classes[class_id][group_id]["toolbar"] = toolbar;
+                }
                 var data = {
                     xml: classes.available_classes[class_id][group_id]["xml"],
                     toolbar: classes.available_classes[class_id][group_id]["toolbar"] 
@@ -892,6 +896,7 @@ function server_sockets(server, client){
                     xml: data.xml,
                     toolbar: data.toolbar
                 }
+                //console.log('toolbar at xml_change is: ' + data.toolbar);
                 var date = new Date().toJSON();
                 logger.info(date + "~" + username + "~xml_change~" + class_id + "~" + group_id + "~" 
                             + JSON.stringify(response)  + "~1~" + class_id + "x" + group_id );
@@ -918,6 +923,7 @@ function server_sockets(server, client){
                     xml: data.xml,
                     toolbar: data.toolbar
                 }
+                //console.log('toolbar at get_xml is: ' + data.toolbar);
                 var date = new Date().toJSON();
                 logger.info(date + "~" + username + "~get_xml~" + class_id + "~" + group_id + "~" 
                             + JSON.stringify(response)  + "~0~" + class_id + "x" + group_id );
