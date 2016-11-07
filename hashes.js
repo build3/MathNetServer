@@ -18,7 +18,7 @@ exports.add_hash = function(class_id) {
             }).fail(function(error) {
                 deferred.reject(error);
             });
-            break
+            break;
         }
     }
 
