@@ -419,15 +419,12 @@ function create_toolbar(class_id, toolbar_name, tools) {
 function create_admin(username, password) {
     var deferred = Q.defer();
 
-console.log("in create-admin");
     database.create_user(username, password)
     .then(function(admin) {
-        
         deferred.resolve(admin);
     }).fail(function(admin) {
         deferred.reject(error);
     });
-
 
     return deferred.promise;
 }
@@ -963,7 +960,6 @@ function server_sockets(server, client){
             class_name = sanitize_data(class_name);
             group_count = sanitize_data(group_count);
             secret = sanitize_data(secret);
-            console.log(admin_id);
 
             if (secret == "ucd_247") {
                 create_class(class_name, group_count, admin_id)
@@ -1143,13 +1139,11 @@ function server_sockets(server, client){
 
             create_toolbar(class_id, toolbar_name, tools)
             .then(function(toolbars) {
-
                 var response = {
                     username : "Admin",
                     class_id : class_id,
                     toolbars : toolbars
                 }
-                //console.log(response);
                 var date = new Date().toJSON();
                 logger.info(date + "~ADMIN~add-toolbar~" + class_id + "~" + toolbars.length + "~" + JSON.stringify(response) 
                             + "~1~"+ class_id + "x");
@@ -1177,7 +1171,6 @@ function server_sockets(server, client){
                     class_id : class_id,
                     toolbars : toolbars
                 }
-                //console.log(response);
                 socket.emit('get-toolbar-response', response);
                 io.sockets.to("admin-" + class_id).emit('get-toolbar-response', response);
 
@@ -1194,7 +1187,6 @@ function server_sockets(server, client){
         socket.on('delete-toolbar', function(class_id, toolbar_name) {
             class_id = sanitize_data(class_id);
 
-            console.log("delete-toolbar");
             delete_toolbar(class_id, toolbar_name)
             .then(function(toolbars) {
 
@@ -1324,8 +1316,6 @@ function server_sockets(server, client){
             if (secret == "ucd_247") {
                 get_classes(admin_id)
                 .then(function(classes) {
-                    
-                    //console.log(classes);
                     var date = new Date().toJSON();
                     var response = {
                         secret: secret,
@@ -1348,29 +1338,25 @@ function server_sockets(server, client){
             secret = sanitize_data(secret);
             username = sanitize_data(username);
             password = sanitize_data(password);
-            console.log("hello");
 
             if (secret == "ucd_247") {
                 check_username(username)
                 .then(function(data_password) {
                     var check = 0;
                     
-                    if(!data_password[0])
-                       {
+                    var data_admin;
+                    if(!data_password[0]) {
                         check = 0;
-                        var data_admin = "nothing"
-                       } 
-                    else if(!pw.verifyPassword(password, data_password[0].password))
-                        {
-                            check = -1;
-                            var data_admin =  data_password[0].admin_id;
-                        }
-                    else
-                        {
-                            check = 1;
-                            var data_admin =  data_password[0].admin_id;
-                            
-                        }
+                        data_admin = ""
+                    } 
+                    else if(!pw.verifyPassword(password, data_password[0].password)) {
+                        check = -1;
+                        data_admin = data_password[0].admin_id;
+                    }
+                    else {
+                        check = 1;
+                        data_admin = data_password[0].admin_id;            
+                    }
 
                     socket.emit('check-username-response', data_admin, check);
                    // io.to(class_id + "x").emit('logout_response', {});
@@ -1391,16 +1377,13 @@ function server_sockets(server, client){
                 var check = 0;
                 var data_admin = 0;
                 
-                if(password && data_password[0] && pw.verifyPassword(password, data_password[0].password))
-                    {
-                        check = 1;
-                        data_admin = admin_id;
-                        socket.admin_id = admin_id;
-                    }
+                if(password && data_password[0] && pw.verifyPassword(password, data_password[0].password)) {
+                    check = 1;
+                    data_admin = admin_id;
+                    socket.admin_id = admin_id;
+                }
                 if(data_password[0] && (Math.abs(new Date() - data_password[0].last_updated) >= 720000) && check == 1)
                     check = -1;
-
-                console.log(new Date() - data_password[0].last_updated);
 
                 socket.emit('check-session-response', data_admin, check);
                // io.to(class_id + "x").emit('logout_response', {});
@@ -1447,8 +1430,6 @@ function server_sockets(server, client){
         socket.on('disconnect', function() {
 
             if (socket.admin_id){
-                console.log("refersh page");
-
                 database.update_time(socket.admin_id)
                 .then(function() {
                     deferred.resolve();

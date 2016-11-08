@@ -130,7 +130,7 @@ exports.create_class = function(class_name, group_count, admin_id) {
                         class_id = rows[0].class_id;
                         for (var group=1; group < group_count + 1; group++) {
                             query = 
-                                "INSERT INTO " + dbconfig.group_table + " (group_id, class_id) VALUES (?, ?);"
+                                "INSERT INTO " + dbconfig.group_table + " (group_id, class_id) VALUES (?, ?);";
                             connection.query(query, [group, class_id]);
                         }
                         deferred.resolve(class_id);
@@ -186,7 +186,6 @@ exports.create_group = function(class_id) {
 
 //Creates a toolbar belonging to the class 
 exports.create_toolbar = function(class_id, toolbar_name, tools) {
-   //  console.log("create_toolbar");
     var deferred = Q.defer();
 
     pool.getConnection(function(error, connection) {
@@ -270,7 +269,6 @@ exports.delete_session = function(admin_id) {
 exports.delete_toolbar = function(class_id, toolbar_name) {
     var deferred = Q.defer();
 
-    console.log(toolbar_name);
     pool.getConnection(function(error, connection) {
         
         var query = "USE " + dbconfig.database + ";";
