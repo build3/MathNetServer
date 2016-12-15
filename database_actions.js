@@ -200,9 +200,36 @@ exports.create_toolbar = function(class_id, toolbar_name, tools) {
         connection.query(query, [class_id, toolbar_name, tools], function(error, rows) {
             if(error){
                 deferred.reject(error);
+            } else {
+                deferred.resolve();
             }
-            else
-            {
+        });
+        
+        //deferred.resolve(toolbar);
+
+
+    connection.release();
+    });
+
+    return deferred.promise;
+}
+exports.update_toolbar = function(class_id, toolbar_name, tools) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+        // Get the class_id and create the groups for that class
+
+        console.log("update query with " + class_id + " " + toolbar_name + " " + tools);      
+        query = "UPDATE  " + dbconfig.toolbar_table + " SET tools=? WHERE class_id=? AND toolbar_name=?;";
+
+        connection.query(query, [tools, class_id, toolbar_name], function(error, rows) {
+            if(error){
+                console.log(error);
+                deferred.reject(error);
+            } else {
                 deferred.resolve();
             }
         });

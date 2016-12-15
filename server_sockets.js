@@ -392,12 +392,15 @@ function create_group(class_id) {
 // If invalid, returns an error.
 // If valid, create a toolbar for the given class in the database and return all
 // the toolbars in the class.
-function create_toolbar(class_id, toolbar_name, tools) {
+function create_toolbar(class_id, toolbar_name, tools, action) {
     var deferred = Q.defer();
 
     hash.find_id(class_id)
     .then(function(unhashed_id) {
-        database.create_toolbar(unhashed_id, toolbar_name, tools);
+        if (action == 'update')
+            database.update_toolbar(unhashed_id, toolbar_name, tools);
+        else if (action == 'insert')
+            database.create_toolbar(unhashed_id, toolbar_name, tools);
         return hash.find_id(class_id);
     }).then(function(unhashed_id) {
         return database.get_toolbars(unhashed_id);
@@ -1134,10 +1137,10 @@ function server_sockets(server, client){
         // This is the handler for the add-toolbar client socket emission
         // It calls a database function to create a toolbar for a class
         // Emits toolbar_get_response to all sockets in the class room
-        socket.on('save-toolbar', function(class_id, toolbar_name, tools) {
+        socket.on('save-toolbar', function(class_id, toolbar_name, tools, action) {
             class_id = sanitize_data(class_id);
-
-            create_toolbar(class_id, toolbar_name, tools)
+            console.log(action);
+            create_toolbar(class_id, toolbar_name, tools, action)
             .then(function(toolbars) {
                 var response = {
                     username : "Admin",
