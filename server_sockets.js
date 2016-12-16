@@ -986,12 +986,14 @@ function server_sockets(server, client){
             var password = pw.makePassword(string, 10, 'sha256', 32);
 
             
-            create_session(admin_id, password)
+            delete_session(admin_id)
             .then(function() {
+                return create_session(admin_id, password);
+            }).then(function() {
 
             }).fail(function(error) {
-                    server_error(error, error);
-                });
+                server_error(error, error);
+            });
             socket.admin_id = admin_id;
         });
 
@@ -1004,8 +1006,8 @@ function server_sockets(server, client){
             .then(function() {
 
             }).fail(function(error) {
-                    server_error(error, error);
-                });
+                server_error(error, error);
+            });
         });
 
 
@@ -1377,13 +1379,14 @@ function server_sockets(server, client){
                 var check = 0;
                 var data_admin = 0;
                 
-                if(password && data_password[0] && pw.verifyPassword(password, data_password[0].password)) {
+                if (password && data_password[0] && pw.verifyPassword(password, data_password[0].password)) {
                     check = 1;
+                    if (data_password[0] && (Math.abs(new Date() - data_password[0].last_updated) >= 720000)) {
+                        check = -1;
+                    }
                     data_admin = admin_id;
                     socket.admin_id = admin_id;
                 }
-                if(data_password[0] && (Math.abs(new Date() - data_password[0].last_updated) >= 720000) && check == 1)
-                    check = -1;
 
                 socket.emit('check-session-response', data_admin, check);
                // io.to(class_id + "x").emit('logout_response', {});
