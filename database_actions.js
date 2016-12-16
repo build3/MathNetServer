@@ -56,11 +56,10 @@ exports.create_session = function(admin_id, password)
         query = "INSERT INTO " + dbconfig.session_table + " (admin_id, password, last_updated) VALUES (?, ?, ?);";
         connection.query(query, [admin_id, password, time], function(error, rows) {
 
-            if(error){
+            if (error) {
                 deferred.reject(error);
             }
-            else
-            {
+            else {
                 deferred.resolve();
             }
         });
@@ -86,11 +85,10 @@ exports.update_time = function(admin_id)
         query = "UPDATE " + dbconfig.session_table + " SET last_updated=? WHERE admin_id=?;";
         connection.query(query, [time, admin_id], function(error, rows) {
 
-            if(error){
+            if (error) {
                 deferred.reject(error);
             }
-            else
-            {
+            else {
                 deferred.resolve();
             }
         });
@@ -250,7 +248,16 @@ exports.delete_session = function(admin_id) {
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "DELETE FROM " + dbconfig.session_table + " WHERE admin_id=?;";
+        var date;
+        date = new Date();
+        date = date.getUTCFullYear() + '-' +
+                ('00' + (date.getUTCMonth() + 1)).slice(-2) + '-' +
+                ('00' + date.getUTCDate()).slice(-2) + ' ' +
+                ('00' + date.getUTCHours()).slice(-2) + ':' +
+                ('00' + date.getUTCMinutes()).slice(-2) + ':' +
+                ('00' + date.getUTCSeconds()).slice(-2); 
+
+        query = "DELETE FROM " + dbconfig.session_table + " WHERE admin_id=? OR last_updated > DATE_ADD(date_created, INTERVAL 8 HOUR);";
         connection.query(query, admin_id, function(error, rows) {
             if(error) {
                 deferred.reject(error);
@@ -366,7 +373,7 @@ exports.get_toolbars = function(class_id){
     return deferred.promise;
 }
 
-exports.check_user = function(username, password){
+exports.check_user = function(username){
     var deferred = Q.defer();
 
     pool.getConnection(function(error, connection){
@@ -390,7 +397,7 @@ exports.check_user = function(username, password){
     return deferred.promise;
 }
 
-exports.check_session = function(admin_id, password){
+exports.check_session = function(admin_id){
     var deferred = Q.defer();
 
     pool.getConnection(function(error, connection){
