@@ -41,6 +41,52 @@ exports.create_user = function(user_name, password)
     return deferred.promise;
 }
 
+exports.get_password = function(admin_id) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection){
+
+        var query = "USE " + dbconfig.database + ";"; 
+        connection.query(query);
+
+        query = "SELECT password FROM " + dbconfig.admin_table + " WHERE admin_id=?;";
+        connection.query(query, [admin_id], function(error, rows) {
+            if (error) {
+                deferred.reject(error);
+            }
+            else {
+                deferred.resolve(rows[0].password);
+            }
+        });
+        connection.release();
+    });
+
+    return deferred.promise;
+}
+
+exports.update_password = function(admin_id, new_password) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection){
+
+        var query = "USE " + dbconfig.database + ";"; 
+        connection.query(query);
+
+        query = "UPDATE " + dbconfig.admin_table + " SET password=? WHERE admin_id=?;";
+        connection.query(query, [new_password, admin_id], function(error, rows) {
+            if (error) {
+                deferred.reject(error);
+            }
+            else {
+                deferred.resolve();
+            }
+        });
+        connection.release();
+    });
+
+    return deferred.promise;
+}
+
 exports.create_session = function(admin_id, password)
 {
     var deferred = Q.defer();
