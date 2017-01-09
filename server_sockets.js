@@ -419,7 +419,32 @@ function create_admin(username, password) {
     database.create_user(username, password)
     .then(function(admin) {
         deferred.resolve(admin);
-    }).fail(function(admin) {
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
+
+
+// Takes an admin_id, password, and
+// new password. Updates password
+// if valid password.
+
+function update_password(admin_id, password, new_password) {
+    var deferred = Q.defer();
+    var valid;
+
+    database.get_password(admin_id)
+    .then(function(db_password) {
+        valid = pw.verifyPassword(password, db_password);
+        if (valid) {
+            new_password = pw.makePassword(new_password, 10, 'sha256', 32);
+            return database.update_password(admin_id, new_password)
+        }
+    }).then(function() {
+        deferred.resolve(valid);
+    }).fail(function(error) {
         deferred.reject(error);
     });
 
@@ -1048,6 +1073,37 @@ function server_sockets(server, client){
                 }
                 }).fail(function(error) {
                     server_error(error, error);
+                });
+            }
+        });
+
+
+        // CHANGE-PASSWORD
+        // This is the handler for the create-admin client socket emission
+        // It calls a database function to create an admin
+        // Socket joins an admin room using class id
+        // Emits create-admin-response to the socket that triggered add-class 
+        socket.on('change-password', function(admin_id, password, new_password, secret) {
+            admin_id = sanitize_data(admin_id);
+            password = sanitize_data(password);
+            new_password = sanitize_data(new_password);
+
+
+            if (secret == "ucd_247") {
+                
+                update_password(admin_id, password, new_password) // change password
+                .then(function(success) {
+
+                    var response = {
+                        success: success
+                    };
+                    
+                    var date = new Date().toJSON();
+                    logger.info(date + "~ADMIN~change-password~admin_id~" + success);
+                    socket.emit('change-password-response', response);
+
+                }).fail(function(error) {
+                    server_error(error);
                 });
             }
         });
