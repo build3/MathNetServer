@@ -182,20 +182,20 @@ exports.create_group = function(class_id) {
     return deferred.promise;
 }
 
-//Creates a toolbar belonging to the class 
-exports.create_toolbar = function(class_id, toolbar_name, tools) {
+//Creates a toolbar belonging to the admin 
+exports.create_toolbar = function(admin_id, toolbar_name, tools) {
     var deferred = Q.defer();
 
     pool.getConnection(function(error, connection) {
 
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
-        // Get the class_id and create the groups for that class
+        // Get the admin_id and create the groups for that class
 
                 
-        query = "INSERT INTO " + dbconfig.toolbar_table + " (class_id, toolbar_name, tools) VALUES (?, ?, ?);";
+        query = "INSERT INTO " + dbconfig.toolbar_table + " (admin_id, toolbar_name, tools) VALUES (?, ?, ?);";
 
-        connection.query(query, [class_id, toolbar_name, tools], function(error, rows) {
+        connection.query(query, [admin_id, toolbar_name, tools], function(error, rows) {
             if(error){
                 deferred.reject(error);
             }
@@ -272,8 +272,8 @@ exports.delete_session = function(admin_id) {
     return deferred.promise;
 }
 
-// Deletes a toolbar using the provided class id and tools
-exports.delete_toolbar = function(class_id, toolbar_name) {
+// Deletes a toolbar using the provided admin id and tools
+exports.delete_toolbar = function(admin_id, toolbar_name) {
     var deferred = Q.defer();
 
     pool.getConnection(function(error, connection) {
@@ -281,8 +281,8 @@ exports.delete_toolbar = function(class_id, toolbar_name) {
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "DELETE FROM " + dbconfig.toolbar_table + " WHERE class_id=? AND toolbar_name=?;";
-        connection.query(query, [class_id, toolbar_name], function(error, rows) {
+        query = "DELETE FROM " + dbconfig.toolbar_table + " WHERE admin_id=? AND toolbar_name=?;";
+        connection.query(query, [admin_id, toolbar_name], function(error, rows) {
             if(error) {
                 deferred.reject(error);
             }
@@ -350,7 +350,7 @@ exports.get_classes = function(admin_id){
 }
 
 //Returns the TOOLBARS and their hashed IDs (from the Class table)
-exports.get_toolbars = function(class_id){
+exports.get_toolbars = function(admin_id){
     var deferred = Q.defer();
     
     pool.getConnection(function(error, connection) {
@@ -358,8 +358,8 @@ exports.get_toolbars = function(class_id){
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "SELECT toolbar_name, tools FROM " + dbconfig.toolbar_table + " WHERE class_id=?;" ;
-        connection.query(query, class_id, function(error, rows) {
+        query = "SELECT toolbar_name, tools FROM " + dbconfig.toolbar_table + " WHERE admin_id=?;" ;
+        connection.query(query, admin_id, function(error, rows) {
             if(error) {
                 deferred.reject(error);
             }
