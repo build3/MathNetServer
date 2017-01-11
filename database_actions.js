@@ -99,7 +99,7 @@ exports.update_time = function(admin_id)
     return deferred.promise;
 }
 // Creates row in Classes table using class_name
-exports.create_class = function(class_name, group_count, admin_id) {
+exports.create_class = function(class_name, group_count, admin_id, group_colors) {
     var deferred = Q.defer();
 
     var class_id = 0;
@@ -128,8 +128,8 @@ exports.create_class = function(class_name, group_count, admin_id) {
                         class_id = rows[0].class_id;
                         for (var group=1; group < group_count + 1; group++) {
                             query = 
-                                "INSERT INTO " + dbconfig.group_table + " (group_id, class_id) VALUES (?, ?);";
-                            connection.query(query, [group, class_id]);
+                                "INSERT INTO " + dbconfig.group_table + " (group_id, class_id, group_color) VALUES (?, ?, ?);";
+                            connection.query(query, [group, class_id, group_colors[group - 1]]);
                         }
                         deferred.resolve(class_id);
                     }
@@ -144,7 +144,7 @@ exports.create_class = function(class_name, group_count, admin_id) {
 }
 
 // Creates a group belonging to the class found using class_name
-exports.create_group = function(class_id) {
+exports.create_group = function(class_id, group_color) {
     var deferred = Q.defer();
 
     pool.getConnection(function(error, connection) {
@@ -170,8 +170,8 @@ exports.create_group = function(class_id) {
                 else {
                     group = 1;
                 }
-                query = "INSERT INTO " + dbconfig.group_table + " (group_id, class_id) VALUES (?, ?);";
-                connection.query(query, [group, class_id]);
+                query = "INSERT INTO " + dbconfig.group_table + " (group_id, class_id, group_color) VALUES (?, ?, ?);";
+                connection.query(query, [group, class_id, group_color]);
                 
                 deferred.resolve(group);
             }
@@ -181,6 +181,32 @@ exports.create_group = function(class_id) {
 
     return deferred.promise;
 }
+
+//Returns the TOOLBARS and their hashed IDs (from the Class table)
+exports.get_group_color = function(class_id, group_id){
+    var deferred = Q.defer();
+   
+    pool.getConnection(function(error, connection) {
+
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "SELECT group_color FROM " + dbconfig.group_table + " WHERE class_id=? AND group_id=?;" ;
+        connection.query(query, [class_id, group_id], function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+           else {
+                deferred.resolve(rows);
+            }
+        });
+        connection.release();
+    });
+
+   return deferred.promise;
+}
+
+
 
 //Creates a toolbar belonging to the class 
 exports.create_toolbar = function(class_id, toolbar_name, tools) {

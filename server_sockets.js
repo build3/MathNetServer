@@ -319,10 +319,10 @@ function get_settings(class_id, group_id) {
 // If valid, create a class of the given class name in the database and return
 // a hashed string of the created class id. A new class entry is also made in 
 // the global datastructure.
-function create_class(class_name, group_count, admin_id){
+function create_class(class_name, group_count, admin_id, group_colors){
     var deferred = Q.defer();
 
-    database.create_class(class_name, group_count, admin_id)
+    database.create_class(class_name, group_count, admin_id, group_colors)
     .then(function(class_id) {
         return hash.add_hash(class_id);
     }).then(function(id_hash) {
@@ -370,14 +370,14 @@ function join_class(class_id) {
 // If valid, create a group for the given class in the database and return all
 // the groups in the class. A new group entry for the class is also made in the
 // global datastructure.
-function create_group(class_id) {
+function create_group(class_id, group_color) {
     var deferred = Q.defer();
 
     hash.find_id(class_id)
     .then(function(unhashed_id) {
-        return database.create_group(unhashed_id);
+        return database.create_group(unhashed_id, group_color);
     }).then(function(group_id) {
-        classes.available_classes[class_id][group_id] = {students:[], deleted:false};
+        classes.available_classes[class_id][group_id] = {students:[], deleted:false, colors:group_color};
         return get_all_groups_from_class(class_id);
     }).then(function(groups) {
         deferred.resolve(groups);
@@ -458,6 +458,26 @@ function check_username(username) {
     database.check_user(username)
     .then(function(data_password) {
         deferred.resolve(data_password);
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
+
+// Takes a class id and group_id.
+// If invalid, returns an error.
+// If valid return 
+// the colors of the group.
+
+function group_color(class_id, group_id) {
+    var deferred = Q.defer();
+
+    hash.find_id(class_id)
+    .then(function(unhashed_id) {
+        return database.get_group_color(unhashed_id, group_id);
+    }).then(function(toolbars) {
+        deferred.resolve(toolbars);
     }).fail(function(error) {
         deferred.reject(error);
     });
@@ -898,7 +918,7 @@ function server_sockets(server, client){
                 logger.info(date + "~" + username + "~xml_change~" + class_id + "~" + group_id + "~" 
                             + JSON.stringify(response)  + "~1~" + class_id + "x" + group_id );
                 socket.broadcast.to(class_id + "x" + group_id).emit('xml_change_response', response);
-                io.sockets.to('admin-' + class_id).emit('xml_change_response', response);
+                io.sockets.to('admin-' + class_id, response).emit('xml_change_response', response);
             }).fail(function(error){
                 server_error(error, error);
             });
@@ -956,13 +976,13 @@ function server_sockets(server, client){
         // It calls a database function to create a class and groups
         // Socket joins an admin room using class id
         // Emits add-class-response to the socket that triggered add-class 
-        socket.on('add-class', function(class_name, group_count, secret, admin_id) {
+        socket.on('add-class', function(class_name, group_count, secret, admin_id, group_colors) {
             class_name = sanitize_data(class_name);
             group_count = sanitize_data(group_count);
             secret = sanitize_data(secret);
-
+            console.log(group_colors[0])
             if (secret == "ucd_247") {
-                create_class(class_name, group_count, admin_id)
+                create_class(class_name, group_count, admin_id, group_colors)
                 .then(function(class_id) {
                     socket.join('admin-' + class_id);
                     var response = {
@@ -1106,13 +1126,14 @@ function server_sockets(server, client){
         // It calls a database function to create a group for a class
         // Emits add-group-response to socket that triggered add-group
         // Emits groups_get_response to all sockets in the class room
-        socket.on('add-group', function(class_id, secret) {
+        socket.on('add-group', function(class_id, secret, colors) {
             class_id = sanitize_data(class_id);
             secret = sanitize_data(secret);
 
+            var group_color = colors.join('-'); //Creating the string to be passed in the sql database as group_color
 
             if (secret == "ucd_247") {
-                create_group(class_id)
+                create_group(class_id, group_color)
                 .then(function(groups) {
                     var response = {
                         username : "Admin",
@@ -1130,6 +1151,27 @@ function server_sockets(server, client){
                 });
             }
         }); 
+
+
+        // GROUP-COLOR
+        // This is the handler for the color-group client socket emission
+        // It calls a database function to get and set the color for a group
+        // Emits group-color-response to socket that triggered add-group
+        socket.on('group-color', function(class_id, group_id) {
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+
+            group_color(class_id, group_id)
+            .then(function(colors) {
+
+                socket.emit('group-color-response', colors);
+                //io.sockets.to(class_id + "x").emit('add-group-response', {});
+
+            }).fail(function(error) {
+                server_error(error, error);
+            });
+        }); 
+
 
 
         // ADD-TOOLBAR
