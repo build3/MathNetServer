@@ -222,7 +222,7 @@ exports.update_toolbar = function(class_id, toolbar_name, tools) {
         connection.query(query);
         // Get the class_id and create the groups for that class
 
-        console.log("update query with " + class_id + " " + toolbar_name + " " + tools);      
+        //console.log("update query with " + class_id + " " + toolbar_name + " " + tools);      
         query = "UPDATE  " + dbconfig.toolbar_table + " SET tools=? WHERE class_id=? AND toolbar_name=?;";
 
         connection.query(query, [tools, class_id, toolbar_name], function(error, rows) {
@@ -238,55 +238,6 @@ exports.update_toolbar = function(class_id, toolbar_name, tools) {
 
 
     connection.release();
-    });
-
-    return deferred.promise;
-}
-
-
-// Deletes a group from the Groups table using a provided class id and group id
-exports.delete_group = function(class_id, group_id) {
-    var deferred = Q.defer();
-
-    pool.getConnection(function(error, connection) {
-        
-        var query = "USE " + dbconfig.database + ";";
-        connection.query(query);
-
-        query = "DELETE FROM " + dbconfig.group_table + " WHERE class_id=? AND group_id=?;";
-        connection.query(query, [class_id, group_id], function(error, rows) {
-            if(error) {
-                deferred.reject(error);
-            }
-            else {
-               deferred.resolve(); ;
-            }
-         });
-         connection.release();
-    });
-
-    return deferred.promise;
-}
-
-// Deletes a group from the Groups table using a provided class id and group id
-exports.delete_session = function(admin_id) {
-    var deferred = Q.defer();
-
-    pool.getConnection(function(error, connection) {
-        
-        var query = "USE " + dbconfig.database + ";";
-        connection.query(query);
-
-        query = "DELETE FROM " + dbconfig.session_table + " WHERE admin_id=?;";
-        connection.query(query, admin_id, function(error, rows) {
-            if(error) {
-                deferred.reject(error);
-            }
-            else {
-               deferred.resolve(); ;
-            }
-         });
-         connection.release();
     });
 
     return deferred.promise;
@@ -316,6 +267,78 @@ exports.delete_toolbar = function(class_id, toolbar_name) {
     return deferred.promise;
 }
 
+//Returns the TOOLBARS and their hashed IDs (from the Class table)
+exports.get_toolbars = function(class_id){
+    var deferred = Q.defer();
+    
+    pool.getConnection(function(error, connection) {
+
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "SELECT toolbar_name, tools FROM " + dbconfig.toolbar_table + " WHERE class_id=?;" ;
+        connection.query(query, class_id, function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+                //console.log(rows);
+                deferred.resolve(rows);
+            }
+        });
+        connection.release();
+    });
+
+    return deferred.promise;
+}
+
+// Deletes a group from the Groups table using a provided class id and group id
+exports.delete_group = function(class_id, group_id) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+        
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "DELETE FROM " + dbconfig.group_table + " WHERE class_id=? AND group_id=?;";
+        connection.query(query, [class_id, group_id], function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+               deferred.resolve(); ;
+            }
+         });
+         connection.release();
+    });
+
+    return deferred.promise;
+}
+
+// Deletes a session from the Sessions table given an admin_id
+exports.delete_session = function(admin_id) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+        
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "DELETE FROM " + dbconfig.session_table + " WHERE admin_id=?;";
+        connection.query(query, admin_id, function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+               deferred.resolve(); ;
+            }
+         });
+         connection.release();
+    });
+
+    return deferred.promise;
+}
 
 // Updates the Class table to add hashed id to class row
 exports.add_hashed_id = function(class_id, hashed_id) {
@@ -356,30 +379,6 @@ exports.get_classes = function(admin_id){
             query = "SELECT hashed_id, class_name FROM " + dbconfig.class_table + " WHERE admin_id=?;";
         
         connection.query(query, admin_id, function(error, rows) {
-            if(error) {
-                deferred.reject(error);
-            }
-            else {
-                deferred.resolve(rows);
-            }
-        });
-        connection.release();
-    });
-
-    return deferred.promise;
-}
-
-//Returns the TOOLBARS and their hashed IDs (from the Class table)
-exports.get_toolbars = function(class_id){
-    var deferred = Q.defer();
-    
-    pool.getConnection(function(error, connection) {
-
-        var query = "USE " + dbconfig.database + ";";
-        connection.query(query);
-
-        query = "SELECT toolbar_name, tools FROM " + dbconfig.toolbar_table + " WHERE class_id=?;" ;
-        connection.query(query, class_id, function(error, rows) {
             if(error) {
                 deferred.reject(error);
             }
