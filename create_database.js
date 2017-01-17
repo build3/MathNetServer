@@ -56,10 +56,10 @@ connection.query('\
                  `toolbar_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, \
                  `toolbar_name` VARCHAR(40) NOT NULL, \
                  `tools` VARCHAR(100) NOT NULL, \
-                 `class_id` INT UNSIGNED NOT NULL, \
+                 `admin_id` INT NOT NULL, \
                  `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
                  PRIMARY KEY (`toolbar_id`), \
-                 FOREIGN KEY (`class_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.class_table+'`(class_id) \
+                 FOREIGN KEY (`admin_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.admin_table+'`(admin_id) \
                  ON DELETE CASCADE \
                  )');
 

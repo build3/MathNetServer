@@ -388,22 +388,21 @@ function create_group(class_id) {
     return deferred.promise;
 }
 
-// Takes a class id, toolbar_name and tools.
+// Takes a admin id, toolbar_name and tools.
 // If invalid, returns an error.
 // If valid, create a toolbar for the given class in the database and return all
 // the toolbars in the class.
-function create_toolbar(class_id, toolbar_name, tools, action) {
+function create_toolbar(admin_id, toolbar_name, tools, action) {
     var deferred = Q.defer();
+    var db_call;
+    if (action == 'update')
+        db_call = database.update_toolbar(admin_id, toolbar_name, tools);
+    else if (action == 'insert')
+        db_call = database.create_toolbar(admin_id, toolbar_name, tools);
 
-    hash.find_id(class_id)
-    .then(function(unhashed_id) {
-        if (action == 'update')
-            database.update_toolbar(unhashed_id, toolbar_name, tools);
-        else if (action == 'insert')
-            database.create_toolbar(unhashed_id, toolbar_name, tools);
-        return hash.find_id(class_id);
-    }).then(function(unhashed_id) {
-        return database.get_toolbars(unhashed_id);
+    db_call
+    .then(function() {
+        return database.get_toolbars(admin_id);
     }).then(function(toolbars) {
         deferred.resolve(toolbars);
     }).fail(function(error) {
@@ -425,7 +424,7 @@ function create_admin(username, password) {
     database.create_user(username, password)
     .then(function(admin) {
         deferred.resolve(admin);
-    }).fail(function(admin) {
+    }).fail(function(error) {
         deferred.reject(error);
     });
 
@@ -433,18 +432,41 @@ function create_admin(username, password) {
 }
 
 
-// Takes a class id.
+// Takes an admin_id, password, and
+// new password. Updates password
+// if valid password.
+
+function update_password(admin_id, password, new_password) {
+    var deferred = Q.defer();
+    var valid;
+
+    database.get_password(admin_id)
+    .then(function(db_password) {
+        valid = pw.verifyPassword(password, db_password);
+        if (valid) {
+            new_password = pw.makePassword(new_password, 10, 'sha256', 32);
+            return database.update_password(admin_id, new_password)
+        }
+    }).then(function() {
+        deferred.resolve(valid);
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
+
+
+// Takes a admin id.
 // If invalid, returns an error.
 // If valid return all
-// the toolbars in the class.
+// the toolbars in the admin.
 
-function get_toolbars(class_id) {
+function get_toolbars(admin_id) {
     var deferred = Q.defer();
 
-    hash.find_id(class_id)
-    .then(function(unhashed_id) {
-        return database.get_toolbars(unhashed_id);
-    }).then(function(toolbars) {
+    database.get_toolbars(admin_id)
+    .then(function(toolbars) {
         deferred.resolve(toolbars);
     }).fail(function(error) {
         deferred.reject(error);
@@ -519,17 +541,14 @@ function delete_session(admin_id) {
 }
 
 // If invalid, returns an error.
-// If valid, deletes the toolbar for the given class in the database and return all
-// the toolbars in the class.
-function delete_toolbar(class_id, toolbar_name) {
+// If valid, deletes the toolbar for the given the admin in the database and return all
+// the toolbars for the admin.
+function delete_toolbar(admin_id, toolbar_name) {
     var deferred = Q.defer();
 
-    hash.find_id(class_id)
-    .then(function(unhashed_id) {
-        database.delete_toolbar(unhashed_id, toolbar_name);
-        return hash.find_id(class_id);
-    }).then(function(unhashed_id) {
-        return database.get_toolbars(unhashed_id);
+    database.delete_toolbar(admin_id, toolbar_name)
+    .then(function() {
+        return database.get_toolbars(admin_id);
     }).then(function(toolbars) {
         deferred.resolve(toolbars);
     }).fail(function(error) {
@@ -989,12 +1008,14 @@ function server_sockets(server, client){
             var password = pw.makePassword(string, 10, 'sha256', 32);
 
             
-            create_session(admin_id, password)
+            delete_session(admin_id)
             .then(function() {
+                return create_session(admin_id, password);
+            }).then(function() {
 
             }).fail(function(error) {
-                    server_error(error, error);
-                });
+                server_error(error, error);
+            });
             socket.admin_id = admin_id;
         });
 
@@ -1007,8 +1028,8 @@ function server_sockets(server, client){
             .then(function() {
 
             }).fail(function(error) {
-                    server_error(error, error);
-                });
+                server_error(error, error);
+            });
         });
 
 
@@ -1057,6 +1078,37 @@ function server_sockets(server, client){
                 }
                 }).fail(function(error) {
                     server_error(error, error);
+                });
+            }
+        });
+
+
+        // CHANGE-PASSWORD
+        // This is the handler for the create-admin client socket emission
+        // It calls a database function to create an admin
+        // Socket joins an admin room using class id
+        // Emits create-admin-response to the socket that triggered add-class 
+        socket.on('change-password', function(admin_id, password, new_password, secret) {
+            admin_id = sanitize_data(admin_id);
+            password = sanitize_data(password);
+            new_password = sanitize_data(new_password);
+
+
+            if (secret == "ucd_247") {
+                
+                update_password(admin_id, password, new_password) // change password
+                .then(function(success) {
+
+                    var response = {
+                        success: success
+                    };
+                    
+                    var date = new Date().toJSON();
+                    logger.info(date + "~ADMIN~change-password~admin_id~" + success);
+                    socket.emit('change-password-response', response);
+
+                }).fail(function(error) {
+                    server_error(error);
                 });
             }
         });
@@ -1137,20 +1189,20 @@ function server_sockets(server, client){
         // This is the handler for the add-toolbar client socket emission
         // It calls a database function to create a toolbar for a class
         // Emits toolbar_get_response to all sockets in the class room
-        socket.on('save-toolbar', function(class_id, toolbar_name, tools, action) {
-            class_id = sanitize_data(class_id);
-            create_toolbar(class_id, toolbar_name, tools, action)
+        socket.on('save-toolbar', function(admin_id, toolbar_name, tools, action) {
+            admin_id = sanitize_data(admin_id);
+
+            create_toolbar(admin_id, toolbar_name, tools, action)
             .then(function(toolbars) {
                 var response = {
                     username : "Admin",
-                    class_id : class_id,
+                    admin_id : admin_id,
                     toolbars : toolbars
                 }
                 var date = new Date().toJSON();
-                logger.info(date + "~ADMIN~add-toolbar~" + class_id + "~" + toolbars.length + "~" + JSON.stringify(response) 
-                            + "~1~"+ class_id + "x");
+                logger.info(date + "~ADMIN~add-toolbar~" + admin_id + "~" + toolbars.length + "~" + JSON.stringify(response) 
+                            + "~1~"+ admin_id + "x");
                 socket.emit('get-toolbar-response', response);
-                io.sockets.to("admin-" + class_id).emit('get-toolbar-response', response);
 
             }).fail(function(error) {
                 server_error(error, error);
@@ -1162,19 +1214,18 @@ function server_sockets(server, client){
         // This is the handler for the get-toolbar client socket emission
         // It calls a database function to get all the toolbars for a class
         // Emits get_toolbar_response to all sockets in the class room
-        socket.on('get-toolbars', function(class_id) {
-            class_id = sanitize_data(class_id);
+        socket.on('get-toolbars', function(admin_id) {
+            admin_id = sanitize_data(admin_id);
 
-            get_toolbars(class_id)
+            get_toolbars(admin_id)
             .then(function(toolbars) {
 
                 var response = {
                     username : "Admin",
-                    class_id : class_id,
+                    admin_id : admin_id,
                     toolbars : toolbars
                 }
                 socket.emit('get-toolbar-response', response);
-                io.sockets.to("admin-" + class_id).emit('get-toolbar-response', response);
 
             }).fail(function(error) {
                 server_error(error, error);
@@ -1186,21 +1237,18 @@ function server_sockets(server, client){
         // This is the handler for the delete-toolbar client socket emission
         // It calls a database function to delete the toolbar for the class
         // Emits delete_toolbar_response to all sockets in the class room
-        socket.on('delete-toolbar', function(class_id, toolbar_name) {
-            class_id = sanitize_data(class_id);
+        socket.on('delete-toolbar', function(admin_id, toolbar_name) {
+            admin_id = sanitize_data(admin_id);
 
-            delete_toolbar(class_id, toolbar_name)
+            delete_toolbar(admin_id, toolbar_name)
             .then(function(toolbars) {
 
                 var response = {
                     username : "Admin",
-                    class_id : class_id,
+                    admin_id : admin_id,
                     toolbars : toolbars
                 }
-                //socket.emit('delete-toolbar-response', response);
-                io.sockets.to("admin-" + class_id).emit('delete-toolbar-response', response);
-                //socket.emit('get-toolbar-response', response);
-                //io.sockets.to("admin-" + class_id).emit('get-toolbar-response', response);
+                socket.emit('delete-toolbar-response', response);
 
             }).fail(function(error) {
                 server_error(error, error);
@@ -1379,13 +1427,14 @@ function server_sockets(server, client){
                 var check = 0;
                 var data_admin = 0;
                 
-                if(password && data_password[0] && pw.verifyPassword(password, data_password[0].password)) {
+                if (password && data_password[0] && pw.verifyPassword(password, data_password[0].password)) {
                     check = 1;
+                    if (data_password[0] && (Math.abs(new Date() - data_password[0].last_updated) >= 720000)) {
+                        check = -1;
+                    }
                     data_admin = admin_id;
                     socket.admin_id = admin_id;
                 }
-                if(data_password[0] && (Math.abs(new Date() - data_password[0].last_updated) >= 720000) && check == 1)
-                    check = -1;
 
                 socket.emit('check-session-response', data_admin, check);
                // io.to(class_id + "x").emit('logout_response', {});
