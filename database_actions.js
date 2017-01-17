@@ -221,13 +221,11 @@ exports.update_toolbar = function(class_id, toolbar_name, tools) {
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
         // Get the class_id and create the groups for that class
-
-        //console.log("update query with " + class_id + " " + toolbar_name + " " + tools);      
+     
         query = "UPDATE  " + dbconfig.toolbar_table + " SET tools=? WHERE class_id=? AND toolbar_name=?;";
 
         connection.query(query, [tools, class_id, toolbar_name], function(error, rows) {
             if(error){
-                console.log(error);
                 deferred.reject(error);
             } else {
                 deferred.resolve();
@@ -282,7 +280,6 @@ exports.get_toolbars = function(class_id){
                 deferred.reject(error);
             }
             else {
-                //console.log(rows);
                 deferred.resolve(rows);
             }
         });

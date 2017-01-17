@@ -1139,7 +1139,6 @@ function server_sockets(server, client){
         // Emits toolbar_get_response to all sockets in the class room
         socket.on('save-toolbar', function(class_id, toolbar_name, tools, action) {
             class_id = sanitize_data(class_id);
-            console.log(action);
             create_toolbar(class_id, toolbar_name, tools, action)
             .then(function(toolbars) {
                 var response = {
