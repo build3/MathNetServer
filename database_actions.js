@@ -129,7 +129,8 @@ exports.create_class = function(class_name, group_count, admin_id, group_colors)
                         for (var group=1; group < group_count + 1; group++) {
                             query = 
                                 "INSERT INTO " + dbconfig.group_table + " (group_id, class_id, group_color) VALUES (?, ?, ?);";
-                            connection.query(query, [group, class_id, group_colors[group - 1]]);
+                            connection.query(query, [group, class_id, group_colors[group - 1
+                                ]]);
                         }
                         deferred.resolve(class_id);
                     }
