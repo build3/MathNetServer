@@ -39,6 +39,7 @@ connection.query(groupQuery, function(err, rows, fields){
             available_classes[hash][rows[j].group_id] = {};
             available_classes[hash][rows[j].group_id]["deleted"] = false;
             available_classes[hash][rows[j].group_id]["students"] = [];
+            available_classes[hash][rows[j].group_id]["colors"] = "";
         }
     }
 });

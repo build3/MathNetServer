@@ -45,6 +45,7 @@ connection.query('\
                  `group_id` INT UNSIGNED NOT NULL, \
                  `class_id` INT UNSIGNED NOT NULL, \
                  `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 `group_color` VARCHAR(40), \
                  PRIMARY KEY (`group_id`, `class_id`), \
                  FOREIGN KEY (`class_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.class_table+'`(class_id) \
                  ON DELETE CASCADE \
