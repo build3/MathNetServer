@@ -12,6 +12,7 @@ module.exports = {
     'group_table': secrets.group_table,
     'toolbar_table': secrets.toolbar_table,
     'admin_table' : secrets.admin_table,
-    'session_table' : secrets.session_table
+    'session_table' : secrets.session_table,
+    'log_table' : secrets.log_table
 
 };

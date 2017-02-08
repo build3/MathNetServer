@@ -45,7 +45,7 @@ connection.query('\
                  `group_id` INT UNSIGNED NOT NULL, \
                  `class_id` INT UNSIGNED NOT NULL, \
                  `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
-                 `group_color` VARCHAR(40), \
+                 `group_color` VARCHAR(40),\
                  PRIMARY KEY (`group_id`, `class_id`), \
                  FOREIGN KEY (`class_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.class_table+'`(class_id) \
                  ON DELETE CASCADE \
@@ -77,6 +77,17 @@ connection.query('\
                  ON DELETE CASCADE \
                  )');
 
+/********************************** Logs *************************************************/
+connection.query('\
+                 CREATE TABLE IF NOT EXISTS `' + dbconfig.database + '`.`' + dbconfig.log_table + '` ( \
+                 `log_id` INT AUTO_INCREMENT, \
+                 `student_name` VARCHAR(200) NOT NULL, \
+                 `log` VARCHAR(1000) NOT NULL, \
+                 `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 `class_id` VARCHAR(40) NOT NULL, \
+                 `group_id` INT, \
+                 PRIMARY KEY (`log_id`) \
+                 )');
 
 connection.query('SET foreign_key_checks = 1;');
 
