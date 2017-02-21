@@ -591,3 +591,27 @@ exports.delete_class = function(class_id) {
 
     return deferred.promise;
 }
+
+//Deletes the hash and all its membors from the database
+exports.add_log = function(student_name, class_id, group_id, log) {       
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+        
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "INSERT INTO " + dbconfig.log_table + " (student_name, log, class_id, group_id) VALUES (?, ?, ?, ?);"; //+ "DELETE * FROM " + dbconfig.group_table + " WHERE class_id=?;";
+        connection.query(query, [student_name, log, class_id, group_id], function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+               deferred.resolve(); ;
+            }
+         });+
+         connection.release();
+    });
+
+    return deferred.promise;
+}

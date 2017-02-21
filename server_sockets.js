@@ -431,6 +431,20 @@ function create_admin(username, password) {
     return deferred.promise;
 }
 
+// adds a log
+
+function add_log(username, class_id, group_id, log) {
+    var deferred = Q.defer();
+
+    database.add_log(username, class_id, group_id, log)
+    .then(function(admin) {
+        deferred.resolve(admin);
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
 
 // Takes an admin_id, password, and
 // new password. Updates password
@@ -1002,7 +1016,9 @@ function server_sockets(server, client){
             class_name = sanitize_data(class_name);
             group_count = sanitize_data(group_count);
             secret = sanitize_data(secret);
-            console.log(group_colors[0])
+            if(!group_colors)
+                group_colors = [0,0,0]
+           //console.log(group_colors[0])
             if (secret == "ucd_247") {
                 create_class(class_name, group_count, admin_id, group_colors)
                 .then(function(class_id) {
@@ -1182,6 +1198,8 @@ function server_sockets(server, client){
         socket.on('add-group', function(class_id, secret, colors) {
             class_id = sanitize_data(class_id);
             secret = sanitize_data(secret);
+            if(!colors)
+                colors = [0,0,0]
 
             var group_color = colors.join('-'); //Creating the string to be passed in the sql database as group_color
 
@@ -1205,6 +1223,37 @@ function server_sockets(server, client){
             }
         }); 
 
+
+
+        // ADD_LOG
+        // This is the handler for the add-log client socket emission
+        // It calls a database function to add a log for each activity
+        socket.on('add_log', function(username, class_id, group_id, log) {
+            class_id = sanitize_data(class_id);
+            username = sanitize_data(username);
+            group_id = sanitize_data(group_id);
+
+            log = username + log;
+
+            if ("ucd_247" == "ucd_247") {
+                add_log(username, class_id, group_id, log)
+                .then(function(groups) {
+                    // var response = {
+                    //     username : "Admin",
+                    //     class_id : class_id,
+                    //     groups : groups
+                    // }
+                    // var date = new Date().toJSON();
+                    // logger.info(date + "~ADMIN~add-group~" + class_id + "~" + groups.length + "~" + JSON.stringify(response) 
+                    //             + "~1~"+ class_id + "x");
+                    // socket.emit('add-group-response', {});
+                    // io.sockets.to(class_id + "x").emit('add-group-response', {});
+
+                }).fail(function(error) {
+                    server_error(error, error);
+                });
+            }
+        }); 
 
         // GROUP-COLOR
         // This is the handler for the color-group client socket emission
