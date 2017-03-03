@@ -18,7 +18,7 @@ module.exports = server_sockets;
 // If invalid, returns an error.
 // If valid, a new user entry is created for the class in the global 
 // datastructure.
-function add_user_to_class(username, class_id) {
+function add_user_to_class(username, class_id,socket_id) {
     var deferred = Q.defer();
     
     if (username === "") {
@@ -30,6 +30,7 @@ function add_user_to_class(username, class_id) {
         if (!(username in classes.available_classes[class_id]["user"])) {
             classes.available_classes[class_id]["user"][username] = {};
             classes.available_classes[class_id]["user"][username]["info"] = "";
+            classes.available_classes[class_id]["user"][username]["socket_id"] = socket_id;
             deferred.resolve();
         }
         else {
@@ -228,34 +229,36 @@ function update_users_coordinates(username, class_id, info) {
 //takes a username, class_id, group_id, and xml string
 //if invalid, errors
 //if valid stores xml string for group in user and group xml object
-function update_user_xml(username, class_id, group_id, xml, toolbar) {
+function update_user_xml(data) {
     var deferred = Q.defer();
-
-    if (class_id in classes.available_classes) {
-        if (group_id in classes.available_classes[class_id]) {
-            if (username in classes.available_classes[class_id]["user"] || username == "admin") {
-                if(xml != ''){
-                    classes.available_classes[class_id][group_id]["xml"] = JSON.stringify(xml);
+    var rdata = {xml : '', toolbar : ''};
+    if (data.class_id in classes.available_classes) {
+        if (data.group_id in classes.available_classes[data.class_id]) {
+            if (data.username in classes.available_classes[data.class_id]["user"] || data.username == "admin") {
+                if(data.xml != ''){
+                    classes.available_classes[data.class_id][data.group_id]["xml"] = JSON.stringify(data.xml);
+                    rdata.xml = classes.available_classes[data.class_id][data.group_id]["xml"];
                 }
-                if(toolbar != ''){
-                    classes.available_classes[class_id][group_id]["toolbar"] = toolbar;
+                if(data.toolbar && data.toolbar != ''){
+                    if(data.toolbar_user && data.toolbar_user != ''){
+                        classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"] = data.toolbar;
+                        rdata.user_socket = classes.available_classes[data.class_id]["user"][data.toolbar_user]["socket_id"];
+                        rdata.toolbar = classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"];
+                        rdata.toolbar_user = data.toolbar_user;
+                    }
                 }
-                var data = {
-                    xml: classes.available_classes[class_id][group_id]["xml"],
-                    toolbar: classes.available_classes[class_id][group_id]["toolbar"] 
-                }
-                deferred.resolve(data);
+                deferred.resolve(rdata);
             }
             else {
-                deferred.reject('Username ' + username + ' is invalid.');
+                deferred.reject('Username ' + data.username + ' is invalid.');
             }
         } 
         else {
-            deferred.reject('Group ID ' + group_id + ' is invalid.');
+            deferred.reject('Group ID ' + data.group_id + ' is invalid.');
         }
     }
     else {
-        deferred.reject('Class ID ' + class_id + ' is invalid.');
+        deferred.reject('update_user_xml: Class ID ' + data.class_id + ' is invalid.');
     }
     return deferred.promise;
 }
@@ -271,7 +274,10 @@ function get_user_xml(username, class_id, group_id) {
         if (group_id in classes.available_classes[class_id]) {
             if (username in classes.available_classes[class_id]["user"] || username == "admin") {
                 var xml = classes.available_classes[class_id][group_id]["xml"];
-                var toolbar = classes.available_classes[class_id][group_id]["toolbar"];
+                var toolbar = "";
+                if(classes.available_classes[class_id]["user"][username] && classes.available_classes[class_id]["user"][username]["toolbar"]){
+                    var toolbar = classes.available_classes[class_id]["user"][username]["toolbar"];
+                }
                 var data = {
                     xml: xml,
                     toolbar: toolbar
@@ -486,6 +492,34 @@ function get_toolbars(admin_id) {
         deferred.reject(error);
     });
 
+    return deferred.promise;
+}
+
+// Takes a class_id.
+// If invalid, returns an error.
+// If valid return all
+// the users in the class.
+
+function get_class_users(class_id) {
+    var deferred = Q.defer();
+
+    if(class_id in classes.available_classes) {
+        var class_users = [];
+        for(var g in classes.available_classes[class_id]){
+            if(parseInt(g) > 0){
+                var user = {};
+                user.group = g;
+                user.users = classes.available_classes[class_id][g]["students"];
+                class_users.push(user);
+            }
+        }
+        var data = {
+            class_users: class_users
+        }
+        deferred.resolve(data);
+    } else {
+        deferred.reject('Class ID ' + class_id + ' is invalid.');
+    }
     return deferred.promise;
 }
 
@@ -722,7 +756,7 @@ function server_sockets(server, client){
             username = sanitize_data(username);
             class_id = sanitize_data(class_id);
             
-            add_user_to_class(username, class_id)
+            add_user_to_class(username, class_id,socket.id)
             .then(function() {
                 socket.class_id = class_id;
                 socket.username = username;
@@ -933,28 +967,45 @@ function server_sockets(server, client){
 
         // XML_CHANGE
         // emits xml_change_response to all sockets in the group room
-        socket.on('xml_change', function(username, class_id, group_id, xml, toolbar) {
-            username = sanitize_data(username);
-            class_id = sanitize_data(class_id);
-            group_id = sanitize_data(group_id);
-            xml = sanitize_data(xml);
-            toolbar = sanitize_data(toolbar);
+        socket.on('xml_change', function(data) {
+            if(data.username){
+                data.username = sanitize_data(data.username);
+            }
+            if(data.class_id){
+                data.class_id = sanitize_data(data.class_id);
+            }
+            if(data.group_id){
+                data.group_id = sanitize_data(data.group_id);    
+            }
+            if(data.xml){
+                data.xml = sanitize_data(data.xml);
+            }
+            if(data.toolbar){
+                data.toolbar = sanitize_data(data.toolbar);
+            }
+            if(data.toolbar_user){
+                data.toolbar_user = sanitize_data(data.toolbar_user);
+            }
             
-            update_user_xml(username, class_id, group_id, xml, toolbar)
-            .then(function(data){
+            update_user_xml(data)
+            .then(function(rdata){
                 var response = {
-                    username: username,
-                    class_id: class_id,
-                    group_id: group_id,
-                    xml: data.xml,
-                    toolbar: data.toolbar
+                    username: data.username,
+                    class_id: data.class_id,
+                    group_id: data.group_id,
+                    xml: rdata.xml,
+                    toolbar: rdata.toolbar
                 }
-                //console.log('toolbar at xml_change is: ' + data.toolbar);
                 var date = new Date().toJSON();
-                logger.info(date + "~" + username + "~xml_change~" + class_id + "~" + group_id + "~" 
-                            + JSON.stringify(response)  + "~1~" + class_id + "x" + group_id );
-                socket.broadcast.to(class_id + "x" + group_id).emit('xml_change_response', response);
-                io.sockets.to('admin-' + class_id, response).emit('xml_change_response', response);
+                logger.info(date + "~" + data.username + "~xml_change~" + data.class_id + "~" + data.group_id + "~" 
+                            + JSON.stringify(response)  + "~1~" + data.class_id + "x" + data.group_id );
+                if(rdata.user_socket){
+                    // updating a user toolbar
+                    socket.broadcast.to(rdata.user_socket).emit('xml_change_response', response);
+                }else{
+                    socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_change_response', response);    
+                }
+                io.sockets.to('admin-' + data.class_id, response).emit('xml_change_response', response);
             }).fail(function(error){
                 server_error(error, error);
             });
@@ -976,7 +1027,6 @@ function server_sockets(server, client){
                     xml: data.xml,
                     toolbar: data.toolbar
                 }
-                //console.log('toolbar at get_xml is: ' + data.toolbar);
                 var date = new Date().toJSON();
                 logger.info(date + "~" + username + "~get_xml~" + class_id + "~" + group_id + "~" 
                             + JSON.stringify(response)  + "~0~" + class_id + "x" + group_id );
@@ -1018,7 +1068,6 @@ function server_sockets(server, client){
             secret = sanitize_data(secret);
             if(!group_colors)
                 group_colors = [0,0,0]
-           //console.log(group_colors[0])
             if (secret == "ucd_247") {
                 create_class(class_name, group_count, admin_id, group_colors)
                 .then(function(class_id) {
@@ -1347,6 +1396,29 @@ function server_sockets(server, client){
 
         }); 
 
+        // GET-CLASS-USERS
+        // This is the handler for the get-class-users client socket emission
+        // It calls a database function to get all the users for a class
+        // Emits a get-class-users-response to all sockets in the class room
+        socket.on('get-class-users', function(class_id,callback) {
+            class_id = sanitize_data(class_id);
+            callback = sanitize_data(callback);
+            get_class_users(class_id)
+            .then(function(data) {
+
+                var response = {
+                    username : "Admin",
+                    admin_id : class_id,
+                    class_users : data.class_users
+                }
+                socket.emit(callback, response);
+
+            }).fail(function(error) {
+                server_error(error, error);
+            });
+
+        }); 
+
         // DELETE-GROUP
         // This is the handler for the delete-group client socket emission
         // It calls a database function to delete a group for a class
@@ -1570,7 +1642,7 @@ function server_sockets(server, client){
         // any variables within it set, and if still set, removes the user from the groups on the server side
         // emitting group_info response to the group (if in one) room and admin, and logout_response to the individual socket.
         socket.on('disconnect', function() {
-
+            console.log("disconnect");
             if (socket.admin_id){
                 database.update_time(socket.admin_id)
                 .then(function() {
