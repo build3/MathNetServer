@@ -684,6 +684,13 @@ function sanitize_data(data) {
     }
 }
 
+function sleep(miliseconds) {
+   var currentTime = new Date().getTime();
+
+   while (currentTime + miliseconds >= new Date().getTime()) {
+   }
+}
+
 // This function holds all event handlers for sockets.
 function server_sockets(server, client){
 
@@ -701,6 +708,15 @@ function server_sockets(server, client){
             socket.emit('server_error', {message: message});
         };
 
+        // PING
+        // pinging to check for time
+        // Emits ping response
+        socket.on('ping', function(time) {
+            sleep(100);
+            socket.emit('ping-response', time);
+        });
+
+        
         // LOGIN
         // Socket joins room using class id
         // Emits login_response to socket that triggered login
