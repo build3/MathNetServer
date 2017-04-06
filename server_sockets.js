@@ -712,7 +712,6 @@ function server_sockets(server, client){
         // pinging to check for time
         // Emits ping response
         socket.on('ping', function(time) {
-            sleep(100);
             socket.emit('ping-response', time);
         });
 
