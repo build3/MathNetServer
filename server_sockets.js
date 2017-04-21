@@ -4,6 +4,8 @@ var socketio = require('socket.io');
 var database = require('./database_actions');
 var hash = require('./hashes');
 var pw = require('secure-password');
+var dmp = require('./diff_match_patch');
+dmp = new diff_match_patch();
 
 // Q allows use of promises. 
 // First, a promise is deferred.
