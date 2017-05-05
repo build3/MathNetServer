@@ -265,6 +265,27 @@ function update_user_xml(data) {
     return deferred.promise;
 }
 
+function patch(data) {
+    var deferred = Q.defer();
+    if (data.class_id in classes.available_classes) {
+        if (data.group_id in classes.available_classes[data.class_id]) {
+            if (data.username in classes.available_classes[data.class_id]["user"] || data.username == "admin") {
+                deferred.resolve();
+            }
+            else {
+                deferred.reject('Username ' + data.username + ' is invalid.');
+            }
+        } 
+        else {
+            deferred.reject('Group ID ' + data.group_id + ' is invalid.');
+        }
+    }
+    else {
+        deferred.reject('update_user_xml: Class ID ' + data.class_id + ' is invalid.');
+    }
+    return deferred.promise;
+}
+
 //takes a username, class_id, and group_id
 //if invalid, returns an error
 //if valid, returns JSON of class data to user
@@ -1027,6 +1048,35 @@ function server_sockets(server, client){
                 server_error(error, error);
             });
         }); //updates user and group xml values in the datastructure 
+
+        // PATCH
+        socket.on('patch', function(data) {
+            if(data.username){
+                data.username = sanitize_data(data.username);
+            }
+            if(data.class_id){
+                data.class_id = sanitize_data(data.class_id);
+            }
+            if(data.group_id){
+                data.group_id = sanitize_data(data.group_id);    
+            }
+            if(data.patch){
+                data.patch = sanitize_data(data.patch);
+            }
+            
+            patch(data)
+            .then(function(){
+                var response = {
+                    username: data.username,
+                    class_id: data.class_id,
+                    group_id: data.group_id,
+                    patch: data.patch
+                }
+                socket.broadcast.to(data.class_id + "x" + data.group_id).emit('patch_response', response);    
+            }).fail(function(error){
+                server_error(error, error);
+            });
+        }); 
 
         // GET_XML
         // emits get_xml_response to socket that requested it.
