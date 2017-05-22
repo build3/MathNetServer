@@ -238,14 +238,18 @@ function update_user_xml(data) {
                 if(data.xml != ''){
                     classes.available_classes[data.class_id][data.group_id]["xml"] = JSON.stringify(data.xml);
                     rdata.xml = classes.available_classes[data.class_id][data.group_id]["xml"];
-                }
-                if(data.toolbar && data.toolbar != ''){
-                    if(data.toolbar_user && data.toolbar_user != ''){
-                        classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"] = data.toolbar;
-                        rdata.user_socket = classes.available_classes[data.class_id]["user"][data.toolbar_user]["socket_id"];
-                        rdata.toolbar = classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"];
-                        rdata.toolbar_user = data.toolbar_user;
+                }                
+                if(data.toolbar_user && data.toolbar_user != ''){
+                    if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
+                        classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'] = data.properties
+                        rdata.properties = classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'];
                     }
+                    if(data.toolbar && data.toolbar != ''){
+                        classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"] = data.toolbar;
+                        rdata.toolbar = classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"];
+                    }
+                    rdata.user_socket = classes.available_classes[data.class_id]["user"][data.toolbar_user]["socket_id"];
+                    rdata.toolbar_user = data.toolbar_user;
                 }
                 deferred.resolve(rdata);
             }
@@ -275,12 +279,17 @@ function get_user_xml(username, class_id, group_id) {
             if (username in classes.available_classes[class_id]["user"] || username == "admin") {
                 var xml = classes.available_classes[class_id][group_id]["xml"];
                 var toolbar = "";
+                var properties = null;
                 if(classes.available_classes[class_id]["user"][username] && classes.available_classes[class_id]["user"][username]["toolbar"]){
+                    if(classes.available_classes[class_id]["user"][username]["properties"]){
+                        var properties = classes.available_classes[class_id]["user"][username]["properties"];
+                    }
                     var toolbar = classes.available_classes[class_id]["user"][username]["toolbar"];
                 }
                 var data = {
                     xml: xml,
-                    toolbar: toolbar
+                    toolbar: toolbar,
+                    properties: properties
                 }
                 deferred.resolve(data);
             }
@@ -1001,6 +1010,11 @@ function server_sockets(server, client){
             if(data.toolbar_user){
                 data.toolbar_user = sanitize_data(data.toolbar_user);
             }
+            if(data.properties){
+                for (var i in data.properties){
+                    data.properties[i] = sanitize_data(data.properties[i]);
+                }
+            }
             
             update_user_xml(data)
             .then(function(rdata){
@@ -1009,8 +1023,11 @@ function server_sockets(server, client){
                     class_id: data.class_id,
                     group_id: data.group_id,
                     xml: rdata.xml,
-                    toolbar: rdata.toolbar
-                }
+                    toolbar: rdata.toolbar,
+                    properties: rdata.properties
+                };
+                console.log(response.properties);
+
                 var date = new Date().toJSON();
                 logger.info(date + "~" + data.username + "~xml_change~" + data.class_id + "~" + data.group_id + "~" 
                             + JSON.stringify(response)  + "~1~" + data.class_id + "x" + data.group_id );
@@ -1040,7 +1057,8 @@ function server_sockets(server, client){
                     class_id: class_id,
                     group_id: group_id,
                     xml: data.xml,
-                    toolbar: data.toolbar
+                    toolbar: data.toolbar,
+                    properties: data.properties
                 }
                 var date = new Date().toJSON();
                 logger.info(date + "~" + username + "~get_xml~" + class_id + "~" + group_id + "~" 
