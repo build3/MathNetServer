@@ -1026,8 +1026,7 @@ function server_sockets(server, client){
                     toolbar: rdata.toolbar,
                     properties: rdata.properties
                 };
-                console.log(response.properties);
-
+                
                 var date = new Date().toJSON();
                 logger.info(date + "~" + data.username + "~xml_change~" + data.class_id + "~" + data.group_id + "~" 
                             + JSON.stringify(response)  + "~1~" + data.class_id + "x" + data.group_id );
