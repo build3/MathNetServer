@@ -240,15 +240,31 @@ function update_user_xml(data) {
                     rdata.xml = classes.available_classes[data.class_id][data.group_id]["xml"];
                 }                
                 if(data.toolbar_user && data.toolbar_user != ''){
-                    if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
-                        classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'] = data.properties
-                        rdata.properties = classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'];
+                    if(data.toolbar_user == "admin"){
+                        for (var i in classes.available_classes[data.class_id][data.group_id]["students"]){
+                            var students = classes.available_classes[data.class_id][data.group_id]["students"];
+                            console.log(classes.available_classes[data.class_id][data.group_id]["students"]);
+                            console.log(classes.available_classes[data.class_id]["user"]);
+                            if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
+                                classes.available_classes[data.class_id]["user"][students[i]]['properties'] = data.properties;
+                            }
+                            if(data.toolbar && data.toolbar != ''){
+                                classes.available_classes[data.class_id]["user"][students[i]]["toolbar"] = data.toolbar;
+                            }
+                        }
+                        rdata.properties = data.properties;
+                        rdata.toolbar = data.toolbar;
+                    } else {
+                        if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
+                            classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'] = data.properties;
+                            rdata.properties = classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'];
+                        }
+                        if(data.toolbar && data.toolbar != ''){
+                            classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"] = data.toolbar;
+                            rdata.toolbar = classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"];
+                        }
+                        rdata.user_socket = classes.available_classes[data.class_id]["user"][data.toolbar_user]["socket_id"];
                     }
-                    if(data.toolbar && data.toolbar != ''){
-                        classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"] = data.toolbar;
-                        rdata.toolbar = classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"];
-                    }
-                    rdata.user_socket = classes.available_classes[data.class_id]["user"][data.toolbar_user]["socket_id"];
                     rdata.toolbar_user = data.toolbar_user;
                 }
                 deferred.resolve(rdata);
@@ -1015,7 +1031,6 @@ function server_sockets(server, client){
                     data.properties[i] = sanitize_data(data.properties[i]);
                 }
             }
-            
             update_user_xml(data)
             .then(function(rdata){
                 var response = {
@@ -1026,7 +1041,7 @@ function server_sockets(server, client){
                     toolbar: rdata.toolbar,
                     properties: rdata.properties
                 };
-                
+
                 var date = new Date().toJSON();
                 logger.info(date + "~" + data.username + "~xml_change~" + data.class_id + "~" + data.group_id + "~" 
                             + JSON.stringify(response)  + "~1~" + data.class_id + "x" + data.group_id );
