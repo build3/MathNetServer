@@ -13,6 +13,7 @@ module.exports = {
     'toolbar_table': secrets.toolbar_table,
     'admin_table' : secrets.admin_table,
     'session_table' : secrets.session_table,
-    'log_table' : secrets.log_table
+    'log_table' : secrets.log_table,
+    'xml_table': secrets.xml_table
 
 };

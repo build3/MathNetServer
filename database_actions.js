@@ -253,9 +253,6 @@ exports.get_group_color = function(class_id, group_id){
    return deferred.promise;
 }
 
-
-
-
 //Creates a toolbar belonging to the admin 
 exports.create_toolbar = function(admin_id, toolbar_name, tools) {
     var deferred = Q.defer();
@@ -313,32 +310,8 @@ exports.update_toolbar = function(admin_id, toolbar_name, tools) {
     return deferred.promise;
 }
 
-// Deletes a toolbar using the provided class id and tools
-exports.delete_toolbar = function(class_id, toolbar_name) {
-    var deferred = Q.defer();
-
-    pool.getConnection(function(error, connection) {
-        
-        var query = "USE " + dbconfig.database + ";";
-        connection.query(query);
-
-        query = "DELETE FROM " + dbconfig.toolbar_table + " WHERE class_id=? AND toolbar_name=?;";
-        connection.query(query, [class_id, toolbar_name], function(error, rows) {
-            if(error) {
-                deferred.reject(error);
-            }
-            else {
-               deferred.resolve(); ;
-            }
-         });
-         connection.release();
-    });
-
-    return deferred.promise;
-}
-
 //Returns the TOOLBARS and their hashed IDs (from the Class table)
-exports.get_toolbars = function(class_id){
+exports.get_toolbars = function(admin_id){
     var deferred = Q.defer();
     
     pool.getConnection(function(error, connection) {
@@ -346,8 +319,86 @@ exports.get_toolbars = function(class_id){
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "SELECT toolbar_name, tools FROM " + dbconfig.toolbar_table + " WHERE class_id=?;" ;
-        connection.query(query, class_id, function(error, rows) {
+        query = "SELECT toolbar_name, tools FROM " + dbconfig.toolbar_table + " WHERE admin_id=?;" ;
+        connection.query(query, admin_id, function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+                deferred.resolve(rows);
+            }
+        });
+        connection.release();
+    });
+
+    return deferred.promise;
+}
+
+//Creates a xml belonging to the admin 
+exports.create_xml = function(admin_id, xml_name, xml) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+                
+        query = "INSERT INTO " + dbconfig.xml_table + " (admin_id, xml_name, xml) VALUES (?, ?, ?);";
+
+        connection.query(query, [admin_id, xml_name, xml], function(error, rows) {
+            if(error){
+                deferred.reject(error);
+            } else {
+                deferred.resolve();
+            }
+        });
+        
+        //deferred.resolve(xml);
+
+
+    connection.release();
+    });
+
+    return deferred.promise;
+}
+exports.update_xml = function(admin_id, xml_name, xml) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+     
+        query = "UPDATE  " + dbconfig.xml_table + " SET xml=? WHERE admin_id=? AND xml_name=?;";
+
+        connection.query(query, [tools, admin_id, xml_name], function(error, rows) {
+            if(error){
+                deferred.reject(error);
+            } else {
+                deferred.resolve();
+            }
+        });
+        
+        //deferred.resolve(xml);
+
+
+    connection.release();
+    });
+
+    return deferred.promise;
+}
+
+//Returns the XMLS and their hashed IDs (from the Class table)
+exports.get_xmls = function(admin_id){
+    var deferred = Q.defer();
+    
+    pool.getConnection(function(error, connection) {
+
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+        query = "SELECT xml_name, xml FROM " + dbconfig.xml_table + " WHERE admin_id=?;" ;
+        connection.query(query, admin_id, function(error, rows) {
             if(error) {
                 deferred.reject(error);
             }
@@ -430,6 +481,31 @@ exports.delete_toolbar = function(admin_id, toolbar_name) {
 
         query = "DELETE FROM " + dbconfig.toolbar_table + " WHERE admin_id=? AND toolbar_name=?;";
         connection.query(query, [admin_id, toolbar_name], function(error, rows) {
+            if(error) {
+                deferred.reject(error);
+            }
+            else {
+               deferred.resolve(); ;
+            }
+         });
+         connection.release();
+    });
+
+    return deferred.promise;
+}
+
+// Deletes xml using the provided admin id and name
+exports.delete_xml = function(admin_id, xml_name) {
+    var deferred = Q.defer();
+
+    pool.getConnection(function(error, connection) {
+        
+        var query = "USE " + dbconfig.database + ";";
+        connection.query(query);
+
+
+        query = "DELETE FROM " + dbconfig.xml_table + " WHERE admin_id=? AND xml_name=?;";
+        connection.query(query, [admin_id, xml_name], function(error, rows) {
             if(error) {
                 deferred.reject(error);
             }
