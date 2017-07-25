@@ -448,19 +448,19 @@ function create_toolbar(admin_id, toolbar_name, tools, action) {
 // If invalid, returns an error.
 // If valid, create a toolbar for the given class in the database and return all
 // the toolbars in the class.
-function create_xml(admin_id, xml_name, xml, action) {
+function create_xml(admin_id, xml_name, xml, toolbar, action) {
     var deferred = Q.defer();
     var db_call;
     if (action == 'update')
-        db_call = database.update_xml(admin_id, xml_name, xml);
+        db_call = database.update_xml(admin_id, xml_name, xml, toolbar);
     else if (action == 'insert')
-        db_call = database.create_xml(admin_id, xml_name, xml);
+        db_call = database.create_xml(admin_id, xml_name, xml, toolbar);
 
     db_call
     .then(function() {
         return database.get_xmls(admin_id);
-    }).then(function(xmls) {
-        deferred.resolve(xmls);
+    }).then(function(response) {
+        deferred.resolve(response);
     }).fail(function(error) {
         deferred.reject(error);      
     });
@@ -553,8 +553,8 @@ function get_xmls(admin_id) {
     var deferred = Q.defer();
 
     database.get_xmls(admin_id)
-    .then(function(xmls) {
-        deferred.resolve(xmls);
+    .then(function(response) {
+        deferred.resolve(response);
     }).fail(function(error) {
         deferred.reject(error);
     });
@@ -1506,23 +1506,24 @@ function server_sockets(server, client){
         // This is the handler for the save_xml client socket emission
         // It calls a database function to create a xml entry for an admin user
         // Emits get_xmls_response to socket that called
-        socket.on('save-xml', function(admin_id, xml_name, xml, action) {
+        socket.on('save-xml', function(admin_id, xml_name, xml, toolbar, action) {
             admin_id = sanitize_data(admin_id);
             xml_name = sanitize_data(xml_name);
             xml = sanitize_data(xml);
+            toolbar = sanitize_data(toolbar);
             action = sanitize_data(action);
 
             xml = JSON.stringify(xml);
-            create_xml(admin_id, xml_name, xml, action)
+            create_xml(admin_id, xml_name, xml, toolbar, action)
             .then(function(xmls) {
                 var response = {
                     username : "Admin",
                     admin_id : admin_id,
                     xmls: xmls
                 }
-                
+
                 var date = new Date().toJSON();
-                logger.info(date + "~ADMIN~add-toolbar~" + admin_id + "~" + xml + "~" + JSON.stringify(response) 
+                logger.info(date + "~ADMIN~save-xml~" + admin_id + "~" + xml + "~" + JSON.stringify(response) 
                             + "~1~"+ admin_id + "x");
                 socket.emit('get-xmls-response', response);
 

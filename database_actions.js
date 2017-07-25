@@ -335,7 +335,7 @@ exports.get_toolbars = function(admin_id){
 }
 
 //Creates a xml belonging to the admin 
-exports.create_xml = function(admin_id, xml_name, xml) {
+exports.create_xml = function(admin_id, xml_name, xml, toolbar) {
     var deferred = Q.defer();
 
     pool.getConnection(function(error, connection) {
@@ -343,9 +343,9 @@ exports.create_xml = function(admin_id, xml_name, xml) {
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
                 
-        query = "INSERT INTO " + dbconfig.xml_table + " (admin_id, xml_name, xml) VALUES (?, ?, ?);";
+        query = "INSERT INTO " + dbconfig.xml_table + " (admin_id, xml_name, xml, toolbar) VALUES (?, ?, ?, ?);";
 
-        connection.query(query, [admin_id, xml_name, xml], function(error, rows) {
+        connection.query(query, [admin_id, xml_name, xml, toolbar], function(error, rows) {
             if(error){
                 deferred.reject(error);
             } else {
@@ -361,7 +361,7 @@ exports.create_xml = function(admin_id, xml_name, xml) {
 
     return deferred.promise;
 }
-exports.update_xml = function(admin_id, xml_name, xml) {
+exports.update_xml = function(admin_id, xml_name, xml, toolbar) {
     var deferred = Q.defer();
 
     pool.getConnection(function(error, connection) {
@@ -369,9 +369,9 @@ exports.update_xml = function(admin_id, xml_name, xml) {
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
      
-        query = "UPDATE  " + dbconfig.xml_table + " SET xml=? WHERE admin_id=? AND xml_name=?;";
+        query = "UPDATE  " + dbconfig.xml_table + " SET xml=?, toolbar=? WHERE admin_id=? AND xml_name=?;";
 
-        connection.query(query, [tools, admin_id, xml_name], function(error, rows) {
+        connection.query(query, [xml, toolbar, admin_id, xml_name], function(error, rows) {
             if(error){
                 deferred.reject(error);
             } else {
@@ -397,7 +397,7 @@ exports.get_xmls = function(admin_id){
         var query = "USE " + dbconfig.database + ";";
         connection.query(query);
 
-        query = "SELECT xml_name, xml FROM " + dbconfig.xml_table + " WHERE admin_id=?;" ;
+        query = "SELECT xml_name, xml, toolbar FROM " + dbconfig.xml_table + " WHERE admin_id=?;" ;
         connection.query(query, admin_id, function(error, rows) {
             if(error) {
                 deferred.reject(error);
