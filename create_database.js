@@ -64,6 +64,20 @@ connection.query('\
                  ON DELETE CASCADE \
                  )');
 
+/********************************** XMLs *************************************************/
+connection.query('\
+                 CREATE TABLE IF NOT EXISTS `' + dbconfig.database + '`.`' + dbconfig.xml_table + '` ( \
+                 `xml_id` INT UNSIGNED NOT NULL AUTO_INCREMENT, \
+                 `xml_name` VARCHAR(40) NOT NULL, \
+                 `xml` VARCHAR(65535) NOT NULL, \
+                 `toolbar` VARCHAR(100) NOT NULL, \
+                 `admin_id` INT NOT NULL, \
+                 `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 PRIMARY KEY (`xml_id`), \
+                 FOREIGN KEY (`admin_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.admin_table+'`(admin_id) \
+                 ON DELETE CASCADE \
+                 )');
+
 /********************************** Sessions *************************************************/
 connection.query('\
                  CREATE TABLE IF NOT EXISTS `' + dbconfig.database + '`.`' + dbconfig.session_table + '` ( \

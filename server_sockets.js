@@ -238,6 +238,7 @@ function update_user_xml(data) {
                 if(data.xml != ''){
                     classes.available_classes[data.class_id][data.group_id]["xml"] = JSON.stringify(data.xml);
                     rdata.xml = classes.available_classes[data.class_id][data.group_id]["xml"];
+                    console.log(rdata.xml);
                 }                
                 if(data.toolbar_user && data.toolbar_user != ''){
                     if(data.toolbar_user == "admin"){
@@ -443,6 +444,29 @@ function create_toolbar(admin_id, toolbar_name, tools, action) {
     return deferred.promise;
 }
 
+// Takes a admin id, toolbar_name and tools.
+// If invalid, returns an error.
+// If valid, create a toolbar for the given class in the database and return all
+// the toolbars in the class.
+function create_xml(admin_id, xml_name, xml, toolbar, action) {
+    var deferred = Q.defer();
+    var db_call;
+    if (action == 'update')
+        db_call = database.update_xml(admin_id, xml_name, xml, toolbar);
+    else if (action == 'insert')
+        db_call = database.create_xml(admin_id, xml_name, xml, toolbar);
+
+    db_call
+    .then(function() {
+        return database.get_xmls(admin_id);
+    }).then(function(response) {
+        deferred.resolve(response);
+    }).fail(function(error) {
+        deferred.reject(error);      
+    });
+
+    return deferred.promise;
+}
 
 // Takes a username and password.
 // If invalid, returns an error.
@@ -520,6 +544,23 @@ function get_toolbars(admin_id) {
     return deferred.promise;
 }
 
+// Takes a admin id.
+// If invalid, returns an error.
+// If valid return all
+// the xmls in the admin.
+
+function get_xmls(admin_id) {
+    var deferred = Q.defer();
+
+    database.get_xmls(admin_id)
+    .then(function(response) {
+        deferred.resolve(response);
+    }).fail(function(error) {
+        deferred.reject(error);
+    });
+
+    return deferred.promise;
+}
 // Takes a class_id.
 // If invalid, returns an error.
 // If valid return all
@@ -644,6 +685,24 @@ function delete_toolbar(admin_id, toolbar_name) {
         return database.get_toolbars(admin_id);
     }).then(function(toolbars) {
         deferred.resolve(toolbars);
+    }).fail(function(error) {
+        deferred.reject(error);      
+    });
+
+    return deferred.promise;
+}
+
+// If invalid, returns an error.
+// If valid, deletes the xml for the given the admin in the database and return all
+// the xmls for the admin.
+function delete_xml(admin_id, xml_name) {
+    var deferred = Q.defer();
+
+    database.delete_xml(admin_id, xml_name)
+    .then(function() {
+        return database.get_xmls(admin_id);
+    }).then(function(xmls) {
+        deferred.resolve(xmls);
     }).fail(function(error) {
         deferred.reject(error);      
     });
@@ -1436,6 +1495,84 @@ function server_sockets(server, client){
                     toolbars : toolbars
                 }
                 socket.emit('delete-toolbar-response', response);
+
+            }).fail(function(error) {
+                server_error(error, error);
+            });
+
+        }); 
+
+        // SAVE-XML
+        // This is the handler for the save_xml client socket emission
+        // It calls a database function to create a xml entry for an admin user
+        // Emits get_xmls_response to socket that called
+        socket.on('save-xml', function(admin_id, xml_name, xml, toolbar, action) {
+            admin_id = sanitize_data(admin_id);
+            xml_name = sanitize_data(xml_name);
+            xml = sanitize_data(xml);
+            toolbar = sanitize_data(toolbar);
+            action = sanitize_data(action);
+
+            xml = JSON.stringify(xml);
+            create_xml(admin_id, xml_name, xml, toolbar, action)
+            .then(function(xmls) {
+                var response = {
+                    username : "Admin",
+                    admin_id : admin_id,
+                    xmls: xmls
+                }
+
+                var date = new Date().toJSON();
+                logger.info(date + "~ADMIN~save-xml~" + admin_id + "~" + xml + "~" + JSON.stringify(response) 
+                            + "~1~"+ admin_id + "x");
+                socket.emit('get-xmls-response', response);
+
+            }).fail(function(error) {
+                server_error(error, error);
+            });
+
+        }); 
+
+        // GET-XMLS
+        // This is the handler for the get-xmls client socket emission
+        // It calls a database function to get all the xml for an admin
+        // Emits get_xmls_response to admin socket that called it
+        socket.on('get-xmls', function(admin_id) {
+            admin_id = sanitize_data(admin_id);
+
+            get_xmls(admin_id)
+            .then(function(xmls) {
+
+                var response = {
+                    username : "Admin",
+                    admin_id : admin_id,
+                    xmls: xmls
+                }
+                socket.emit('get-xmls-response', response);
+
+            }).fail(function(error) {
+                server_error(error, error);
+            });
+
+        }); 
+
+        // DELETE-XML
+        // This is the handler for the delete-xml client socket emission
+        // It calls a database function to delete a xml for a admin user
+        // Emits delete_admin_response to admin user who called it
+        socket.on('delete-xml', function(admin_id, xml_name) {
+            admin_id = sanitize_data(admin_id);
+            xml_name = sanitize_data(xml_name);
+
+            delete_xml(admin_id, xml_name)
+            .then(function(xmls) {
+
+                var response = {
+                    username : "Admin",
+                    admin_id : admin_id,
+                    xmls: xmls
+                }
+                socket.emit('delete-xml-response', response);
 
             }).fail(function(error) {
                 server_error(error, error);
