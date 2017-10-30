@@ -294,6 +294,7 @@ function get_user_xml(username, class_id, group_id) {
         if (group_id in classes.available_classes[class_id]) {
             if (username in classes.available_classes[class_id]["user"] || username == "admin") {
                 var xml = classes.available_classes[class_id][group_id]["xml"];
+                //console.log(xml);
                 var toolbar = "";
                 var properties = null;
                 if(classes.available_classes[class_id]["user"][username] && classes.available_classes[class_id]["user"][username]["toolbar"]){
@@ -971,6 +972,29 @@ function server_sockets(server, client){
             });
         }); // populates array other_members with the other students and their 
         //     coordinates in the given group 
+
+        // TOGGLE_CODAP
+        // This is the handler for the toggle_codapclient socket emission
+        // It calls the toggle_codap response for the group
+        socket.on('toggle_codap', function(class_id, group_id) {
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+
+            get_user_xml("admin", class_id,group_id)
+            .then(function(data)
+            {
+                var response = {
+                    class_id: class_id,
+                    group_id: group_id,
+                    xml: data.xml,
+                    toolbar: data.toolbar,
+                    properties: data.properties
+                }
+            socket.emit('toggle_codap_response', response);
+            }).fail(function(error){
+                server_error(error, error);
+            });
+        });
 
         // COORDINATE_CHANGE
         // Emits coordinate_change_response to all sockets in the class group 
