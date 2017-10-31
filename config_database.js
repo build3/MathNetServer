@@ -9,6 +9,11 @@ module.exports = {
     },
 	'database': secrets.database,
     'class_table': secrets.class_table,
-    'group_table': secrets.group_table
+    'group_table': secrets.group_table,
+    'toolbar_table': secrets.toolbar_table,
+    'admin_table' : secrets.admin_table,
+    'session_table' : secrets.session_table,
+    'log_table' : secrets.log_table,
+    'xml_table': secrets.xml_table
 
 };
