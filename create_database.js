@@ -18,7 +18,7 @@ connection.query('\
                  `admin_id` INT AUTO_INCREMENT, \
                  `user_name` VARCHAR(40) NOT NULL, \
                  `password` VARCHAR(1000) NOT NULL, \
-                 `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
                  PRIMARY KEY (`admin_id`) \
                  )');
 
@@ -30,7 +30,7 @@ connection.query('\
                  `admin_id` INT, \
                  `hashed_id` VARCHAR(8), \
                  `class_name` VARCHAR(40) NOT NULL, \
-                 `date_create` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 `date_create` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
                  PRIMARY KEY (`class_id`), \
                  UNIQUE INDEX `id_UNIQUE` (`class_id` ASC), \
                  UNIQUE INDEX `class_name` (`class_name` ASC), \
@@ -44,7 +44,7 @@ connection.query('\
                  CREATE TABLE IF NOT EXISTS `' + dbconfig.database + '`.`' + dbconfig.group_table + '` ( \
                  `group_id` INT UNSIGNED NOT NULL, \
                  `class_id` INT UNSIGNED NOT NULL, \
-                 `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
                  `group_color` VARCHAR(40),\
                  PRIMARY KEY (`group_id`, `class_id`), \
                  FOREIGN KEY (`class_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.class_table+'`(class_id) \
@@ -58,7 +58,7 @@ connection.query('\
                  `toolbar_name` VARCHAR(40) NOT NULL, \
                  `tools` VARCHAR(100) NOT NULL, \
                  `admin_id` INT NOT NULL, \
-                 `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
                  PRIMARY KEY (`toolbar_id`), \
                  FOREIGN KEY (`admin_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.admin_table+'`(admin_id) \
                  ON DELETE CASCADE \
@@ -72,7 +72,7 @@ connection.query('\
                  `xml` TEXT NOT NULL, \
                  `toolbar` VARCHAR(320) NOT NULL, \
                  `admin_id` INT NOT NULL, \
-                 `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
                  PRIMARY KEY (`xml_id`), \
                  FOREIGN KEY (`admin_id`) REFERENCES `'+ dbconfig.database +'`.`'+dbconfig.admin_table+'`(admin_id) \
                  ON DELETE CASCADE \
@@ -84,8 +84,8 @@ connection.query('\
                  `session_id` INT AUTO_INCREMENT, \
                  `admin_id` INT, \
                  `password` VARCHAR(1000) NOT NULL, \
-                 `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
-                 `last_updated` DATETIME, \
+                 `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
+                 `last_updated` TIMESTAMP, \
                  PRIMARY KEY (`session_id`), \
                  FOREIGN KEY (`admin_id`) REFERENCES `' + dbconfig.database + '`.`' + dbconfig.admin_table + '`(admin_id) \
                  ON DELETE CASCADE \
@@ -97,7 +97,7 @@ connection.query('\
                  `log_id` INT AUTO_INCREMENT, \
                  `student_name` VARCHAR(200) NOT NULL, \
                  `log` VARCHAR(1000) NOT NULL, \
-                 `date_created` DATETIME DEFAULT CURRENT_TIMESTAMP, \
+                 `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
                  `class_id` VARCHAR(40) NOT NULL, \
                  `group_id` INT, \
                  PRIMARY KEY (`log_id`) \
