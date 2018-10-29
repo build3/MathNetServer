@@ -231,7 +231,7 @@ function update_users_coordinates(username, class_id, info) {
 //if valid stores xml string for group in user and group xml object
 function update_user_xml(data) {
     var deferred = Q.defer();
-    var rdata = {xml : '', toolbar : ''};
+    var rdata = {xml : '', toolbar : '', properties: ''};
     if (data.class_id in classes.available_classes) {
         if (data.group_id in classes.available_classes[data.class_id]) {
             if (data.username in classes.available_classes[data.class_id]["user"] || data.username == "admin") {
@@ -239,7 +239,11 @@ function update_user_xml(data) {
                     classes.available_classes[data.class_id][data.group_id]["xml"] = JSON.stringify(data.xml);
                     rdata.xml = classes.available_classes[data.class_id][data.group_id]["xml"];
                     console.log(rdata.xml);
-                }                
+                }   
+                if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
+                    classes.available_classes[data.class_id][data.group_id]['properties'] = data.properties;
+                    rdata.properties = classes.available_classes[data.class_id][data.group_id]['properties'];
+                }
                 if(data.toolbar_user && data.toolbar_user != ''){
                     if(data.toolbar_user == "admin"){
                         for (var i in classes.available_classes[data.class_id][data.group_id]["students"]){
@@ -302,6 +306,9 @@ function get_user_xml(username, class_id, group_id) {
                         var properties = classes.available_classes[class_id]["user"][username]["properties"];
                     }
                     var toolbar = classes.available_classes[class_id]["user"][username]["toolbar"];
+                }
+                if(properties == null){
+                    properties = classes.available_classes[class_id][group_id]['properties'];
                 }
                 var data = {
                     xml: xml,
