@@ -229,7 +229,7 @@ function update_users_coordinates(username, class_id, info) {
 //takes a username, class_id, group_id, and xml string
 //if invalid, errors
 //if valid stores xml string for group in user and group xml object
-function update_user_xml(data) {
+function kevin_update_user_xml(data) {
     var deferred = Q.defer();
     var rdata = {xml : '', toolbar : ''};
     if (data.class_id in classes.available_classes) {
@@ -238,7 +238,70 @@ function update_user_xml(data) {
                 if(data.xml != ''){
                     classes.available_classes[data.class_id][data.group_id]["xml"] = JSON.stringify(data.xml);
                     rdata.xml = classes.available_classes[data.class_id][data.group_id]["xml"];
-                    console.log(rdata.xml);
+                }                
+                if(data.toolbar_user && data.toolbar_user != ''){
+                    if(data.toolbar_user == "admin"){
+                        for (var i in classes.available_classes[data.class_id][data.group_id]["students"]){
+                            var students = classes.available_classes[data.class_id][data.group_id]["students"];
+                            if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
+                                classes.available_classes[data.class_id]["user"][students[i]]['properties'] = data.properties;
+                            }
+                            if(data.toolbar && data.toolbar != ''){
+                                classes.available_classes[data.class_id]["user"][students[i]]["toolbar"] = data.toolbar;
+                            }
+                        }
+                        rdata.properties = data.properties;
+                        rdata.toolbar = data.toolbar;
+                    } else {
+                        if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
+                            classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'] = data.properties;
+                            rdata.properties = classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'];
+                        }
+                        if(data.toolbar && data.toolbar != ''){
+                            classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"] = data.toolbar;
+                            rdata.toolbar = classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"];
+                        }
+                        rdata.user_socket = classes.available_classes[data.class_id]["user"][data.toolbar_user]["socket_id"];
+                    }
+                    rdata.toolbar_user = data.toolbar_user;
+                }
+                deferred.resolve(rdata);
+            }
+            else {
+                deferred.reject('Username ' + data.username + ' is invalid.');
+            }
+        } 
+        else {
+            deferred.reject('Group ID ' + data.group_id + ' is invalid.');
+        }
+    }
+    else {
+        deferred.reject('update_user_xml: Class ID ' + data.class_id + ' is invalid.');
+    }
+    return deferred.promise;
+}
+
+//takes a username, class_id, group_id, and xml string
+//if invalid, errors
+//if valid stores xml string for group in user and group xml object
+function update_user_xml(data) {
+    var deferred = Q.defer();
+    var rdata = {xml : '', toolbar : ''};
+    if (data.class_id in classes.available_classes) {
+        if (data.group_id in classes.available_classes[data.class_id]) {
+            if (data.username in classes.available_classes[data.class_id]["user"] || data.username == "admin") {
+               /* if(data.obj_xml != undefined){
+                    var cur_xml_doc = $.parseXML(cur_xml);
+                    data.obj_xml = data.obj_xml.replace(/&lt;/g,'<').replace(/&gt;/g, '>').replace(/\\"/g, '"').replace(/\\n/g, '').replace(/\\t/g, '');
+                    data.obj_xml = data.obj_xml.substr(data.obj_xml.indexOf("<"), data.obj_xml.lastIndexOf(">"));
+                    $(cur_xml_doc).find('construction')[0].appendChild($.parseXML(data.obj_xml).children[0]);
+
+                    var final_xml = $(cur_xml_doc).find('geogebra')[0].outerHTML;
+                }*/
+                if(data.xml != ''){
+                    classes.available_classes[data.class_id][data.group_id]["xml"] = JSON.stringify(data.xml);
+                    rdata.xml = classes.available_classes[data.class_id][data.group_id]["xml"];
+                    //console.log(rdata.xml); //Kevin
                 }                
                 if(data.toolbar_user && data.toolbar_user != ''){
                     if(data.toolbar_user == "admin"){
@@ -1064,6 +1127,48 @@ function server_sockets(server, client){
             });
         }); //registers the change of coordinates in the datastructure and passes them back to group
 
+        // XML_UPDATE (Kevin)
+        // emits xml_change_response to all sockets in the group room
+        socket.on('xml_update', function(data) {
+            if(data.username){
+                data.username = sanitize_data(data.username);
+            }
+            if(data.class_id){
+                data.class_id = sanitize_data(data.class_id);
+            }
+            if(data.group_id){
+                data.group_id = sanitize_data(data.group_id);    
+            }
+            if(data.xml){
+                data.xml = sanitize_data(data.xml);
+            }
+            if(data.toolbar){
+                data.toolbar = sanitize_data(data.toolbar);
+            }
+            if(data.toolbar_user){
+                data.toolbar_user = sanitize_data(data.toolbar_user);
+            }
+            if(data.properties){
+                for (var i in data.properties){
+                    data.properties[i] = sanitize_data(data.properties[i]);
+                }
+            }
+             var response = {
+                    username: data.username,
+                    class_id: data.class_id,
+                    group_id: data.group_id,
+                    xml: JSON.stringify(data.xml),
+                    toolbar: data.toolbar,
+                    properties: data.properties,
+                    obj_xml: JSON.stringify(data.obj_xml),
+                    obj_label: data.obj_label,
+                    obj_cmd_str: data.obj_cmd_str,
+                    type_of_req: data.type_of_req
+                };
+                socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_update_response', response);
+                //io.sockets.to('admin-' + data.class_id, response).emit('xml_change_response', response);
+        }); //updates user and group xml values in the datastructure 
+
         // XML_CHANGE
         // emits xml_change_response to all sockets in the group room
         socket.on('xml_change', function(data) {
@@ -1098,12 +1203,14 @@ function server_sockets(server, client){
                     group_id: data.group_id,
                     xml: rdata.xml,
                     toolbar: rdata.toolbar,
-                    properties: rdata.properties
+                    properties: rdata.properties,
+                    obj_xml: JSON.stringify(data.obj_xml),
+                    obj_label: data.obj_label,
+                    obj_cmd_str: data.obj_cmd_str
                 };
-
                 var date = new Date().toJSON();
-                logger.info(date + "~" + data.username + "~xml_change~" + data.class_id + "~" + data.group_id + "~" 
-                            + JSON.stringify(response)  + "~1~" + data.class_id + "x" + data.group_id );
+                logger.warn(date + "~" + data.username + "~xml_change~" + data.class_id + "~" + data.group_id + "~" 
+                            + JSON.stringify(response)  + "~1~" + data.class_id + "x" + data.group_id ); //Kevin - info to warn
                 if(rdata.user_socket){
                     // updating a user toolbar
                     socket.broadcast.to(rdata.user_socket).emit('xml_change_response', response);
