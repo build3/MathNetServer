@@ -229,61 +229,6 @@ function update_users_coordinates(username, class_id, info) {
 //takes a username, class_id, group_id, and xml string
 //if invalid, errors
 //if valid stores xml string for group in user and group xml object
-function kevin_update_user_xml(data) {
-    var deferred = Q.defer();
-    var rdata = {xml : '', toolbar : ''};
-    if (data.class_id in classes.available_classes) {
-        if (data.group_id in classes.available_classes[data.class_id]) {
-            if (data.username in classes.available_classes[data.class_id]["user"] || data.username == "admin") {
-                if(data.xml != ''){
-                    classes.available_classes[data.class_id][data.group_id]["xml"] = JSON.stringify(data.xml);
-                    rdata.xml = classes.available_classes[data.class_id][data.group_id]["xml"];
-                }                
-                if(data.toolbar_user && data.toolbar_user != ''){
-                    if(data.toolbar_user == "admin"){
-                        for (var i in classes.available_classes[data.class_id][data.group_id]["students"]){
-                            var students = classes.available_classes[data.class_id][data.group_id]["students"];
-                            if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
-                                classes.available_classes[data.class_id]["user"][students[i]]['properties'] = data.properties;
-                            }
-                            if(data.toolbar && data.toolbar != ''){
-                                classes.available_classes[data.class_id]["user"][students[i]]["toolbar"] = data.toolbar;
-                            }
-                        }
-                        rdata.properties = data.properties;
-                        rdata.toolbar = data.toolbar;
-                    } else {
-                        if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
-                            classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'] = data.properties;
-                            rdata.properties = classes.available_classes[data.class_id]["user"][data.toolbar_user]['properties'];
-                        }
-                        if(data.toolbar && data.toolbar != ''){
-                            classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"] = data.toolbar;
-                            rdata.toolbar = classes.available_classes[data.class_id]["user"][data.toolbar_user]["toolbar"];
-                        }
-                        rdata.user_socket = classes.available_classes[data.class_id]["user"][data.toolbar_user]["socket_id"];
-                    }
-                    rdata.toolbar_user = data.toolbar_user;
-                }
-                deferred.resolve(rdata);
-            }
-            else {
-                deferred.reject('Username ' + data.username + ' is invalid.');
-            }
-        } 
-        else {
-            deferred.reject('Group ID ' + data.group_id + ' is invalid.');
-        }
-    }
-    else {
-        deferred.reject('update_user_xml: Class ID ' + data.class_id + ' is invalid.');
-    }
-    return deferred.promise;
-}
-
-//takes a username, class_id, group_id, and xml string
-//if invalid, errors
-//if valid stores xml string for group in user and group xml object
 function update_user_xml(data) {
     var deferred = Q.defer();
     var rdata = {xml : '', toolbar : ''};
@@ -301,7 +246,6 @@ function update_user_xml(data) {
                 if(data.xml != ''){
                     classes.available_classes[data.class_id][data.group_id]["xml"] = JSON.stringify(data.xml);
                     rdata.xml = classes.available_classes[data.class_id][data.group_id]["xml"];
-                    //console.log(rdata.xml); //Kevin
                 }                
                 if(data.toolbar_user && data.toolbar_user != ''){
                     if(data.toolbar_user == "admin"){
@@ -1127,7 +1071,7 @@ function server_sockets(server, client){
             });
         }); //registers the change of coordinates in the datastructure and passes them back to group
 
-        // XML_UPDATE (Kevin)
+        // XML_UPDATE (mathnet)
         // emits xml_change_response to all sockets in the group room
         socket.on('xml_update', function(data) {
             if(data.username){
@@ -1153,7 +1097,8 @@ function server_sockets(server, client){
                     data.properties[i] = sanitize_data(data.properties[i]);
                 }
             }
-             var response = {
+
+            var response = {
                     username: data.username,
                     class_id: data.class_id,
                     group_id: data.group_id,
@@ -1166,7 +1111,6 @@ function server_sockets(server, client){
                     type_of_req: data.type_of_req
                 };
                 socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_update_response', response);
-                //io.sockets.to('admin-' + data.class_id, response).emit('xml_change_response', response);
         }); //updates user and group xml values in the datastructure 
 
         // XML_CHANGE
@@ -1210,7 +1154,7 @@ function server_sockets(server, client){
                 };
                 var date = new Date().toJSON();
                 logger.warn(date + "~" + data.username + "~xml_change~" + data.class_id + "~" + data.group_id + "~" 
-                            + JSON.stringify(response)  + "~1~" + data.class_id + "x" + data.group_id ); //Kevin - info to warn
+                            + JSON.stringify(response)  + "~1~" + data.class_id + "x" + data.group_id ); //mathnet - info to warn
                 if(rdata.user_socket){
                     // updating a user toolbar
                     socket.broadcast.to(rdata.user_socket).emit('xml_change_response', response);
@@ -1248,6 +1192,41 @@ function server_sockets(server, client){
                 server_error(error, error);
             });
         }); //gets class xml and returns it to the socket that joined the group
+
+        // P2P_GET_XML (mathnet)
+        // emits get_xml_response to socket that requested it.
+        socket.on('p2p_get_xml', function(username, class_id, group_id) {
+            username = sanitize_data(username);
+            class_id = sanitize_data(class_id);
+            group_id = sanitize_data(group_id);
+
+            var response = {
+                username : username,
+                class_id : class_id,
+                group_id : group_id
+            }
+            
+            for(var i = 0; i < classes.available_classes[class_id][group_id]["students"].length; i++){
+                if(classes.available_classes[class_id][group_id]["students"][i] != username){
+                    var student = classes.available_classes[class_id][group_id]["students"][i];
+                    io.to(classes.available_classes[class_id]["user"][student]["socket_id"]).emit('p2p_get_xml_response', response);
+                    break;
+                }
+            }
+
+        }); //gets class xml and returns it to the socket that joined the group
+
+        socket.on('applet_xml', function(xml, username, class_id, group_id){
+
+            var response = {
+                username : username,
+                class_id : class_id,
+                group_id : group_id,
+                xml : xml,
+                properties : null
+            }
+            io.to(classes.available_classes[class_id]["user"][username]["socket_id"]).emit('applet_xml_response', response);
+        });
 
         // GET-SETTINGS
         // This is the handler for the get-settings client socket emission
