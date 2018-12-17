@@ -1108,7 +1108,9 @@ function server_sockets(server, client){
                     obj_xml: JSON.stringify(data.obj_xml),
                     obj_label: data.obj_label,
                     obj_cmd_str: data.obj_cmd_str,
-                    type_of_req: data.type_of_req
+                    type_of_req: data.type_of_req,
+                    xml_update_ver: data.xml_update_ver,
+                    new_update: data.new_update
                 };
                 socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_update_response', response);
         }); //updates user and group xml values in the datastructure 
@@ -1216,14 +1218,14 @@ function server_sockets(server, client){
 
         }); //gets class xml and returns it to the socket that joined the group
 
-        socket.on('applet_xml', function(xml, username, class_id, group_id){
-
+        socket.on('applet_xml', function(xml, username, class_id, group_id, xml_update_ver){
             var response = {
                 username : username,
                 class_id : class_id,
                 group_id : group_id,
                 xml : xml,
-                properties : null
+                properties : null,
+                xml_update_ver: xml_update_ver
             }
             io.to(classes.available_classes[class_id]["user"][username]["socket_id"]).emit('applet_xml_response', response);
         });
