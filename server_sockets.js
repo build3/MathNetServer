@@ -251,8 +251,6 @@ function update_user_xml(data) {
                     if(data.toolbar_user == "admin"){
                         for (var i in classes.available_classes[data.class_id][data.group_id]["students"]){
                             var students = classes.available_classes[data.class_id][data.group_id]["students"];
-                            console.log(classes.available_classes[data.class_id][data.group_id]["students"]);
-                            console.log(classes.available_classes[data.class_id]["user"]);
                             if(data.properties && data.properties != 'null' && data.properties != 'undefined'){
                                 classes.available_classes[data.class_id]["user"][students[i]]['properties'] = data.properties;
                             }
