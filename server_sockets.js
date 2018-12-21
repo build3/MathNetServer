@@ -1072,7 +1072,7 @@ function server_sockets(server, client){
         }); //registers the change of coordinates in the datastructure and passes them back to group
 
         // XML_UPDATE (mathnet)
-        // emits xml_change_response to all sockets in the group room
+        // emits xml_update_response to all sockets in the group room
         socket.on('xml_update', function(data) {
             if(data.username){
                 data.username = sanitize_data(data.username);
@@ -1113,6 +1113,7 @@ function server_sockets(server, client){
                     new_update: data.new_update
                 };
                 socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_update_response', response);
+                io.sockets.to('admin-' + data.class_id, response).emit('xml_update_response', response);
         }); //updates user and group xml values in the datastructure 
 
         // XML_CHANGE
@@ -1218,6 +1219,8 @@ function server_sockets(server, client){
 
         }); //gets class xml and returns it to the socket that joined the group
 
+        //This is used by the client (which is was requested for a copy of the updated XML) 
+        //to return the XML to the requestor (which could be the admin or a client/student)
         socket.on('applet_xml', function(xml, username, class_id, group_id, xml_update_ver){
             var response = {
                 username : username,
@@ -1227,7 +1230,12 @@ function server_sockets(server, client){
                 properties : null,
                 xml_update_ver: xml_update_ver
             }
-            io.to(classes.available_classes[class_id]["user"][username]["socket_id"]).emit('applet_xml_response', response);
+            if(username !== 'admin'){
+                io.to(classes.available_classes[class_id]["user"][username]["socket_id"]).emit('applet_xml_response', response);
+            }
+            else{
+                io.sockets.to('admin-' + class_id).emit('applet_xml_response', response);
+            }
         });
 
         // GET-SETTINGS
