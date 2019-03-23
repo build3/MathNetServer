@@ -8,7 +8,7 @@ var logger = new (winston.Logger)({
         'timestamp': false,
         name: 'logs',
         filename: 'logs.txt',
-        level: 'info',
+        level: 'warn',
         formatter: function(options) {
             return (undefined !== options.message ? options.message : '');
         },
