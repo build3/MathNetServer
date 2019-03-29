@@ -1095,6 +1095,13 @@ function server_sockets(server, client){
                     data.properties[i] = sanitize_data(data.properties[i]);
                 }
             }
+            var admin_update;
+            if (data.type_of_req == 'update') {
+                admin_update = false;
+                if (data.recipient && data.recipient == 'admin') {
+                    admin_update = true;
+                }
+            }
 
             var response = {
                     username: data.username,
@@ -1110,8 +1117,12 @@ function server_sockets(server, client){
                     xml_update_ver: data.xml_update_ver,
                     new_update: data.new_update
                 };
-                socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_update_response', response);
-                io.sockets.to('admin-' + data.class_id, response).emit('xml_update_response', response);
+                if (admin_update == undefined || admin_update == false) {
+                    socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_update_response', response);
+                }
+                if (admin_update == undefined || admin_update == true) {
+                    io.sockets.to('admin-' + data.class_id, response).emit('xml_update_response', response);
+                }
         }); //updates user and group xml values in the datastructure 
 
         // XML_CHANGE
