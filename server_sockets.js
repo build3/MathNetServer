@@ -1110,8 +1110,12 @@ function server_sockets(server, client){
                     xml_update_ver: data.xml_update_ver,
                     new_update: data.new_update
                 };
-                socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_update_response', response);
-                io.sockets.to('admin-' + data.class_id, response).emit('xml_update_response', response);
+                if (data.type_of_req != 'update' || data.recipient == 'student') {
+                    socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_update_response', response);
+                }
+                if (data.type_of_req != 'update' || data.recipient == 'admin') {
+                    io.sockets.to('admin-' + data.class_id, response).emit('xml_update_response', response);
+                }
         }); //updates user and group xml values in the datastructure 
 
         // XML_CHANGE
@@ -1211,10 +1215,11 @@ function server_sockets(server, client){
                 if(classes.available_classes[class_id][group_id]["students"][i] != username){
                     var student = classes.available_classes[class_id][group_id]["students"][i];
                     io.to(classes.available_classes[class_id]["user"][student]["socket_id"]).emit('p2p_get_xml_response', response);
-                    break;
+                    return;
                 }
             }
-
+            // if no other student was found on the same group
+            io.sockets.to('admin-' + class_id).emit('get_admin_applet_xml_response', response);
         }); //gets class xml and returns it to the socket that joined the group
 
         //This is used by the client (which is was requested for a copy of the updated XML) 
