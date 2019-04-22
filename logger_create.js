@@ -7,7 +7,7 @@ var logger = new (winston.Logger)({
       new (winston.transports.File)({
         'timestamp': false,
         name: 'logs',
-        filename: 'logs.txt',
+        filename: process.env.LOG_FILE || 'logs.txt',
         level: 'warn',
         formatter: function(options) {
             return (undefined !== options.message ? options.message : '');
