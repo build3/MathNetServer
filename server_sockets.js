@@ -1166,7 +1166,7 @@ function server_sockets(server, client){
                 }else{
                     socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_change_response', response);    
                 }
-                io.sockets.to('admin-' + data.class_id, response).emit('xml_change_response', response);
+                //io.sockets.to('admin-' + data.class_id, response).emit('xml_change_response', response);
             }).fail(function(error){
                 server_error(error, error);
             });
