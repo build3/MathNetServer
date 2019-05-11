@@ -1241,6 +1241,24 @@ function server_sockets(server, client){
             }
         });
 
+        // This is used in order to return a group xml to a student that joined an empty group
+        socket.on('send_admin_applet_xml', function(xml, username, class_id, group_id, xml_update_ver){
+            var response = {
+                username : username,
+                class_id : class_id,
+                group_id : group_id,
+                xml : xml,
+                properties : null,
+                xml_update_ver: xml_update_ver
+            }
+            if(username !== 'admin'){
+                io.to(classes.available_classes[class_id]["user"][username]["socket_id"]).emit('send_admin_applet_xml_response', response);
+            }
+            else{
+                io.sockets.to('admin-' + class_id).emit('send_admin_applet_xml_response', response);
+            }
+        });
+
         // GET-SETTINGS
         // This is the handler for the get-settings client socket emission
         // Emits get-settings-response to all sockets in the class group room
