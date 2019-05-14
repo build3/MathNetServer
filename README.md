@@ -61,7 +61,7 @@ After installation, you then run `node create_database.js` to create the necessa
 Now, you are ready to run the server. To do so, run `node server.js`. You can then navigate to wherever the server is running and add the correct port number to the url.
 For example, if running on `localhost` and `port 8888`, you would go to [http://localhost:8888/](http://localhost:8888/).
 
-By default, the port number is set to `8888`, but if you wish to change it, simply open `server.js` and edit the port number on **line 2**. The line should look like this `var port = 8888;`.
+By default, the port number is set to `8889`, but if you wish to change it, simply open `server.js` and edit the port number on **line 2**. The line should look like this `var port = 8888;`.
 
 #### Linux (Ubuntu) ####
 

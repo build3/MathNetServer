@@ -85,7 +85,7 @@ connection.query('\
                  `admin_id` INT, \
                  `password` VARCHAR(1000) NOT NULL, \
                  `date_created` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
-                 `last_updated` TIMESTAMP, \
+                 `last_updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP, \
                  PRIMARY KEY (`session_id`), \
                  FOREIGN KEY (`admin_id`) REFERENCES `' + dbconfig.database + '`.`' + dbconfig.admin_table + '`(admin_id) \
                  ON DELETE CASCADE \
