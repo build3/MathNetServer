@@ -1110,12 +1110,13 @@ function server_sockets(server, client){
                     xml_update_ver: data.xml_update_ver,
                     new_update: data.new_update
                 };
-                if (data.type_of_req != 'update' || data.recipient == 'student') {
+            //commented code used for selective updates to admin
+                // if (data.type_of_req != 'update' || data.recipient == 'student') {
                     socket.broadcast.to(data.class_id + "x" + data.group_id).emit('xml_update_response', response);
-                }
-                if (data.type_of_req != 'update' || data.recipient == 'admin') {
+                // }
+                // if (data.type_of_req != 'update' || data.recipient == 'admin') {
                     io.sockets.to('admin-' + data.class_id, response).emit('xml_update_response', response);
-                }
+                // }
         }); //updates user and group xml values in the datastructure 
 
         // XML_CHANGE
