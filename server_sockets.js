@@ -848,8 +848,8 @@ function server_sockets(server, client){
         // PING
         // pinging to check for time
         // Emits ping response
-        socket.on('ping', function(time) {
-            socket.emit('ping-response', time);
+        socket.on('ping-mathnet', function(time) {
+            socket.emit('ping-mathnet-response', time);
         });
 
         
